@@ -82,6 +82,22 @@ const Liquidity = () => {
       Fees: "$195.16",
       PoolBalance: "5,400.42 WETH",
     },
+    {
+      LiquidityName: "CL1-WETH/superOETHb",
+      LiquidityIcn: [p1, p1, p1],
+      Volume: "$487,904.63",
+      APR: "5.0333%",
+      Fees: "$195.16",
+      PoolBalance: "5,400.42 WETH",
+    },
+    {
+      LiquidityName: "CL1-WETH/superOETHb",
+      LiquidityIcn: [p1, p1, p1],
+      Volume: "$487,904.63",
+      APR: "5.0333%",
+      Fees: "$195.16",
+      PoolBalance: "5,400.42 WETH",
+    },
   ];
   const [activeTab, setActiveTab] = useState(1);
   const showTab = (tab) => {
