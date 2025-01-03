@@ -1,0 +1,31 @@
+:root body {
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 22px;
+  color: var(--textColor);
+  background-color: var(--backgroundColor);
+}
+.btn {
+  min-height: unset !important;
+}
+.themeClr {
+  color: #00ff4e;
+}
+input.form-control:focus {
+  box-shadow: unset;
+  border-color: #00ff4e !important;
+}
+.iconWithText .icn {
+  top: 50%;
+  transform: translateY(-50%);
+}
+:root .commonBtn {
+  background-color: #00ff4e;
+  border-color: #00ff4e;
+  transition: 0.4s;
+  height: 45px;
+}
+:root .commonBtn:hover {
+  background-color: #001b1c;
+  border-color: #001b1c;
+}

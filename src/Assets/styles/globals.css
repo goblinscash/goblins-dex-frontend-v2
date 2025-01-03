@@ -1,0 +1,16 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+@import "daisyui/dist/full.css";
+
+@import "./style.css";
+
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: dark;
+  }
+  body {
+    /* color: white; */
+    font-family: "poppins";
+  }
+}
