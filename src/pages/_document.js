@@ -5,7 +5,7 @@ class MyDocument extends Document {
     return (
       <Html lang="en">
         <Head>
-          <meta name="description" content="My Passion Ai" />
+          <meta name="description" content="Goblin Cash" />
 
           <link rel="shortcut icon" href="/images/logoIcn.svg" />
           <link
