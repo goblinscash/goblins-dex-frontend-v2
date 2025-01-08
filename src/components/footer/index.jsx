@@ -1,3 +1,4 @@
+"use client";
 import Image from "next/image";
 import React from "react";
 import styled from "styled-components";
@@ -6,7 +7,7 @@ import Link from "next/link";
 const Footer = () => {
   return (
     <>
-      <footer className="siteFooter bg-[var(--backgroundColor2)] py-3">
+      <footer className="siteFooter bg-[var(--backgroundColor2)] py-3 sticky bottom-0">
         <div className="container">
           <div className="grid gap-3 grid-cols-12">
             <div className="col-span-12">

@@ -12,7 +12,9 @@ const TableLayout = ({ column, data }) => {
                 column.length > 0 &&
                 column.map((item, key) => (
                   <>
-                    <th className="font-semibold p-3 border-0">{item.head}</th>
+                    <th className="font-semibold p-3 border-0 text-left">
+                      {item.head}
+                    </th>
                   </>
                 ))}
             </tr>

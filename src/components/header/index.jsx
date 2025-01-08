@@ -1,18 +1,18 @@
+"use client";
 import React, { useState } from "react";
 import Switch from "react-switch";
 // css
-import { Dropdown, YellowThemeBtn } from "../Common";
 import Image from "next/image";
 
 // image
-import logo from "@/Assets/Images/logo.png";
+import logo from "@/assets/Images/logo.png";
 import Link from "next/link";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import styled from "styled-components";
-import { useTheme } from "@/ContextApi/ThemeContext";
+import { useTheme } from "../../ContextApi/ThemeContext";
 import { Tooltip } from "react-tooltip";
 
-const Header = ({ sidebar, setSidebar }) => {
+const Header = () => {
   const { theme, toggleTheme } = useTheme();
   const router = useRouter();
 
@@ -23,34 +23,6 @@ const Header = ({ sidebar, setSidebar }) => {
   const handleDropdownClick = (index, isOpen) => {
     setOpenDropdown(isOpen ? index : null);
   };
-
-  const normalizePathname = (pathname) => {
-    // Remove leading slash(es)
-    const normalizedPathname = pathname.replace(/^\/+/, "");
-
-    // If the pathname has more than one segment, return the full path
-    if (normalizedPathname.includes("/")) {
-      return (
-        <>
-          <button
-            onClick={() => router.back()}
-            className="items-center gap-2 border-0 bg-transparent p-0 lg:flex hidden"
-          >
-            <span className="icn">{backIcn}</span>
-            Back
-          </button>
-        </>
-      );
-    }
-
-    // Otherwise, return just the base path
-    return (
-      <h6 className="m-0 font-normal text-xl capitalize whitespace-nowrap lg:block hidden">
-        {normalizedPathname}
-      </h6>
-    );
-  };
-  const normalizedPath = normalizePathname(pathname);
 
   const isChecked = theme === "dark";
   return (
