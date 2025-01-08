@@ -1,38 +1,22 @@
 import React, { useState } from "react";
-import Select from "react-select";
 
 // css
-import styles from "./AddExercisePop.module.scss";
-import { createPortal } from "react-dom";
-import AllCateogryPop from "../AllCategoryPop";
 
-const AddExercisePop = ({ exercise, setExercise }) => {
-  const [category, setCategory] = useState();
-  const options = [
-    { value: "weight(lbs)", label: "Weight (lbs)" },
-    { value: "reps", label: "Reps" },
-    { value: "time(seconds)", label: "Time (seconds)" },
-  ];
+const SwapPop = ({ swap, setSwap }) => {
   const handleExercise = () => {
-    setExercise(!exercise);
-  };
-  const handleCategory = () => {
-    setCategory(!category);
+    setSwap(!swap);
   };
   return (
     <>
-      {category &&
-        createPortal(
-          <AllCateogryPop category={category} setCategory={setCategory} />,
-          document.body
-        )}
       <div
-        className={`${styles.AddExercisePop} fixed inset-0 flex items-center justify-center cstmModal`}
+        className={` fixed inset-0 flex items-center justify-center cstmModal`}
       >
         <div className="absolute inset-0 bg-black opacity-50"></div>
-        <div className={`${styles.modalDialog} modalDialog p-2 mx-auto rounded-lg z-10 bg-white`}>
+        <div className={`modalDialog p-2 mx-auto rounded-lg z-10 bg-white`}>
           <div className="top flex items-center justify-between gap-2 border-b border-gray-100">
-            <p className="m-0 font-semibold text-dark text-base">Add Exercise</p>
+            <p className="m-0 font-semibold text-dark text-base">
+              Add Exercise
+            </p>
             <button
               onClick={handleExercise}
               className="m-0 border-0 p-0 transparent font-semibold text-gray-400 "
@@ -56,7 +40,10 @@ const AddExercisePop = ({ exercise, setExercise }) => {
               <form>
                 <div className="grid grid-cols-12 gap-3">
                   <div className="col-span-12">
-                    <label htmlFor="" className="form-label m-0 pb-1 text-gray-500">
+                    <label
+                      htmlFor=""
+                      className="form-label m-0 pb-1 text-gray-500"
+                    >
                       Exercise Name
                     </label>
                     <input
@@ -66,12 +53,14 @@ const AddExercisePop = ({ exercise, setExercise }) => {
                     />
                   </div>
                   <div className="col-span-12">
-                    <label htmlFor="" className="form-label m-0 pb-1 text-gray-500">
+                    <label
+                      htmlFor=""
+                      className="form-label m-0 pb-1 text-gray-500"
+                    >
                       Exercise Category
                     </label>
                     <div className="iconWithText relative">
                       <input
-                        onClick={handleCategory}
                         type="text"
                         placeholder="None"
                         className="form-control rounded-lg border-gray-300 font-semibold text-xs"
@@ -86,7 +75,10 @@ const AddExercisePop = ({ exercise, setExercise }) => {
                     </div>
                   </div>
                   <div className="col-span-12">
-                    <label htmlFor="" className="form-label m-0 pb-1 text-gray-500">
+                    <label
+                      htmlFor=""
+                      className="form-label m-0 pb-1 text-gray-500"
+                    >
                       Video
                     </label>
                     <input
@@ -97,7 +89,10 @@ const AddExercisePop = ({ exercise, setExercise }) => {
                   </div>
                   <div className="col-span-12">
                     <div className="flex items-center justify-between">
-                      <label htmlFor="" className="form-label m-0 pb-1 text-gray-500">
+                      <label
+                        htmlFor=""
+                        className="form-label m-0 pb-1 text-gray-500"
+                      >
                         Training Variables
                       </label>
                       <span className="text-red-500">*Max 4 Added</span>
@@ -110,7 +105,10 @@ const AddExercisePop = ({ exercise, setExercise }) => {
                     <Select isMulti options={options} />
                   </div>
                   <div className="col-span-12">
-                    <label htmlFor="" className="form-label m-0 pb-1 text-gray-500">
+                    <label
+                      htmlFor=""
+                      className="form-label m-0 pb-1 text-gray-500"
+                    >
                       Coaching Cues
                     </label>
                     <div className="flex items-center justify-between gap-1">
@@ -126,7 +124,10 @@ const AddExercisePop = ({ exercise, setExercise }) => {
                     </div>
                   </div>
                   <div className="col-span-12">
-                    <label htmlFor="" className="form-label m-0 pb-1 text-gray-500">
+                    <label
+                      htmlFor=""
+                      className="form-label m-0 pb-1 text-gray-500"
+                    >
                       Coaching Instructions
                     </label>
                     <div className="flex items-center justify-between gap-1">
@@ -157,4 +158,4 @@ const AddExercisePop = ({ exercise, setExercise }) => {
   );
 };
 
-export default AddExercisePop;
+export default SwapPop;

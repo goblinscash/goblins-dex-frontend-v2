@@ -11,7 +11,7 @@
   padding: 0 15px;
 }
 .btn {
-  padding: 0 10px;
+  padding: 0 20px;
 }
 .themeClr {
   color: #00ff4e;
@@ -32,13 +32,27 @@ input.form-control:focus {
   background-color: #00ff4e;
   border-color: #00ff4e;
   transition: 0.4s;
+  color: #001b1c;
   height: 45px;
 }
 .commonBtn:hover {
   background-color: #001b1c;
   border-color: #001b1c;
+  color: #00ff4e;
 }
 
 section {
   min-height: calc(100vh - 150px);
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
 }

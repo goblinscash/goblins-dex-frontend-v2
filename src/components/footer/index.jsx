@@ -31,6 +31,139 @@ const Footer = () => {
                     </Link>
                   </li>
                 </ul>
+                <ul className="flex items-center gap-4">
+                  <li>
+                    <Link
+                      className="flex items-center font-normal capitalize text-decoration-none hover:underline underline-offset-2 text-[#00ff00]"
+                      target="_blank"
+                      href="https://twitter.com/GoblinsCash"
+                    >
+                      <svg
+                        height={24}
+                        width={24}
+                        viewBox="0 0 14 14"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g clipPath="url(#clip0_1_2)">
+                          <mask
+                            id="mask0_1_2"
+                            maskUnits="userSpaceOnUse"
+                            x={0}
+                            y={0}
+                            width={14}
+                            height={14}
+                            style={{ maskType: "luminance" }}
+                          >
+                            <path d="M0 0H14V14H0V0Z" fill="white" />
+                          </mask>
+                          <g mask="url(#mask0_1_2)">
+                            <path
+                              d="M11.025 0.656H13.172L8.482 6.03L14 13.344H9.68L6.294 8.909L2.424 13.344H0.275L5.291 7.594L0 0.657H4.43L7.486 4.71L11.025 0.656ZM10.27 12.056H11.46L3.78 1.877H2.504L10.27 12.056Z"
+                              fill="#00ff00"
+                            />
+                          </g>
+                        </g>
+                        <defs>
+                          <clipPath id="clip0_1_2">
+                            <rect width={14} height={14} fill="white" />
+                          </clipPath>
+                        </defs>
+                      </svg>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      className="flex items-center font-normal capitalize text-decoration-none hover:underline underline-offset-2 text-[#00ff00]"
+                      target="_blank"
+                      href="https://t.co/YupLbprFkk"
+                    >
+                      <svg
+                        height={24}
+                        width={24}
+                        className=""
+                        viewBox="0 0 16 16"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g clipPath="url(#clip0_1_9)">
+                          <path
+                            d="M14.7011 1.41947L0.525837 6.91403C-0.0446004 7.1699 -0.237538 7.68231 0.387962 7.9604L4.02452 9.12206L12.8173 3.65987C13.2974 3.31697 13.7889 3.4084 13.3659 3.78562L5.81415 10.6586L5.57693 13.5672C5.79665 14.0163 6.19896 14.0184 6.45559 13.7952L8.5449 11.808L12.1232 14.5014C12.9543 14.9959 13.4065 14.6768 13.5853 13.7703L15.9323 2.59937C16.176 1.48359 15.7605 0.991966 14.7011 1.41947Z"
+                            fill="#00ff00"
+                          />
+                        </g>
+                        <defs>
+                          <clipPath id="clip0_1_9">
+                            <rect width={16} height={16} fill="white" />
+                          </clipPath>
+                        </defs>
+                      </svg>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      className="flex items-center font-normal capitalize text-decoration-none hover:underline underline-offset-2 text-[#00ff00]"
+                      target="_blank"
+                      href="https://www.youtube.com/channel/UCCzhdunwglLryMW8hj4G3zQ"
+                    >
+                      <svg
+                        height={24}
+                        width={24}
+                        className=""
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M10 15L15.19 12L10 9V15ZM21.56 7.17C21.69 7.64 21.78 8.27 21.84 9.07C21.91 9.87 21.94 10.56 21.94 11.16L22 12C22 14.19 21.84 15.8 21.56 16.83C21.31 17.73 20.73 18.31 19.83 18.56C19.36 18.69 18.5 18.78 17.18 18.84C15.88 18.91 14.69 18.94 13.59 18.94L12 19C7.81 19 5.2 18.84 4.17 18.56C3.27 18.31 2.69 17.73 2.44 16.83C2.31 16.36 2.22 15.73 2.16 14.93C2.09 14.13 2.06 13.44 2.06 12.84L2 12C2 9.81 2.16 8.2 2.44 7.17C2.69 6.27 3.27 5.69 4.17 5.44C4.64 5.31 5.5 5.22 6.82 5.16C8.12 5.09 9.31 5.06 10.41 5.06L12 5C16.19 5 18.8 5.16 19.83 5.44C20.73 5.69 21.31 6.27 21.56 7.17Z"
+                          fill="#00ff00"
+                        />
+                      </svg>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      className="flex items-center font-normal capitalize text-decoration-none hover:underline underline-offset-2 text-[#00ff00]"
+                      target="_blank"
+                      href="https://github.com/goblinscash"
+                    >
+                      <svg
+                        height={24}
+                        width={24}
+                        xmlns="http://www.w3.org/2000/svg"
+                        className=""
+                        viewBox="0 0 16 16"
+                      >
+                        <path
+                          d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"
+                          fill="#00ff00"
+                        />
+                      </svg>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      className="flex items-center font-normal capitalize text-decoration-none hover:underline underline-offset-2 text-[#00ff00]"
+                      target="_blank"
+                      href="https://medium.com/@GoblinsCash"
+                    >
+                      <svg
+                        height={24}
+                        width={24}
+                        xmlns="http://www.w3.org/2000/svg"
+                        className=""
+                        viewBox="0 -55 256 256"
+                        preserveAspectRatio="xMidYMid"
+                        fill="none"
+                      >
+                        <path
+                          fill="#00ff00"
+                          d="M72.2 0c39.88 0 72.2 32.55 72.2 72.7 0 40.14-32.33 72.69-72.2 72.69-39.87 0-72.2-32.55-72.2-72.7C0 32.56 32.33 0 72.2 0Zm115.3 4.26c19.94 0 36.1 30.64 36.1 68.44 0 37.79-16.16 68.43-36.1 68.43-19.93 0-36.1-30.64-36.1-68.43 0-37.8 16.16-68.44 36.1-68.44Zm55.8 7.13c7.01 0 12.7 27.45 12.7 61.3 0 33.86-5.68 61.32-12.7 61.32-7.01 0-12.7-27.46-12.7-61.31 0-33.86 5.7-61.31 12.7-61.31Z"
+                        />
+                      </svg>
+                    </Link>
+                  </li>
+                </ul>
               </div>
             </div>
           </div>

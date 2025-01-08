@@ -6,13 +6,13 @@ import Image from "next/image";
 
 type Tab = {
   title: string;
-  content: JSX.Element; // This can be any JSX element
+  content: React.ReactNode; // This can be any JSX element
 };
 
 type Column = {
   head: string;
   accessor: string;
-  component?: (item: Data, key: number) => JSX.Element; // Optional component property
+  component?: (item: Data, key: number) => React.ReactNode; // Optional component property
   isComponent?: boolean; // For columns with specific components (like a switch)
 };
 
@@ -54,7 +54,7 @@ const Liquidity = () => {
       accessor: "Liquidity",
       component: (item: Data, key: number) => {
         return (
-          <div key={key} className="d-flex align-items-center gap-10">
+          <div key={key} className="flex items-center gap-3">
             <div className="imgWrp flex-shrink-0">
               <Image
                 src={""} // Add image source dynamically here

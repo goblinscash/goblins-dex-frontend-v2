@@ -46,17 +46,17 @@ const Header = () => {
               <div className="right flex items-center gap-3">
                 <ul className="list-none pl-0 mb-0 flex items-center justify-end gap-3">
                   <li className="px-2">
-                    <Link href="" className="">
+                    <Link href="/swap" className="">
                       Swap
                     </Link>
                   </li>
                   <li className="px-2">
-                    <Link href="" className="">
+                    <Link href="/liquidity" className="">
                       Liquidity
                     </Link>
                   </li>
                   <li className="px-1">
-                    <button className="btn flex items-center justify-center commonBtn rounded text-xs font-medium">
+                    <button className="btn flex items-center justify-center commonBtn rounded text-xs font-medium ">
                       Connect
                     </button>
                   </li>
