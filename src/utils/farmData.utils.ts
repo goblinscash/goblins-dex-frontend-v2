@@ -96,7 +96,7 @@ export const getDepositParams = (
     }; 
 
     const sweepTokens = [token0, token1];
-    const referralCode = ethers.AbiCoder.defaultAbiCoder().encode(["string"], ["REF123"]);
+    const referralCode = ethers.encodeBytes32String("REF123");
 
     return { params, settings, sweepTokens, approved: zero, referralCode };
 };

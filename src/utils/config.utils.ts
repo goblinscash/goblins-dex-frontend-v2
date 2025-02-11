@@ -1,4 +1,4 @@
-type UniswapContract = {
+export type UniswapContract = {
     factory?: string;
     nfpm?: string;
 };
@@ -14,7 +14,27 @@ export const uniswapContracts: UniswapContracts = {
 };
 
 
-export const vfatContracts = {
+type ChainContracts = {
+    [key: number]: {
+        UniswapV3Connector?: string;
+        AerodromeRouterConnector?: string;
+        NftFarmStrategy?: string;
+        SickleImplementation?: string;
+        SickleFactory?: string;
+        NftSettingsRegistry?: string;
+        SickleRegistry?: string;
+        ConnectorRegistry?: string;
+        NftTransferLib?: string;
+        NftSettingsLib?: string;
+        FeesLib?: string;
+        TransferLib?: string;
+        SwapLib?: string;
+        NftZapLib?: string;
+    };
+};
+
+
+export const vfatContracts: ChainContracts = {
     84532: {
         UniswapV3Connector: "0x5d6094F3d68d725153d0938ce5b0E4D7815B42A7",
         AerodromeRouterConnector: "0x43FDB828aD3D705Fc5D25467f078a724fC209c5D",
@@ -36,9 +56,14 @@ export const vfatContracts = {
     }
 }
 
-export const rpcUrls = {
+export type RpcUrls = {
+    84532: string;
+    56: string;
+};
+
+export const rpcUrls: RpcUrls = {
     84532: "https://base-sepolia-rpc.publicnode.com",
     56: ""
-}
+} as const
 
 export const zeroAddr = "0x0000000000000000000000000000000000000000"
