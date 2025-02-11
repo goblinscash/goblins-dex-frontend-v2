@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 // css
-import styles from "./Common.module.scss";
 import { CstmDropdown, YellowBtn } from "./commonStyled";
 import { useRouter } from "next/router";
 
@@ -396,24 +395,29 @@ export const SocialLogin = () => {
   );
 };
 
-export const YellowThemeBtn = ({ title, icn, btnClass, to }) => {
-  const router = useRouter();
-  const handleClick = () => {
-    if (to) {
-      router.push(to);
-    } else {
-      console.warn("No destination provided for the button.");
-    }
-  };
-
+export const ToggleSwitch = () => {
+  const [isOn, setIsOn] = useState(false);
   return (
     <>
-      <YellowBtn
-        onClick={handleClick}
-        className={`${btnClass} flex border-0 items-center justify-center btn relative`}
-      >
-        <span className="icn absolute">{icn}</span> {title}
-      </YellowBtn>
+      <label className="relative inline-block w-12 h-6">
+        <input
+          type="checkbox"
+          checked={isOn}
+          onChange={() => setIsOn(!isOn)}
+          className="opacity-0 w-0 h-0 absolute"
+          style={{ height: 0, width: 0 }}
+        />
+        <span
+          className={`slider block w-full h-full rounded-full cursor-pointer transition-all duration-300 ease-in-out ${
+            isOn ? "bg-blue-500" : "bg-gray-500"
+          }`}
+        ></span>
+        <span
+          className={`dot absolute left-1 top-1 w-4 h-4 rounded-full transition-all duration-300 ease-in-out ${
+            isOn ? "translate-x-6 bg-white" : "bg-white"
+          }`}
+        ></span>
+      </label>
     </>
   );
 };
