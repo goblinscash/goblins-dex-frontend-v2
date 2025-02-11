@@ -11,6 +11,9 @@ import { useRouter } from "next/navigation";
 import styled from "styled-components";
 import { useTheme } from "../../ContextApi/ThemeContext";
 import { Tooltip } from "react-tooltip";
+import { shortenPubkey } from "@/utils/math.utils";
+import { useWeb3Modal } from '@web3modal/wagmi/react'
+import { useAccount } from "wagmi";
 
 const Header = () => {
   const { theme, toggleTheme } = useTheme();
@@ -20,11 +23,20 @@ const Header = () => {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [menu, setMenu] = useState("");
 
+  const { address } = useAccount()
+  const { open } = useWeb3Modal()
+
+  const connect = async () => {
+    await open()
+  }
+
+
   const handleDropdownClick = (index, isOpen) => {
     setOpenDropdown(isOpen ? index : null);
   };
 
   const isChecked = theme === "dark";
+
   return (
     <>
       <header
@@ -56,8 +68,11 @@ const Header = () => {
                     </Link>
                   </li>
                   <li className="px-1">
-                    <button className="btn flex items-center justify-center commonBtn rounded text-xs font-medium ">
-                      Connect
+                    <button
+                      className="btn flex items-center justify-center commonBtn rounded text-xs font-medium "
+                      onClick={connect}
+                    >
+                      {address ? shortenPubkey(address) : "Connect"}
                     </button>
                   </li>
                 </ul>

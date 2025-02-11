@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import styled from "styled-components";
 
@@ -12,7 +13,7 @@ const TableLayout = ({ column, data }) => {
                 column.length > 0 &&
                 column.map((item, key) => (
                   <>
-                    <th className="font-semibold p-3 border-0 text-left">
+                    <th className="font-semibold p-3 border-0 text-left" key={key}>
                       {item.head}
                     </th>
                   </>
@@ -30,7 +31,7 @@ const TableLayout = ({ column, data }) => {
                       column.map((item, key) => {
                         if (item.component) {
                           return (
-                            <td className="border-0 p-3 capitalize fw-sbold">
+                            <td className="border-0 p-3 capitalize fw-sbold" key={key}>
                               {item.component(data, columnkey, data)}
                             </td>
                           );

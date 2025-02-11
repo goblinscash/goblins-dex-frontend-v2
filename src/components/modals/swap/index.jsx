@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 
-// css
-
 const SwapPop = ({ swap, setSwap }) => {
   const handleExercise = () => {
     setSwap(!swap);

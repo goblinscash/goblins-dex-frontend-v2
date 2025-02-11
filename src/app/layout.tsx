@@ -4,6 +4,11 @@ import "../assets/styles/globals.css";
 import { ThemeProvider } from "@/ContextApi/ThemeContext";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
+import { headers } from 'next/headers'
+import { cookieToInitialState } from 'wagmi'
+import { config } from '@/config'
+import Web3ModalProvider from '@/context'
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,20 +25,25 @@ export const metadata: Metadata = {
   description: "Goblin Cash",
 };
 
+
 export default function RootLayout({
-  children,
+  children
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
+  //@ts-expect-error type warning
+  const initialState = cookieToInitialState(config, headers().get('cookie'))
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} `}>
+      <body>
         <ThemeProvider>
-          <Header />
-          {children}
-          <Footer />
+          <Web3ModalProvider initialState={initialState}>
+            <Header />
+            {children}
+            <Footer />
+          </Web3ModalProvider>
         </ThemeProvider>
       </body>
     </html>
-  );
+  )
 }

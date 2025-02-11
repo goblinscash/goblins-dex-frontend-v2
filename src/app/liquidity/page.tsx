@@ -125,7 +125,7 @@ const Liquidity = () => {
         <div className="grid gap-3 grid-cols-12">
           <div className="col-span-12">
             <div className="flex items-center justify-between flex-wrap">
-              <h4 className="m-0 font-bold text-2xl">Liquidity Poolss</h4>
+              <h4 className="m-0 font-bold text-2xl">Liquidity Pools</h4>
               <form action="">
                 <div className="relative iconWithText">
                   <span className="absolute icn left-2">{search}</span>
