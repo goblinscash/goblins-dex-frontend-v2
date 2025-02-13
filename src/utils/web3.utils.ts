@@ -57,10 +57,11 @@ export const fetchNftBalance = async (chainId: number, wallet: string) => {
     const ids = [...Array(totalNft)].map((_, i) => {
         return instance.tokenOfOwnerByIndex(sickle, i)
     });
-   
+
     let nftIds = await Promise.all(ids)
     nftIds = nftIds.map((item) => parseInt(item))
-    console.log(totalNft, "totalNft", nftIds)   
+    console.log(totalNft, "totalNft", nftIds)
+    return nftIds
 }
 
 export const getSickle = async (chainId: number, wallet: string) => {
@@ -74,4 +75,20 @@ export const getSickle = async (chainId: number, wallet: string) => {
     );
     const sickle = await instance.sickles(wallet)
     return sickle
+}
+
+export const userDeposits = async (chainId: number, wallet: string) => {
+    try {
+        if (!isValidChainId(chainId)) {
+            throw new Error(`Invalid chainId: ${chainId}`);
+        }
+        const nfts = await fetchNftBalance(chainId, wallet);
+        const position = nfts?.map((id) => fetchPosition(chainId, id))
+        
+        const positions = await Promise.all(position)
+
+        return positions
+    } catch (error) {
+        console.log(error)
+    }
 }

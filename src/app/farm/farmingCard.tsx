@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Select, { components, StylesConfig } from "react-select";
 import { ToggleSwitch } from "@/components/common";
 import { useEthersSigner } from "@/hooks/useEthersSigner";
@@ -7,7 +7,7 @@ import { getDepositParams } from "@/utils/farmData.utils";
 import { ethers } from "ethers";
 import farmStrategyAbi from "../../abi/farmStrategy.json"
 import { useAccount, useChainId } from "wagmi";
-import { fetchNftBalance } from "@/utils/web3.utils";
+import { fetchNftBalance, userDeposits } from "@/utils/web3.utils";
 
 type OptionType = {
   value: string;
@@ -140,9 +140,20 @@ const FarmingCard = () => {
     }));
   };
 
+
+  const positions = async() => {
+    if(address){
+      const position = await userDeposits(chainId, address)
+      console.log(position, "+++****")
+    }
+  }
+
+  useEffect(() => {
+    positions()
+  }, [chainId, address])
+
   const deposit = async () => {
-    if(!address) return 
-    await fetchNftBalance(chainId, address)
+    if(!address) return     
     if (!chainId) return null
     const uniswapContract = uniswapContracts[Number(chainId)] as UniswapContract;
     const tokenId = 0
