@@ -1,8 +1,8 @@
 "use client";
 import React, { useState } from "react";
 import styled from "styled-components";
-import TableLayout from "@/components/tableLayout";
-import Image from "next/image";
+// import TableLayout from "@/components/tableLayout";
+// import Image from "next/image";
 import FarmingCard from "./farmingCard";
 import PoolTable from "./poolTable";
 
@@ -16,10 +16,10 @@ const Farm = () => {
       title: "Farms",
       content: <>adafsdfasd</>,
     },
-    {
-      title: "Pools",
-      content: <>asdfasdf23423</>,
-    },
+    // {
+    //   title: "Pools",
+    //   content: <>asdfasdf23423</>,
+    // },
     {
       title: "Deposits",
       content: <>a2342134</>,
@@ -82,21 +82,21 @@ const Nav = styled.div`
 
 export default Farm;
 
-const search = (
-  <svg
-    width="18"
-    height="18"
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M21 21L17 17M19 11C19 13.1217 18.1571 15.1566 16.6569 16.6569C15.1566 18.1571 13.1217 19 11 19C8.87827 19 6.84344 18.1571 5.34315 16.6569C3.84285 15.1566 3 13.1217 3 11C3 8.87827 3.84285 6.84344 5.34315 5.34315C6.84344 3.84285 8.87827 3 11 3C13.1217 3 15.1566 3.84285 16.6569 5.34315C18.1571 6.84344 19 8.87827 19 11Z"
-      stroke="currentColor"
-      stroke-width="1.5"
-      stroke-miterlimit="10"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    />
-  </svg>
-);
+// const search = (
+//   <svg
+//     width="18"
+//     height="18"
+//     viewBox="0 0 24 24"
+//     fill="none"
+//     xmlns="http://www.w3.org/2000/svg"
+//   >
+//     <path
+//       d="M21 21L17 17M19 11C19 13.1217 18.1571 15.1566 16.6569 16.6569C15.1566 18.1571 13.1217 19 11 19C8.87827 19 6.84344 18.1571 5.34315 16.6569C3.84285 15.1566 3 13.1217 3 11C3 8.87827 3.84285 6.84344 5.34315 5.34315C6.84344 3.84285 8.87827 3 11 3C13.1217 3 15.1566 3.84285 16.6569 5.34315C18.1571 6.84344 19 8.87827 19 11Z"
+//       stroke="currentColor"
+//       stroke-width="1.5"
+//       stroke-miterlimit="10"
+//       stroke-linecap="round"
+//       stroke-linejoin="round"
+//     />
+//   </svg>
+// );

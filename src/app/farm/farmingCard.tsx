@@ -1,6 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import Select, { components, StylesConfig } from "react-select";
 import { ToggleSwitch } from "@/components/common";
+import { useEthersSigner } from "@/hooks/useEthersSigner";
+import { UniswapContract, uniswapContracts, vfatContracts, zeroAddr } from "@/utils/config.utils";
+import { getDepositParams } from "@/utils/farmData.utils";
+import { ethers } from "ethers";
+import farmStrategyAbi from "../../abi/farmStrategy.json"
+import { useAccount, useChainId } from "wagmi";
+import { fetchNftBalance } from "@/utils/web3.utils";
 
 type OptionType = {
   value: string;
@@ -40,8 +47,8 @@ const customStyles: StylesConfig<OptionType, false> = {
     backgroundColor: state.isSelected
       ? "#1a1919" // Background of selected option
       : state.isFocused
-      ? "#1a1919" // Background on hover
-      : "#353231", // Default background
+        ? "#1a1919" // Background on hover
+        : "#353231", // Default background
 
     color: state.isSelected ? "#fff" : "#fff", // Text color
     "&:hover": {
@@ -56,15 +63,17 @@ const customStyles: StylesConfig<OptionType, false> = {
 };
 
 // Custom Dropdown Indicator component
-const CustomDropdownIndicator: React.FC<any> = (props) => {
+const CustomDropdownIndicator: React.FC = (props) => {
   return (
+    //@ts-expect-error warning
     <components.DropdownIndicator {...props}>
       <div className="pr-1">{exhangeIcn}</div>
     </components.DropdownIndicator>
   );
 };
 
-const SingleValue: React.FC<any> = ({ data }) => (
+//@ts-expect-error warning
+const SingleValue: React.FC = ({ data }) => (
   <div className="flex items-center gap-2 text-white">
     <img
       src={data.image}
@@ -75,7 +84,8 @@ const SingleValue: React.FC<any> = ({ data }) => (
   </div>
 );
 
-const CustomOption: React.FC<any> = (props) => {
+const CustomOption: React.FC = (props) => {
+  //@ts-expect-error any type
   const { data, innerRef, innerProps } = props;
   return (
     <div
@@ -111,6 +121,81 @@ const FarmingCard = () => {
       image: "https://via.placeholder.com/20/8B0000/FFFFFF?text=C",
     },
   ];
+
+  const signer = useEthersSigner();
+  const chainId = useChainId()
+  const { address } = useAccount()
+
+  const [data, setData] = useState({
+    amount0Desired: "",
+    amount1Desired: ""
+  })
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+
+    setData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const deposit = async () => {
+    if(!address) return 
+    await fetchNftBalance(chainId, address)
+    if (!chainId) return null
+    const uniswapContract = uniswapContracts[Number(chainId)] as UniswapContract;
+    const tokenId = 0
+    const token0 = "0x067Fe9C33b6c1B4750ED60357d25b9Eb29Ef8c7f"
+    const token1 = "0x6AE97D8132619521bf16256a2cEEA4850866d496"
+
+    const pool = "0xF9f6FE6d14c0F8653F35a4e8A3875a489f2AF0Ff"
+    const zero = zeroAddr
+    const tickLower = -120
+    const tickUpper = 120
+    const fee = 3000
+
+    const { params, settings, sweepTokens, approved, referralCode } = getDepositParams(
+      uniswapContract.nfpm as string,
+      tokenId,
+      token0,
+      token1,
+      data.amount0Desired,
+      data.amount1Desired,
+      0,
+      0,
+      pool,
+      zero,
+      tickLower,
+      tickUpper,
+      fee
+    );
+
+
+    try {
+      const nftFarmStrategy = new ethers.Contract(
+        vfatContracts[Number(chainId)].NftFarmStrategy as string,
+        farmStrategyAbi,
+        await signer
+      );
+
+      const tx = await nftFarmStrategy.deposit(
+        params,
+        settings,
+        sweepTokens,
+        approved,
+        referralCode,
+        { gasLimit: 8000000 }
+      );
+
+      console.log("Transaction Hash:", tx.hash);
+      await tx.wait();
+      console.log("Deposit Successful!");
+    } catch (error) {
+      //@ts-expect-error warning
+      console.error("Transaction Failed:", error?.message);
+    }
+  }
 
   return (
     <>
@@ -173,11 +258,13 @@ const FarmingCard = () => {
           </div>
           <div className="py-2">
             <div className="flex items-center justify-between pb-1">
-              <span className="text-xs font-medium">WETH Amount</span>
+              <span className="text-xs font-medium">USDT Amount</span>
               <span className="text-xs text-gray-400">Balance: 0</span>
             </div>
             <div className="flex items-center justify-between gap-2">
               <input
+                name="amount0Desired"
+                onChange={handleChange}
                 type="text"
                 className="form-control bg-[#1a1919] text-xs h-[40px] w-full px-2 text-white font-medium"
               />
@@ -194,11 +281,13 @@ const FarmingCard = () => {
           </div>
           <div className="py-2">
             <div className="flex items-center justify-between pb-1">
-              <span className="text-xs font-medium">WETH Amount</span>
+              <span className="text-xs font-medium">USDC Amount</span>
               <span className="text-xs text-gray-400">Balance: 0</span>
             </div>
             <div className="flex items-center justify-between gap-2">
               <input
+                name="amount1Desired"
+                onChange={handleChange}
                 type="text"
                 className="form-control bg-[#1a1919] text-xs h-[40px] w-full px-2 text-white font-medium"
               />
@@ -231,7 +320,10 @@ const FarmingCard = () => {
               </div>
             </div>
             <div className="pt-2">
-              <button className="flex w-full rounded text-black items-center justify-center bg-white px-2 py-2 font-medium">
+              <button
+                onClick={() => deposit()}
+                className="flex w-full rounded text-black items-center justify-center bg-white px-2 py-2 font-medium"
+              >
                 Deposit
               </button>
             </div>

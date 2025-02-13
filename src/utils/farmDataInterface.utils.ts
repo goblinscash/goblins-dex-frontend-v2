@@ -6,7 +6,7 @@ export interface DepositParams {
     nft: string;
     increase: {
         zap: {
-            swaps: any[];
+            swaps: [];
             addLiquidityParams: {
                 nft: string;
                 tokenId: number;
@@ -85,4 +85,13 @@ export interface HarvestParams {
     sweepTokens: string[];
     amount0Max?: string;
     amount1Max?: string;
+  }
+
+ export interface WithdrawParams {
+    stakingContract: string;
+    tokenId: string;
+    liquidity: string;
+    rewardTokens?: string[];
+    outputTokens?: string[];
+    sweepTokens?: string[];
   }

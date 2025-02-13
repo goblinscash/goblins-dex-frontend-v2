@@ -59,7 +59,7 @@ export const fetchNftBalance = async (chainId: number, wallet: string) => {
     });
    
     let nftIds = await Promise.all(ids)
-    nftIds = nftIds.map((item, i) => parseInt(item))
+    nftIds = nftIds.map((item) => parseInt(item))
     console.log(totalNft, "totalNft", nftIds)   
 }
 

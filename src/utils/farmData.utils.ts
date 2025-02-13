@@ -4,17 +4,19 @@ import {
     DepositReturn,
     HarvestParams,
     RewardConfig,
-    SettingsConfig
+    SettingsConfig,
+    WithdrawParams
 } from "./farmDataInterface.utils";
 import { MAX_UINT_128 } from "./constant.utils";
+import { toUnits } from "./math.utils";
 
 export const getDepositParams = (
     nfpm: string,
     tokenId: number,
     token0: string,
     token1: string,
-    amount0Desired: BigNumberish,
-    amount1Desired: BigNumberish,
+    amount0Desired: string,
+    amount1Desired: string,
     amount0Min: BigNumberish,
     amount1Min: BigNumberish,
     pool: string,
@@ -47,8 +49,8 @@ export const getDepositParams = (
                     },
                     tickLower: tickLower,
                     tickUpper: tickUpper,
-                    amount0Desired: amount0Desired.toString(),
-                    amount1Desired: amount1Desired.toString(),
+                    amount0Desired: toUnits(amount0Desired, 18).toString(),
+                    amount1Desired: toUnits(amount1Desired, 18).toString(),
                     amount0Min: amount0Min.toString(),
                     amount1Min: amount1Min.toString(),
                     deadline: Math.floor(Date.now() / 1000) + 600,
@@ -56,7 +58,7 @@ export const getDepositParams = (
                 }
             },
             tokensIn: [token0, token1],
-            amountsIn: [amount0Desired.toString(), amount1Desired.toString()],
+            amountsIn: [toUnits(amount0Desired, 18).toString(), toUnits(amount1Desired, 18).toString()],
             extraData: "0x"
         }
     };
@@ -65,10 +67,10 @@ export const getDepositParams = (
         pool: pool,
         autoRebalance: false,
         rebalanceConfig: {
-            rewardBehavior: 0, 
+            rewardBehavior: 0,
             harvestTokenOut: zero,
             rewardConfig: {
-                rewardBehavior: 0,  
+                rewardBehavior: 0,
                 harvestTokenOut: zero
             },
             tickSpacesBelow: 0,
@@ -83,7 +85,7 @@ export const getDepositParams = (
             delayMin: 0
         },
         automateRewards: false,
-        rewardConfig, 
+        rewardConfig,
         autoExit: false,
         exitConfig: {
             triggerTickLow: 0,
@@ -93,7 +95,7 @@ export const getDepositParams = (
             priceImpactBP: 0,
             slippageBP: 0
         }
-    }; 
+    };
 
     const sweepTokens = [token0, token1];
     const referralCode = ethers.encodeBytes32String("REF123");
@@ -132,4 +134,57 @@ export const getHarvestParams = ({
             sweepTokens
         }
     };
+};
+
+export const getWithdrawParams = ({
+    stakingContract,
+    tokenId,
+    liquidity,
+    rewardTokens,
+    outputTokens,
+    sweepTokens
+}: WithdrawParams) => {
+    const amount0Max = MAX_UINT_128
+    const amount1Max = MAX_UINT_128
+
+    const position = {
+        farm: {
+            stakingContract,
+            poolIndex: 0
+        },
+        nft: stakingContract,
+        tokenId
+    };
+
+    const harvestParams = {
+        harvest: {
+            rewardTokens,
+            amount0Max,
+            amount1Max,
+            extraData: "0x00"
+        },
+        swaps: [],
+        outputTokens,
+        sweepTokens
+    };
+
+    const withdrawParams = {
+        zap: {
+            removeLiquidityParams: {
+                nft: stakingContract,
+                tokenId,
+                liquidity,
+                amount0Min: "0",
+                amount1Min: "0",
+                amount0Max,
+                amount1Max,
+                extraData: "0x00"
+            },
+            swaps: []
+        },
+        tokensOut: outputTokens,
+        extraData: "0x00"
+    };
+
+    return { position, harvestParams, withdrawParams, sweepTokens };
 };
