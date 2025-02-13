@@ -5,16 +5,28 @@ import styled from "styled-components";
 // import Image from "next/image";
 import FarmingCard from "./farmingCard";
 import PoolTable from "./poolTable";
+import DepositTable from "./DepositTable";
+import CounterCard from "./CounterCard";
+import Loader from "@/components/Loader";
 
 type Tab = {
   title: string;
-  content: React.ReactNode; // This can be any JSX element
+  component: React.ReactNode; // This can be any JSX element
 };
 const Farm = () => {
   const tabs: Tab[] = [
     {
       title: "Farms",
-      content: <>adafsdfasd</>,
+      component: (
+        <div className="grid gap-3 grid-cols-12">
+          <div className="md:col-span-7 col-span-12">
+            <PoolTable />
+          </div>
+          <div className="md:col-span-5 col-span-12">
+            <FarmingCard />
+          </div>
+        </div>
+      ),
     },
     // {
     //   title: "Pools",
@@ -22,11 +34,16 @@ const Farm = () => {
     // },
     {
       title: "Deposits",
-      content: <>a2342134</>,
+      component: (
+        <>
+          <CounterCard />
+          <DepositTable />
+        </>
+      ),
     },
   ];
 
-  const [activeTab, setActiveTab] = useState<number>(1);
+  const [activeTab, setActiveTab] = useState<number>(0);
 
   const showTab = (tab: number) => {
     console.log(tab, "tab");
@@ -34,39 +51,33 @@ const Farm = () => {
   };
 
   return (
-    <section className="Farm py-5 relative">
-      <div className="container max-w-full px-3">
-        <div className="grid gap-3 grid-cols-12">
-          <div className="col-span-12">
-            <Nav className="flex nav rounded bg-[#353231] p-1 gap-4">
-              {tabs &&
-                tabs.length > 0 &&
-                tabs.map((item, key) => (
-                  <button
-                    key={key}
-                    onClick={() => showTab(key)}
-                    className={`${
-                      activeTab === key && "active"
-                    } tab-button font-medium relative rounded py-2  text-xs text-gray-400 w-full`}
-                  >
-                    {item.title}
-                  </button>
-                ))}
-            </Nav>
-          </div>
-          <div className="col-span-12">
-            <div className="grid gap-3 grid-cols-12">
-              <div className="md:col-span-7 col-span-12">
-                <PoolTable />
-              </div>
-              <div className="md:col-span-5 col-span-12">
-                <FarmingCard />
-              </div>
+    <>
+      <Loader />
+      <section className="Farm py-5 relative">
+        <div className="container max-w-full px-3">
+          <div className="grid gap-3 grid-cols-12">
+            <div className="col-span-12">
+              <Nav className="flex nav rounded bg-[#353231] p-1 gap-4">
+                {tabs &&
+                  tabs.length > 0 &&
+                  tabs.map((item, key) => (
+                    <button
+                      key={key}
+                      onClick={() => showTab(key)}
+                      className={`${
+                        activeTab === key && "active"
+                      } tab-button font-medium relative rounded py-2  text-xs text-gray-400 w-full`}
+                    >
+                      {item.title}
+                    </button>
+                  ))}
+              </Nav>
             </div>
+            <div className="col-span-12">{tabs[activeTab].component}</div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 };
 

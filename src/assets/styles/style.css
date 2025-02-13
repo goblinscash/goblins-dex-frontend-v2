@@ -58,3 +58,10 @@ input::-webkit-inner-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+.cstmModal .modalDialog {
+  max-height: calc(100vh - 50px);
+  scrollbar-width: none;
+}
+.cstmModal .modalDialog::-webkit-scrollbar {
+  display: none;
+}

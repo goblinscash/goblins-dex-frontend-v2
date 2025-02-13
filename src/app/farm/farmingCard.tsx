@@ -2,10 +2,15 @@ import React, { useState } from "react";
 import Select, { components, StylesConfig } from "react-select";
 import { ToggleSwitch } from "@/components/common";
 import { useEthersSigner } from "@/hooks/useEthersSigner";
-import { UniswapContract, uniswapContracts, vfatContracts, zeroAddr } from "@/utils/config.utils";
+import {
+  UniswapContract,
+  uniswapContracts,
+  vfatContracts,
+  zeroAddr,
+} from "@/utils/config.utils";
 import { getDepositParams } from "@/utils/farmData.utils";
 import { ethers } from "ethers";
-import farmStrategyAbi from "../../abi/farmStrategy.json"
+import farmStrategyAbi from "../../abi/farmStrategy.json";
 import { useAccount, useChainId } from "wagmi";
 import { fetchNftBalance } from "@/utils/web3.utils";
 
@@ -47,8 +52,8 @@ const customStyles: StylesConfig<OptionType, false> = {
     backgroundColor: state.isSelected
       ? "#1a1919" // Background of selected option
       : state.isFocused
-        ? "#1a1919" // Background on hover
-        : "#353231", // Default background
+      ? "#1a1919" // Background on hover
+      : "#353231", // Default background
 
     color: state.isSelected ? "#fff" : "#fff", // Text color
     "&:hover": {
@@ -123,13 +128,13 @@ const FarmingCard = () => {
   ];
 
   const signer = useEthersSigner();
-  const chainId = useChainId()
-  const { address } = useAccount()
+  const chainId = useChainId();
+  const { address } = useAccount();
 
   const [data, setData] = useState({
     amount0Desired: "",
-    amount1Desired: ""
-  })
+    amount1Desired: "",
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -141,36 +146,38 @@ const FarmingCard = () => {
   };
 
   const deposit = async () => {
-    if(!address) return 
-    await fetchNftBalance(chainId, address)
-    if (!chainId) return null
-    const uniswapContract = uniswapContracts[Number(chainId)] as UniswapContract;
-    const tokenId = 0
-    const token0 = "0x067Fe9C33b6c1B4750ED60357d25b9Eb29Ef8c7f"
-    const token1 = "0x6AE97D8132619521bf16256a2cEEA4850866d496"
+    if (!address) return;
+    await fetchNftBalance(chainId, address);
+    if (!chainId) return null;
+    const uniswapContract = uniswapContracts[
+      Number(chainId)
+    ] as UniswapContract;
+    const tokenId = 0;
+    const token0 = "0x067Fe9C33b6c1B4750ED60357d25b9Eb29Ef8c7f";
+    const token1 = "0x6AE97D8132619521bf16256a2cEEA4850866d496";
 
-    const pool = "0xF9f6FE6d14c0F8653F35a4e8A3875a489f2AF0Ff"
-    const zero = zeroAddr
-    const tickLower = -120
-    const tickUpper = 120
-    const fee = 3000
+    const pool = "0xF9f6FE6d14c0F8653F35a4e8A3875a489f2AF0Ff";
+    const zero = zeroAddr;
+    const tickLower = -120;
+    const tickUpper = 120;
+    const fee = 3000;
 
-    const { params, settings, sweepTokens, approved, referralCode } = getDepositParams(
-      uniswapContract.nfpm as string,
-      tokenId,
-      token0,
-      token1,
-      data.amount0Desired,
-      data.amount1Desired,
-      0,
-      0,
-      pool,
-      zero,
-      tickLower,
-      tickUpper,
-      fee
-    );
-
+    const { params, settings, sweepTokens, approved, referralCode } =
+      getDepositParams(
+        uniswapContract.nfpm as string,
+        tokenId,
+        token0,
+        token1,
+        data.amount0Desired,
+        data.amount1Desired,
+        0,
+        0,
+        pool,
+        zero,
+        tickLower,
+        tickUpper,
+        fee
+      );
 
     try {
       const nftFarmStrategy = new ethers.Contract(
@@ -195,7 +202,7 @@ const FarmingCard = () => {
       //@ts-expect-error warning
       console.error("Transaction Failed:", error?.message);
     }
-  }
+  };
 
   return (
     <>
