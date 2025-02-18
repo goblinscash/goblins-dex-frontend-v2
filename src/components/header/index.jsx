@@ -12,7 +12,7 @@ import styled from "styled-components";
 import { useTheme } from "../../ContextApi/ThemeContext";
 import { Tooltip } from "react-tooltip";
 import { shortenPubkey } from "@/utils/math.utils";
-import { useWeb3Modal } from '@web3modal/wagmi/react'
+import { useWeb3Modal } from "@web3modal/wagmi/react";
 import { useAccount } from "wagmi";
 
 const Header = () => {
@@ -23,13 +23,12 @@ const Header = () => {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [menu, setMenu] = useState("");
 
-  const { address } = useAccount()
-  const { open } = useWeb3Modal()
+  const { address } = useAccount();
+  const { open } = useWeb3Modal();
 
   const connect = async () => {
-    await open()
-  }
-
+    await open();
+  };
 
   const handleDropdownClick = (index, isOpen) => {
     setOpenDropdown(isOpen ? index : null);
@@ -53,7 +52,7 @@ const Header = () => {
               width={10000}
             />
             <MobileMenu
-              className={`  cstmMenu flex items-center justify-end w-full ps-lg-4 gap-2`}
+              className={`cstmMenu flex items-center justify-end w-full ps-lg-4 gap-2`}
             >
               <div className="right flex items-center gap-3">
                 <ul className="list-none pl-0 mb-0 flex items-center justify-end gap-3">
@@ -65,6 +64,11 @@ const Header = () => {
                   <li className="px-2">
                     <Link href="/liquidity" className="">
                       Liquidity
+                    </Link>
+                  </li>
+                  <li className="px-2">
+                    <Link href="/farm" className="">
+                      Farm
                     </Link>
                   </li>
                   <li className="px-1">

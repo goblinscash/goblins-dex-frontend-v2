@@ -1,15 +1,10 @@
 "use client";
-import React, { useState } from "react";
-import { createPortal } from "react-dom";
+import React from "react";
 import styled, { keyframes } from "styled-components";
-import SwapPop from "@/components/modals/swap";
 
 const Swap = () => {
-  const [swap, setSwap] = useState();
   return (
     <>
-      {swap &&
-        createPortal(<SwapPop swap={swap} setSwap={setSwap} />, document.body)}
       <section className="py-5 relative">
         <div className="container">
           <div className="grid gap-3 grid-cols-12">

@@ -1,39 +1,76 @@
-import Logo from "@/components/common/Logo";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import styled from "styled-components";
+import PositionManagementPopup from "@/components/modals/PositionManagementPopup";
+import { userDeposits } from "@/utils/web3.utils";
+import { useAccount, useChainId } from "wagmi";
+import Loader from "@/components/Loader";
+import Logo from "@/components/common/Logo";
 
-import { useChainId } from "wagmi";
+const DepositTable = () => {
+  const [position, setPosition] = useState();
+  const [data, setData] = useState();
+  const [nftPosition, setNftPosition] = useState();
 
 
-const PoolTable = ({ pools, setFarmPool }) => {
-  const chainId = useChainId()
+
+  const chainId = useChainId();
+  const { address } = useAccount();
+
+  const fetchPositions = async () => {
+    if (address) {
+      const _position = await userDeposits(chainId, address)
+      setData(_position)
+    }
+  }
+
+  const openModal = (item) => {
+    setNftPosition(item)
+    setPosition(!position)
+  }
+
+  useEffect(() => {
+    fetchPositions()
+  }, [chainId, address])
+
   return (
     <>
-      <div className="top flex items-center justify-between gap-2">
-        <input
-          type="text"
-          placeholder="search..."
-          className="form-control bg-[#1a1919] text-xs h-[40px] w-full px-2 text-white font-medium"
-        />
-        <button className="border p-2 flex items-center justify-center border-[#1a1919]">
-          {filterIcn}
-        </button>
-      </div>
+      {!data && <Loader />}
+      {position &&
+        createPortal(
+          <PositionManagementPopup
+            position={position}
+            nftPosition={nftPosition}
+            setPosition={setPosition}
+          />,
+          document.body
+        )}
+
       <TableWrpper className="overflow-auto mt-2 text-[#939393]">
         <table className="w-full caption-bottom text-sm border border-[#1a1919]">
           <thead className="">
             <tr>
-              <th className="]">
+              <th className="border-b border-[#272625]">
                 <div className="flex items-center gap-1 w-full group text-muted-foreground px-2 text-xs justify-start">
                   {" "}
                 </div>
               </th>
-              <th className="border-0">
+              <th className="border-b border-[#272625]">
                 <div className="flex items-center gap-1 w-full group text-muted-foreground px-2 text-xs justify-start">
                   Asset{" "}
                 </div>
               </th>
-              <th className="border-0">
+              <th className="border-b border-[#272625]">
+                <div className="flex items-center gap-1 w-full group text-muted-foreground px-2 text-xs justify-start">
+                  TokenId{" "}
+                </div>
+              </th>
+              <th className="border-b border-[#272625]">
+                <div className="flex items-center gap-1 w-full group text-muted-foreground px-2 text-xs justify-start">
+                  Deposit{" "}
+                </div>
+              </th>
+              <th className="border-b border-[#272625]">
                 <button
                   type="button"
                   tabIndex={0}
@@ -53,10 +90,10 @@ const PoolTable = ({ pools, setFarmPool }) => {
                       />
                     </svg>
                   </span>{" "}
-                  TVL{" "}
+                  Daily Reward{" "}
                 </button>
               </th>
-              <th className="border-0">
+              <th className="border-b border-[#272625]">
                 <button
                   type="button"
                   tabIndex={0}
@@ -77,28 +114,28 @@ const PoolTable = ({ pools, setFarmPool }) => {
                       />
                     </svg>
                   </span>{" "}
-                  APR{" "}
+                  Earned{" "}
                 </button>
               </th>
-              <th className="border-0">
+              <th className="border-b border-[#272625]">
                 <div className="flex items-center gap-1 w-full group text-muted-foreground px-2 text-xs justify-end">
-                  {" "}
+                  APR
                 </div>
               </th>
             </tr>
           </thead>{" "}
           <tbody className="">
             {" "}
-
             {
-              pools && pools.map((item) => (
+              data && data?.map((item, index) => (
                 <tr
+                  key={index}
+                  onClick={() => openModal(item)}
                   className="hover:bg-muted/20 data-[state=selected]:bg-muted border-b transition-colors relative overflow-hidden border-t hover:cursor-pointer"
                   style={{}}
-                  onClick={() => setFarmPool(item)}
                 >
                   <td
-                    className="p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] mx-0"
+                    className="p-3 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] mx-0 "
                     style={{ maxWidth: 50, width: 50 }}
                   >
                     <div className="flex min-h-[37px] items-center justify-start">
@@ -121,15 +158,15 @@ const PoolTable = ({ pools, setFarmPool }) => {
                     </div>{" "}
                   </td>
                   <td
-                    className="p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] mx-0"
+                    className="p-3 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] mx-0 "
                     style={{}}
                   >
                     <div className="flex min-h-[37px] items-center justify-start">
                       <div className="flex items-center">
-                        <Logo chainId={chainId} token={item?.token0?.id} /> {" "}
-                        <Logo chainId={chainId} token={item?.token1?.id} /> {" "}
+                        <Logo chainId={chainId} token={item?.position?.token0} /> {" "}
+                        <Logo chainId={chainId} token={item?.position?.token1} /> {" "}
                         <div className="hidden items-center whitespace-nowrap text-sm text-foreground sm:flex">
-                          {item?.token0?.symbol}/{item?.token1?.symbol}
+                          {item?.token0.symbol}/{item?.token1.symbol}
                         </div>{" "}
                         <div className="tags svelte-1n2akg9 flex items-center">
                           <button className="hidden sm:flex">
@@ -141,8 +178,8 @@ const PoolTable = ({ pools, setFarmPool }) => {
                             />
                           </button>{" "}
                           <button className="hidden sm:flex">
-                            <span className="focus:ring-ring inline-flex select-none items-center rounded-md border py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-secondary text-secondary-foreground hover:bg-secondary/80 border-transparent px-1.5">
-                              {parseInt(item.feeTier) / 10000}%
+                            <span className="focus:ring-ring inline-flex select-none items-center rounded-md border .5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-secondary text-secondary-foreground hover:bg-secondary/80 border-transparent px-1.5">
+                              {parseFloat(item?.position?.fee) / 10000}%
                             </span>
                           </button>{" "}
                         </div>
@@ -150,30 +187,32 @@ const PoolTable = ({ pools, setFarmPool }) => {
                     </div>{" "}
                   </td>
                   <td
-                    className="p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] mx-0"
+                    className="p-3 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] mx-0 "
+                    style={{ maxWidth: 50, width: 50 }}
+                  >
+                    <div className="flex min-h-[37px] items-center">
+                      <button className="focus-visible:ring-ring inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground text-foreground h-9 w-9">
+                        {item?.nftId}
+                      </button>
+                    </div>{" "}
+                  </td>
+                  <td
+                    className="p-3 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] mx-0 "
                     style={{ maxWidth: 170, width: 170 }}
                   >
-                    <div className="flex min-h-[37px] items-center justify-end">
+                    <div className="flex min-h-[37px] items-center">
                       <div className="flex items-center justify-end gap-2">
                         <div className="flex items-center justify-end gap-1 text-foreground">
                           {" "}
                           <button className="">
-                            <span slot="trigger">${parseFloat(item.totalValueLockedUSD).toFixed(3)}</span>
+                            <span slot="trigger">$8,816,345.78</span>
                           </button>{" "}
                         </div>{" "}
-                        {/* <span className="flex items-center gap-2">
-                          <img
-                            src="https://imagedelivery.net/tLQGX6fO2lhA7EXY2jvPQQ/chain-42161/public"
-                            alt="Arbitrum logo"
-                            style={{ height: 30 }}
-                            title="Arbitrum"
-                          />{" "}
-                        </span> */}
                       </div>
                     </div>{" "}
                   </td>
                   <td
-                    className="p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] mx-0"
+                    className="p-3 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] mx-0 "
                     style={{ maxWidth: 100, width: 100 }}
                   >
                     <div className="flex min-h-[37px] items-center justify-end">
@@ -204,56 +243,28 @@ const PoolTable = ({ pools, setFarmPool }) => {
                     </div>{" "}
                   </td>
                   <td
-                    className="p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] mx-0"
+                    className="p-3 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] mx-0 "
                     style={{ maxWidth: 50, width: 50 }}
                   >
                     <div className="flex min-h-[37px] items-center justify-end">
                       <button className="focus-visible:ring-ring inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground text-foreground h-9 w-9">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width={16}
-                          height={16}
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.5"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="lucide-icon lucide lucide-arrow-down-to-line text-muted-foreground"
-                        >
-                          <path d="M12 17V3" />
-                          <path d="m6 11 6 6 6-6" />
-                          <path d="M19 21H5" />
-                        </svg>
+                        $0.03
+                      </button>
+                    </div>{" "}
+                  </td>
+                  <td
+                    className="p-3 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] mx-0 "
+                    style={{ maxWidth: 50, width: 50 }}
+                  >
+                    <div className="flex min-h-[37px] items-center justify-end">
+                      <button className="focus-visible:ring-ring inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 disabled:pointer-events-none disabled:opacity-50 hover:bg-accent hover:text-accent-foreground text-foreground h-9 w-9">
+                        $38.39
                       </button>
                     </div>{" "}
                   </td>
                 </tr>
               ))
             }
-
-            {/* <tr className="">
-              <td colSpan={6} className="">
-                <div className=" border border-[#1a1919] px-3 py-2 bg-[#1a1919]">
-                  <span className="text-white font-bold">Pool</span>
-
-                  <ul className="list-none pl-0 mb-0 text-xs">
-                    <li className="flex py-1 items-center justify-between border-b border-[#4e4e4e]">
-                      <span className="text-[#888]">In Range TVL</span>
-                      <span className="text-[#888]">$48,600.74</span>
-                    </li>
-                    <li className="flex py-1 items-center justify-between border-b border-[#4e4e4e]">
-                      <span className="text-[#888]">In Range TVL</span>
-                      <span className="text-[#888]">$48,600.74</span>
-                    </li>
-                    <li className="flex py-1 items-center justify-between border-b border-[#4e4e4e]">
-                      <span className="text-[#888]">In Range TVL</span>
-                      <span className="text-[#888]">$48,600.74</span>
-                    </li>
-                  </ul>
-                </div>
-              </td>
-            </tr> */}
           </tbody>
         </table>
       </TableWrpper>
@@ -263,34 +274,11 @@ const PoolTable = ({ pools, setFarmPool }) => {
 
 const TableWrpper = styled.div`
   td,
-  th,
   tr {
     border: 0 !important;
+    text-align: left;
+    min-width: 150px;
   }
 `;
 
-export default PoolTable;
-
-const filterIcn = (
-  <svg
-    width="20"
-    height="20"
-    stroke="currentColor"
-    stroke-width="1.5"
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="none"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <line x1="4" x2="4" y1="21" y2="14"></line>
-    <line x1="4" x2="4" y1="10" y2="3"></line>
-    <line x1="12" x2="12" y1="21" y2="12"></line>
-    <line x1="12" x2="12" y1="8" y2="3"></line>
-    <line x1="20" x2="20" y1="21" y2="16"></line>
-    <line x1="20" x2="20" y1="12" y2="3"></line>
-    <line x1="2" x2="6" y1="14" y2="14"></line>
-    <line x1="10" x2="14" y1="8" y2="8"></line>
-    <line x1="18" x2="22" y1="16" y2="16"></line>
-  </svg>
-);
+export default DepositTable;

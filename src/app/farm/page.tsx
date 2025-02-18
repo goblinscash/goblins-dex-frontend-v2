@@ -1,32 +1,71 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 // import TableLayout from "@/components/tableLayout";
 // import Image from "next/image";
 import FarmingCard from "./farmingCard";
 import PoolTable from "./poolTable";
+import DepositTable from "./DepositTable";
+import CounterCard from "./CounterCard";
+import { getTopPools } from "@/utils/requests.utils";
+import { useChainId } from "wagmi";
+import { subGraphUrls } from "@/utils/config.utils";
 
 type Tab = {
   title: string;
-  content: React.ReactNode; // This can be any JSX element
+  component: React.ReactNode; // This can be any JSX element
 };
 const Farm = () => {
+  const chainId  = useChainId()
+  const [pools, setPools] = useState()
+  const [farmPool, setFarmPool] = useState()
+
+
+  const fetchPools = async() => {
+      const poolFc = getTopPools(subGraphUrls[Number(chainId) || 8453])
+      const _pools = await poolFc("liquidity", "desc")
+      if(_pools.pools?.length > 0){
+        setFarmPool(_pools.pools[0])
+      }
+      setPools(_pools.pools)
+  }
+
+  useEffect(() => {
+    fetchPools()
+  }, [chainId])
+ 
+  console.log(farmPool, "pools++")
+
   const tabs: Tab[] = [
     {
       title: "Farms",
-      content: <>adafsdfasd</>,
+      component: (
+        <div className="grid gap-3 grid-cols-12">
+          <div className="md:col-span-7 col-span-12">
+            <PoolTable pools={pools} setFarmPool={setFarmPool}/>
+          </div>
+          <div className="md:col-span-5 col-span-12">
+            <FarmingCard farmPool={farmPool}  />
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: "Deposits",
+      component: (
+        <>
+          <CounterCard />
+          <DepositTable />
+        </>
+      ),
     },
     // {
     //   title: "Pools",
     //   content: <>asdfasdf23423</>,
     // },
-    {
-      title: "Deposits",
-      content: <>a2342134</>,
-    },
   ];
 
-  const [activeTab, setActiveTab] = useState<number>(1);
+  const [activeTab, setActiveTab] = useState<number>(0);
 
   const showTab = (tab: number) => {
     console.log(tab, "tab");
@@ -34,39 +73,32 @@ const Farm = () => {
   };
 
   return (
-    <section className="Farm py-5 relative">
-      <div className="container max-w-full px-3">
-        <div className="grid gap-3 grid-cols-12">
-          <div className="col-span-12">
-            <Nav className="flex nav rounded bg-[#353231] p-1 gap-4">
-              {tabs &&
-                tabs.length > 0 &&
-                tabs.map((item, key) => (
-                  <button
-                    key={key}
-                    onClick={() => showTab(key)}
-                    className={`${
-                      activeTab === key && "active"
-                    } tab-button font-medium relative rounded py-2  text-xs text-gray-400 w-full`}
-                  >
-                    {item.title}
-                  </button>
-                ))}
-            </Nav>
-          </div>
-          <div className="col-span-12">
-            <div className="grid gap-3 grid-cols-12">
-              <div className="md:col-span-7 col-span-12">
-                <PoolTable />
-              </div>
-              <div className="md:col-span-5 col-span-12">
-                <FarmingCard />
-              </div>
+    <>
+      {/* <Loader /> */}
+      <section className="Farm py-5 relative">
+        <div className="container max-w-full px-3">
+          <div className="grid gap-3 grid-cols-12">
+            <div className="col-span-12">
+              <Nav className="flex nav rounded bg-[#353231] p-1 gap-4">
+                {tabs &&
+                  tabs.length > 0 &&
+                  tabs.map((item, key) => (
+                    <button
+                      key={key}
+                      onClick={() => showTab(key)}
+                      className={`${activeTab === key && "active"
+                        } tab-button font-medium relative rounded py-2  text-xs text-gray-400 w-full`}
+                    >
+                      {item.title}
+                    </button>
+                  ))}
+              </Nav>
             </div>
+            <div className="col-span-12">{tabs[activeTab].component}</div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 };
 

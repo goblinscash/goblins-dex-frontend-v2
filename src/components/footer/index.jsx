@@ -7,7 +7,7 @@ import Link from "next/link";
 const Footer = () => {
   return (
     <>
-      <footer className="siteFooter bg-[var(--backgroundColor2)] py-3 sticky bottom-0">
+      <footer className="siteFooter bg-[#000] z-[999] py-3 sticky bottom-0">
         <div className="container">
           <div className="grid gap-3 grid-cols-12">
             <div className="col-span-12">
