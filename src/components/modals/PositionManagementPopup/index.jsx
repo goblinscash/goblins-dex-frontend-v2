@@ -15,6 +15,7 @@ import { getWithdrawParams } from "@/utils/farmData.utils";
 import { ethers } from "ethers";
 import farmStrategyAbi from "../../../abi/farmStrategy.json";
 import BtnLoader from "@/components/common/BtnLoader";
+import Logo from "@/components/common/Logo";
 
 
 // Custom styles
@@ -350,22 +351,10 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
                 <li className="border-b flex items-center justify-between gap-2 flex-wrap py-2 border-[#353231]">
                   <span className="text-white">Swap Fees</span>
                   <div className="flex items-center">
-                    <img
-                      src="https://imagedelivery.net/tLQGX6fO2lhA7EXY2jvPQQ/0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f-42161/public"
-                      className=""
-                      alt="UNI-V3 logo"
-                      title="UNI-V3"
-                      style={{ height: 30 }}
-                    />{" "}
-                    <img
-                      src="https://imagedelivery.net/tLQGX6fO2lhA7EXY2jvPQQ/0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9-42161/public"
-                      alt="UNI-V3 logo"
-                      className="mr-2"
-                      title="UNI-V3"
-                      style={{ height: 30, marginLeft: "-10px" }}
-                    />
+                  <Logo chainId={chainId} token={nftPosition?.position?.token0} /> {" "}
+                  <Logo chainId={chainId} token={nftPosition?.position?.token1} /> {" "}
                     <div className="hidden items-center whitespace-nowrap text-sm text-foreground sm:flex">
-                      CL10-WBTC/USDT
+                    {nftPosition?.token0?.symbol}/{nftPosition?.token1?.symbol}
                     </div>{" "}
                     <div className="tags svelte-1n2akg9 flex items-center">
                       <button className="hidden sm:flex">
@@ -378,7 +367,7 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
                       </button>{" "}
                       <button className="hidden sm:flex">
                         <span className="focus:ring-ring inline-flex select-none items-center rounded-md border py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-secondary text-secondary-foreground hover:bg-secondary/80 border-transparent px-1.5">
-                          0.05%
+                          {nftPosition?.position?.fee.toString()/10000}%
                         </span>
                       </button>{" "}
                     </div>
