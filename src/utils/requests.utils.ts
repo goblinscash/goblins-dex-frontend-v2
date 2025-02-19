@@ -4,7 +4,6 @@ import { getPoolDetailQuery, getTokenQuery, getTopPoolsQuery } from "./queries.u
 export function getPoolDetails(subgraphUrl: string) {
     return async function (id: string) {
         const variables = { id };
-
         try {
             const response = await axios.post(
                 subgraphUrl,
@@ -18,9 +17,7 @@ export function getPoolDetails(subgraphUrl: string) {
                     },
                 }
             );
-
             const { data } = response.data;
-
             return data;
         } catch (error) {
             //@ts-expect-error ts warning
@@ -45,9 +42,7 @@ export function getTokenDetails(subgraphUrl: string) {
                     },
                 }
             );
-
             const { data } = response.data;
-
             return data;
         } catch (error) {
             //@ts-expect-error ts warning
@@ -59,7 +54,6 @@ export function getTokenDetails(subgraphUrl: string) {
 export function getTopPools(subgraphUrl: string) {
     return async (orderBy: string, orderDirection: string) => {
         const variables = { orderBy, orderDirection };
-
         try {
             const response = await axios.post(
                 subgraphUrl,
@@ -71,11 +65,9 @@ export function getTopPools(subgraphUrl: string) {
                     headers: { "Content-Type": "application/json" },
                 }
             );
-
             if (response.data.errors) {
                 throw new Error(`GraphQL Error: ${JSON.stringify(response.data.errors)}`);
             }
-
             return response.data.data;
         } catch (error) {
             console.error("Error fetching top pools:", error);

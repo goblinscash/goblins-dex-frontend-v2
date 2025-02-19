@@ -159,9 +159,7 @@ export const getHarvestParams = ({
     tokenId,
     rewardTokens,
     outputTokens,
-    sweepTokens,
-    amount0Max = MAX_UINT_128,
-    amount1Max = MAX_UINT_128
+    sweepTokens
 }: HarvestParams) => {
     return {
         position: {
@@ -175,8 +173,8 @@ export const getHarvestParams = ({
         params: {
             harvest: {
                 rewardTokens,
-                amount0Max,
-                amount1Max,
+                amount0Max: MAX_UINT_128,
+                amount1Max: MAX_UINT_128,
                 extraData: "0x00"
             },
             swaps: [],
@@ -265,6 +263,5 @@ export const getRebalanceParms = (
         }
     }
 
-
-    return {params}
+    return { params }
 }

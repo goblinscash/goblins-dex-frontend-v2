@@ -10,11 +10,13 @@ import {
   vfatContracts,
   zeroAddr,
 } from "@/utils/config.utils";
-import { getWithdrawParams } from "@/utils/farmData.utils";
+import { getHarvestParams, getRebalanceParms, getWithdrawParams } from "@/utils/farmData.utils";
 import { ethers } from "ethers";
 import farmStrategyAbi from "../../../abi/farmStrategy.json";
 import BtnLoader from "@/components/common/BtnLoader";
 import Logo from "@/components/common/Logo";
+import { getUniswapPool } from "@/utils/web3.utils";
+import { type } from "os";
 
 // Custom styles
 const customStyles = {
@@ -48,8 +50,8 @@ const customStyles = {
     backgroundColor: state.isSelected
       ? "#1a1919" // Background of selected option
       : state.isFocused
-      ? "#1a1919" // Background on hover
-      : "#353231", // Default background
+        ? "#1a1919" // Background on hover
+        : "#353231", // Default background
 
     color: state.isSelected ? "#fff" : "#fff", // Text color
     "&:hover": {
@@ -122,20 +124,175 @@ const options = [
   },
 ];
 
+const exhangeIcn = (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="15"
+    height="15"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="m3 16 4 4 4-4"></path>
+    <path d="M7 20V4"></path>
+    <path d="m21 8-4-4-4 4"></path>
+    <path d="M17 4v16"></path>
+  </svg>
+);
+
+const icn1 = (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M12 8V4H8"></path>
+    <rect width="16" height="12" x="4" y="8" rx="2"></rect>
+    <path d="M2 14h2"></path>
+    <path d="M20 14h2"></path>
+    <path d="M15 13v2"></path>
+    <path d="M9 13v2"></path>
+  </svg>
+);
+
+const cross = (
+  <svg
+    width="12"
+    height="12"
+    viewBox="0 0 18 18"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M17 17L1 1M17 1L1 17"
+      stroke="#fff"
+      strokeWidth="2"
+      strokeLinecap="round"
+    />
+  </svg>
+);
+
+const ActButton = ({ label, onClick, load }) => {
+  return (
+    <div className="pt-2">
+      <button
+        onClick={onClick}
+        className="flex w-full rounded text-black items-center justify-center bg-white px-2 py-2 font-medium"
+      >
+        {load ? <BtnLoader /> : label}
+      </button>
+    </div>
+  );
+};
+
 const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
   const signer = useEthersSigner();
   const chainId = useChainId();
   const { address } = useAccount();
-  const [load, setLoad] = useState(false);
+  const [load, setLoad] = useState({});
 
   const handlePosition = () => {
     setPosition(!position);
   };
 
-  console.log(nftPosition, "nftPosition");
+  const handleLoad = (action, status) => {
+    setLoad((prev) => ({ ...prev, [action]: status }));
+  };
+
+  const harvest = async () => {
+    if (!address) return;
+    try {
+      handleLoad("Harvest", true)
+      const uniswapContract = uniswapContracts[Number(chainId)];
+      const token0 = nftPosition.token0.id;
+      const token1 = nftPosition.token1.id;
+      const sweepTokens = [token0, token1]
+
+      const param = {
+        stakingContract: uniswapContract.nfpm,
+        tokenId: nftPosition.nftId.toString(),
+        rewardTokens: sweepTokens,
+        outputTokens: sweepTokens,
+        sweepTokens: sweepTokens
+      }
+
+      const { position, params } = getHarvestParams(param)
+
+      const nftFarmStrategy = new ethers.Contract(
+        vfatContracts[Number(chainId)].NftFarmStrategy,
+        farmStrategyAbi,
+        await signer
+      );
+
+      const tx = await nftFarmStrategy.harvest(
+        position,
+        params,
+        { gasLimit: 5000000 }
+      );
+
+      await tx.wait();
+      handleLoad("Harvest", false)
+    } catch (error) {
+      console.log(error)
+      handleLoad("Harvest", false)
+    }
+  }
+
+  const rebalance = async () => {
+    try {
+      if (!address) return;
+      handleLoad("Rebalance", true)
+      const uniswapContract = uniswapContracts[Number(chainId)];
+      const token0 = nftPosition.token0.id;
+      const token1 = nftPosition.token1.id;
+      const sweepTokens = [token0, token1]
+      const pool = await getUniswapPool(chainId, token0, token1, nftPosition.position.fee)
+
+      const { params } = getRebalanceParms(
+        pool,
+        token0,
+        token1,
+        nftPosition.nftId.toString(),
+        nftPosition.position.liquidity,
+        uniswapContract.nfpm,
+        nftPosition.position.fee,
+        nftPosition.position.tickLower.toString() * 2,
+        nftPosition.position.tickUpper.toString() * 2,
+        sweepTokens,
+        sweepTokens
+      )
+
+      const nftFarmStrategy = new ethers.Contract(
+        vfatContracts[Number(chainId)].NftFarmStrategy,
+        farmStrategyAbi,
+        await signer
+      );
+
+      const tx = await nftFarmStrategy.rebalance(
+        params,
+        sweepTokens,
+        { gasLimit: 5000000 }
+      );
+
+      await tx.wait();
+      handleLoad("Rebalance", false)
+    } catch (error) {
+      console.log(error)
+      handleLoad("Rebalance", false)
+    }
+  }
   const exit = async () => {
     if (!address) return;
-    setLoad(true);
+    handleLoad("Exit", true)
     const uniswapContract = uniswapContracts[Number(chainId)];
     const token0 = nftPosition.token0.id;
     const token1 = nftPosition.token1.id;
@@ -168,13 +325,15 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
       );
 
       await tx.wait();
-      setLoad(false);
+      handleLoad("Exit", false)
     } catch (error) {
-      setLoad(false);
+      handleLoad("Exit", false)
       //@ts-expect-error warning
       console.error("Transaction Failed:", error?.message);
     }
   };
+
+  console.log(nftPosition, "nftPosition");
 
   return (
     <>
@@ -195,7 +354,7 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
             <div className="flex items-center justify-between gap-2">
               <div className="left">
                 <h4 className="font-bold text-white text-base">
-                  CL1-WETH/superOETHb on Base
+                  {nftPosition.token0?.symbol}/{nftPosition.token1?.symbol} on Base
                 </h4>
                 <ul className="list-none pl-0 mb-0 flex items-center gap-1">
                   <li className="">
@@ -238,10 +397,10 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
             <div className="mt-2">
               <div className="p-1 inline-flex items-center rounded bg-[#353231]">
                 <button className="flex items-center rounded bg-[#000] justify-center px-3 py-1 text-xs font-medium ">
-                  Price in superOETHb
+                  Price in USD
                 </button>
                 <button className="flex items-center justify-center px-3 py-1 font-medium text-xs">
-                  Price in WETH
+                  Price in ETH
                 </button>
               </div>
             </div>
@@ -366,14 +525,10 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
                   <ToggleSwitch />
                 </div>
               </div>
-              <div className="pt-2">
-                <button
-                  onClick={() => exit()}
-                  className="flex w-full rounded text-black items-center justify-center bg-white px-2 py-2 font-medium"
-                >
-                  {load ? <BtnLoader /> : "Exit"}
-                </button>
-              </div>
+              <ActButton label="Exit" onClick={() => exit()} load={load["Exit"]} />
+              <ActButton label="Rebalance" onClick={() => rebalance()} load={load["Rebalance"]} />
+              <ActButton label="Harvest" onClick={() => harvest()} load={load["Harvest"]} />
+
             </div>
           </div>
           <div className="py-2">
@@ -385,10 +540,10 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
                 <li className="border-b flex items-center justify-between gap-2 flex-wrap py-2 border-[#353231]">
                   <span className="text-white">Swap Fees</span>
                   <div className="flex items-center">
-                  <Logo chainId={chainId} token={nftPosition?.position?.token0} /> {" "}
-                  <Logo chainId={chainId} token={nftPosition?.position?.token1} /> {" "}
+                    <Logo chainId={chainId} token={nftPosition?.position?.token0} /> {" "}
+                    <Logo chainId={chainId} token={nftPosition?.position?.token1} /> {" "}
                     <div className="hidden items-center whitespace-nowrap text-sm text-foreground sm:flex">
-                    {nftPosition?.token0?.symbol}/{nftPosition?.token1?.symbol}
+                      {nftPosition?.token0?.symbol}/{nftPosition?.token1?.symbol}
                     </div>{" "}
                     <div className="tags svelte-1n2akg9 flex items-center">
                       <button className="hidden sm:flex">
@@ -401,7 +556,7 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
                       </button>{" "}
                       <button className="hidden sm:flex">
                         <span className="focus:ring-ring inline-flex select-none items-center rounded-md border py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 bg-secondary text-secondary-foreground hover:bg-secondary/80 border-transparent px-1.5">
-                          {nftPosition?.position?.fee.toString()/10000}%
+                          {nftPosition?.position?.fee.toString() / 10000}%
                         </span>
                       </button>{" "}
                     </div>
@@ -418,59 +573,4 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
 
 export default PositionManagementPopup;
 
-const exhangeIcn = (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="15"
-    height="15"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="m3 16 4 4 4-4"></path>
-    <path d="M7 20V4"></path>
-    <path d="m21 8-4-4-4 4"></path>
-    <path d="M17 4v16"></path>
-  </svg>
-);
 
-const icn1 = (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M12 8V4H8"></path>
-    <rect width="16" height="12" x="4" y="8" rx="2"></rect>
-    <path d="M2 14h2"></path>
-    <path d="M20 14h2"></path>
-    <path d="M15 13v2"></path>
-    <path d="M9 13v2"></path>
-  </svg>
-);
-
-const cross = (
-  <svg
-    width="12"
-    height="12"
-    viewBox="0 0 18 18"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path
-      d="M17 17L1 1M17 1L1 17"
-      stroke="#fff"
-      strokeWidth="2"
-      strokeLinecap="round"
-    />
-  </svg>
-);

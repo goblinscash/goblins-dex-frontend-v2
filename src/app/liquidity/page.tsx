@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import TableLayout from "@/components/tableLayout";
-import Image from "next/image";
 
 type Tab = {
   title: string;

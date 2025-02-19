@@ -4,6 +4,7 @@ import nfpmAbi from "../abi/nfpm.json"
 import sickleFactoryAbi from "../abi/sickleFactory.json"
 import erc20Abi from "../abi/erc20.json"
 import uniPoolAbi from "../abi/uniPool.json"
+import uniswapFactoryAbi from "../abi/uniswapFactory.json"
 
 import { toUnits } from "./math.utils";
 import { getTokenDetails } from "./requests.utils";
@@ -162,4 +163,17 @@ export const getTickSpacing = async (chainId: number, pool: string) => {
     );
     const spacing = await instance.tickSpacing()
     return parseFloat(spacing)
+}
+
+export const getUniswapPool = async (chainId: number, token0: string, token1: string, feeTier: number) => {
+    if (!isValidChainId(chainId)) {
+        throw new Error(`Invalid chainId: ${chainId}`);
+    }
+    const instance = new ethers.Contract(
+        uniswapContracts[chainId].factory as string,
+        uniswapFactoryAbi,
+        new ethers.JsonRpcProvider(rpcUrls[chainId])
+    );
+    const pool = await instance.getPool(token0, token1, feeTier)
+    return pool
 }
