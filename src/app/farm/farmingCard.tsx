@@ -12,7 +12,11 @@ import { getDepositParams } from "@/utils/farmData.utils";
 import { ethers } from "ethers";
 import farmStrategyAbi from "../../abi/farmStrategy.json";
 import { useAccount, useChainId } from "wagmi";
-import { approve, getPredictedSickle, getTickSpacing } from "@/utils/web3.utils";
+import {
+  approve,
+  getPredictedSickle,
+  getTickSpacing,
+} from "@/utils/web3.utils";
 import { toUnits } from "@/utils/math.utils";
 import BtnLoader from "@/components/common/BtnLoader";
 
@@ -54,8 +58,8 @@ const customStyles: StylesConfig<OptionType, false> = {
     backgroundColor: state.isSelected
       ? "#1a1919" // Background of selected option
       : state.isFocused
-        ? "#1a1919" // Background on hover
-        : "#353231", // Default background
+      ? "#1a1919" // Background on hover
+      : "#353231", // Default background
 
     color: state.isSelected ? "#fff" : "#fff", // Text color
     "&:hover": {
@@ -130,7 +134,7 @@ const FarmingCard = ({ farmPool }) => {
     },
   ];
 
-  const [load, setLoad] = useState(false)
+  const [load, setLoad] = useState(false);
   const signer = useEthersSigner();
   const chainId = useChainId();
   const { address } = useAccount();
@@ -150,18 +154,20 @@ const FarmingCard = ({ farmPool }) => {
   };
 
   const deposit = async () => {
-    if (!address && farmPool) return
+    if (!address && farmPool) return;
     try {
-      setLoad(true)
-      const tickSpacing = await getTickSpacing(chainId, farmPool.id)
-      const uniswapContract = uniswapContracts[Number(chainId)] as UniswapContract;
-      const tokenId = 0
-      const token0 = farmPool.token0.id
-      const token1 = farmPool.token1.id
+      setLoad(true);
+      const tickSpacing = await getTickSpacing(chainId, farmPool.id);
+      const uniswapContract = uniswapContracts[
+        Number(chainId)
+      ] as UniswapContract;
+      const tokenId = 0;
+      const token0 = farmPool.token0.id;
+      const token1 = farmPool.token1.id;
       const pool = farmPool.id;
       const zero = zeroAddr;
-      const tickLower = -tickSpacing //farmPool.tick;
-      const tickUpper = tickSpacing //Math.abs(parseFloat(farmPool.tick));
+      const tickLower = -tickSpacing; //farmPool.tick;
+      const tickUpper = tickSpacing; //Math.abs(parseFloat(farmPool.tick));
       const fee = farmPool.feeTier;
 
       const { params, settings, sweepTokens, approved, referralCode } =
@@ -170,8 +176,14 @@ const FarmingCard = ({ farmPool }) => {
           tokenId,
           token0,
           token1,
-          toUnits(data.amount0Desired, parseInt(farmPool.token0.decimals)).toString(),
-          toUnits(data.amount1Desired, parseInt(farmPool.token1.decimals)).toString(),
+          toUnits(
+            data.amount0Desired,
+            parseInt(farmPool.token0.decimals)
+          ).toString(),
+          toUnits(
+            data.amount1Desired,
+            parseInt(farmPool.token1.decimals)
+          ).toString(),
           0,
           0,
           pool,
@@ -181,17 +193,28 @@ const FarmingCard = ({ farmPool }) => {
           fee
         );
 
-
       //@ts-expect-error ts warning
-      const predictedSickle = await getPredictedSickle(chainId, address)
-      const tx0Approve = await approve(token0, await signer, predictedSickle, parseFloat(data.amount0Desired), parseInt(farmPool.token0.decimals))
+      const predictedSickle = await getPredictedSickle(chainId, address);
+      const tx0Approve = await approve(
+        token0,
+        await signer,
+        predictedSickle,
+        parseFloat(data.amount0Desired),
+        parseInt(farmPool.token0.decimals)
+      );
       if (tx0Approve) {
-        await tx0Approve.wait()
+        await tx0Approve.wait();
       }
 
-      const tx1Approve = await approve(token1, await signer, predictedSickle, parseFloat(data.amount1Desired), parseInt(farmPool.token1.decimals))
+      const tx1Approve = await approve(
+        token1,
+        await signer,
+        predictedSickle,
+        parseFloat(data.amount1Desired),
+        parseInt(farmPool.token1.decimals)
+      );
       if (tx1Approve) {
-        await tx1Approve.wait()
+        await tx1Approve.wait();
       }
       const nftFarmStrategy = new ethers.Contract(
         vfatContracts[Number(chainId)].NftFarmStrategy as string,
@@ -209,9 +232,9 @@ const FarmingCard = ({ farmPool }) => {
       );
 
       await tx.wait();
-      setLoad(false)
+      setLoad(false);
     } catch (error) {
-      setLoad(false)
+      setLoad(false);
       //@ts-expect-error warning
       console.error("Transaction Failed:", error?.message);
     }
@@ -278,7 +301,9 @@ const FarmingCard = ({ farmPool }) => {
           </div>
           <div className="py-2">
             <div className="flex items-center justify-between pb-1">
-              <span className="text-xs font-medium">{farmPool?.token0?.symbol} Amount</span>
+              <span className="text-xs font-medium">
+                {farmPool?.token0?.symbol} Amount
+              </span>
               <span className="text-xs text-gray-400">Balance: 0</span>
             </div>
             <div className="flex items-center justify-between gap-2">
@@ -301,7 +326,9 @@ const FarmingCard = ({ farmPool }) => {
           </div>
           <div className="py-2">
             <div className="flex items-center justify-between pb-1">
-              <span className="text-xs font-medium">{farmPool?.token1?.symbol} Amount</span>
+              <span className="text-xs font-medium">
+                {farmPool?.token1?.symbol} Amount
+              </span>
               <span className="text-xs text-gray-400">Balance: 0</span>
             </div>
             <div className="flex items-center justify-between gap-2">
@@ -320,6 +347,46 @@ const FarmingCard = ({ farmPool }) => {
             <div className="mt-1">
               <input type="range" className="form-control w-full" />
               <p className="text-right text-xs font-gray-400">0%</p>
+            </div>
+          </div>
+          <div className="py-2">
+            <div className="grid gap-3 grid-cols-12">
+              <div className="col-span-6">
+                <label htmlFor="" className="form-label m-0 text-xs">
+                  Min price 0.99990 (0%)
+                </label>
+                <div className="relative iconWithText">
+                  <button className="border-0 px-0 absolute left-2 absolute icn text-base font-bold">
+                    -
+                  </button>
+                  <input
+                    type="text"
+                    placeholder="3"
+                    className="form-control rounded bg-[#1a1919] h-[45px] w-full px-14 text-center"
+                  />
+                  <button className="border-0 px-2 absolute right-2 absolute icn text-base font-bold">
+                    +
+                  </button>
+                </div>
+              </div>
+              <div className="col-span-6">
+                <label htmlFor="" className="form-label m-0 text-xs">
+                  Max price 1.00000 (0.01%)
+                </label>
+                <div className="relative iconWithText">
+                  <button className="border-0 px-0 absolute left-2 absolute icn text-base font-bold">
+                    -
+                  </button>
+                  <input
+                    type="text"
+                    placeholder="3"
+                    className="form-control rounded bg-[#1a1919] h-[45px] w-full px-14 text-center"
+                  />
+                  <button className="border-0 px-2 absolute right-2 absolute icn text-base font-bold">
+                    +
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
           <div className="py-2">
@@ -383,9 +450,9 @@ const icn1 = (
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    stroke-width="1.5"
-    stroke-linecap="round"
-    stroke-linejoin="round"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
   >
     <path d="M12 8V4H8"></path>
     <rect width="16" height="12" x="4" y="8" rx="2"></rect>

@@ -4,9 +4,8 @@ import styled from "styled-components";
 
 import { useChainId } from "wagmi";
 
-
 const PoolTable = ({ pools, setFarmPool }) => {
-  const chainId = useChainId()
+  const chainId = useChainId();
   return (
     <>
       <div className="top flex items-center justify-between gap-2">
@@ -89,9 +88,8 @@ const PoolTable = ({ pools, setFarmPool }) => {
           </thead>{" "}
           <tbody className="">
             {" "}
-
-            {
-              pools && pools.map((item) => (
+            {pools &&
+              pools.map((item) => (
                 <tr
                   className="hover:bg-muted/20 data-[state=selected]:bg-muted border-b transition-colors relative overflow-hidden border-t hover:cursor-pointer"
                   style={{}}
@@ -126,8 +124,8 @@ const PoolTable = ({ pools, setFarmPool }) => {
                   >
                     <div className="flex min-h-[37px] items-center justify-start">
                       <div className="flex items-center">
-                        <Logo chainId={chainId} token={item?.token0?.id} /> {" "}
-                        <Logo chainId={chainId} token={item?.token1?.id} /> {" "}
+                        <Logo chainId={chainId} token={item?.token0?.id} />{" "}
+                        <Logo chainId={chainId} token={item?.token1?.id} />{" "}
                         <div className="hidden items-center whitespace-nowrap text-sm text-foreground sm:flex">
                           {item?.token0?.symbol}/{item?.token1?.symbol}
                         </div>{" "}
@@ -158,7 +156,9 @@ const PoolTable = ({ pools, setFarmPool }) => {
                         <div className="flex items-center justify-end gap-1 text-foreground">
                           {" "}
                           <button className="">
-                            <span slot="trigger">${parseFloat(item.totalValueLockedUSD).toFixed(3)}</span>
+                            <span slot="trigger">
+                              ${parseFloat(item.totalValueLockedUSD).toFixed(3)}
+                            </span>
                           </button>{" "}
                         </div>{" "}
                         {/* <span className="flex items-center gap-2">
@@ -229,9 +229,7 @@ const PoolTable = ({ pools, setFarmPool }) => {
                     </div>{" "}
                   </td>
                 </tr>
-              ))
-            }
-
+              ))}
             {/* <tr className="">
               <td colSpan={6} className="">
                 <div className=" border border-[#1a1919] px-3 py-2 bg-[#1a1919]">
@@ -276,7 +274,7 @@ const filterIcn = (
     width="20"
     height="20"
     stroke="currentColor"
-    stroke-width="1.5"
+    strokeWidth="1.5"
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
     fill="none"

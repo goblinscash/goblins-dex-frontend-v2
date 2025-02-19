@@ -54,16 +54,16 @@ export const AccordionItem = ({
             <path
               d="M24.2729 29.5454H42.8184"
               stroke="#F1F1F1"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             />
             <path
               d="M33.5454 38.8181V20.2726"
               stroke="#F1F1F1"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             />
             <defs>
               <filter
@@ -192,9 +192,9 @@ export const CstmPagination = () => {
                 <path
                   d="M20.3337 22.6668L15.667 18.0002L20.3337 13.3335"
                   stroke="#131316"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
                 <defs>
                   <filter
@@ -287,9 +287,9 @@ export const CstmPagination = () => {
                 <path
                   d="M15.667 22.6668L20.3337 18.0002L15.667 13.3335"
                   stroke="#131316"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                 />
                 <defs>
                   <filter

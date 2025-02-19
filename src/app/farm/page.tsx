@@ -16,25 +16,24 @@ type Tab = {
   component: React.ReactNode; // This can be any JSX element
 };
 const Farm = () => {
-  const chainId  = useChainId()
-  const [pools, setPools] = useState()
-  const [farmPool, setFarmPool] = useState()
+  const chainId = useChainId();
+  const [pools, setPools] = useState();
+  const [farmPool, setFarmPool] = useState();
 
-
-  const fetchPools = async() => {
-      const poolFc = getTopPools(subGraphUrls[Number(chainId) || 8453])
-      const _pools = await poolFc("liquidity", "desc")
-      if(_pools.pools?.length > 0){
-        setFarmPool(_pools.pools[0])
-      }
-      setPools(_pools.pools)
-  }
+  const fetchPools = async () => {
+    const poolFc = getTopPools(subGraphUrls[Number(chainId) || 8453]);
+    const _pools = await poolFc("liquidity", "desc");
+    if (_pools.pools?.length > 0) {
+      setFarmPool(_pools.pools[0]);
+    }
+    setPools(_pools.pools);
+  };
 
   useEffect(() => {
-    fetchPools()
-  }, [chainId])
- 
-  console.log(farmPool, "pools++")
+    fetchPools();
+  }, [chainId]);
+
+  console.log(farmPool, "pools++");
 
   const tabs: Tab[] = [
     {
@@ -42,10 +41,10 @@ const Farm = () => {
       component: (
         <div className="grid gap-3 grid-cols-12">
           <div className="md:col-span-7 col-span-12">
-            <PoolTable pools={pools} setFarmPool={setFarmPool}/>
+            <PoolTable pools={pools} setFarmPool={setFarmPool} />
           </div>
           <div className="md:col-span-5 col-span-12">
-            <FarmingCard farmPool={farmPool}  />
+            <FarmingCard farmPool={farmPool} />
           </div>
         </div>
       ),
@@ -86,8 +85,9 @@ const Farm = () => {
                     <button
                       key={key}
                       onClick={() => showTab(key)}
-                      className={`${activeTab === key && "active"
-                        } tab-button font-medium relative rounded py-2  text-xs text-gray-400 w-full`}
+                      className={`${
+                        activeTab === key && "active"
+                      } tab-button font-medium relative rounded py-2  text-xs text-gray-400 w-full`}
                     >
                       {item.title}
                     </button>
@@ -125,10 +125,10 @@ export default Farm;
 //     <path
 //       d="M21 21L17 17M19 11C19 13.1217 18.1571 15.1566 16.6569 16.6569C15.1566 18.1571 13.1217 19 11 19C8.87827 19 6.84344 18.1571 5.34315 16.6569C3.84285 15.1566 3 13.1217 3 11C3 8.87827 3.84285 6.84344 5.34315 5.34315C6.84344 3.84285 8.87827 3 11 3C13.1217 3 15.1566 3.84285 16.6569 5.34315C18.1571 6.84344 19 8.87827 19 11Z"
 //       stroke="currentColor"
-//       stroke-width="1.5"
-//       stroke-miterlimit="10"
-//       stroke-linecap="round"
-//       stroke-linejoin="round"
+//       strokeWidth="1.5"
+//       strokeMiterlimit="10"
+//       strokeLinecap="round"
+//       strokeLinejoin="round"
 //     />
 //   </svg>
 // );

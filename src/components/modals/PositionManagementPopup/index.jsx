@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { ToggleSwitch } from "@/components/common";
 import Select, { components } from "react-select";
 
-
 import { useEthersSigner } from "@/hooks/useEthersSigner";
 import { useAccount, useChainId } from "wagmi";
 import {
@@ -16,7 +15,6 @@ import { ethers } from "ethers";
 import farmStrategyAbi from "../../../abi/farmStrategy.json";
 import BtnLoader from "@/components/common/BtnLoader";
 import Logo from "@/components/common/Logo";
-
 
 // Custom styles
 const customStyles = {
@@ -50,8 +48,8 @@ const customStyles = {
     backgroundColor: state.isSelected
       ? "#1a1919" // Background of selected option
       : state.isFocused
-        ? "#1a1919" // Background on hover
-        : "#353231", // Default background
+      ? "#1a1919" // Background on hover
+      : "#353231", // Default background
 
     color: state.isSelected ? "#fff" : "#fff", // Text color
     "&:hover": {
@@ -128,22 +126,19 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
   const signer = useEthersSigner();
   const chainId = useChainId();
   const { address } = useAccount();
-  const [load, setLoad] = useState(false)
-
+  const [load, setLoad] = useState(false);
 
   const handlePosition = () => {
     setPosition(!position);
   };
 
-
-  console.log(nftPosition, "nftPosition")
+  console.log(nftPosition, "nftPosition");
   const exit = async () => {
-    if (!address) return
-    setLoad(true)
+    if (!address) return;
+    setLoad(true);
     const uniswapContract = uniswapContracts[Number(chainId)];
-    const token0 = nftPosition.token0.id
-    const token1 = nftPosition.token1.id
-
+    const token0 = nftPosition.token0.id;
+    const token1 = nftPosition.token1.id;
 
     const params = {
       stakingContract: uniswapContract.nfpm,
@@ -151,10 +146,11 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
       liquidity: nftPosition.position.liquidity,
       rewardTokens: [token0, token1],
       outputTokens: [token0, token1],
-      sweepTokens: [token0, token1]
-    }
+      sweepTokens: [token0, token1],
+    };
 
-    const { position, harvestParams, withdrawParams, sweepTokens } = getWithdrawParams(params)
+    const { position, harvestParams, withdrawParams, sweepTokens } =
+      getWithdrawParams(params);
 
     try {
       const nftFarmStrategy = new ethers.Contract(
@@ -172,14 +168,13 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
       );
 
       await tx.wait();
-      setLoad(false)
+      setLoad(false);
     } catch (error) {
-      setLoad(false)
+      setLoad(false);
       //@ts-expect-error warning
       console.error("Transaction Failed:", error?.message);
     }
   };
-
 
   return (
     <>
@@ -314,7 +309,46 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
                 <p className="text-right text-xs font-gray-400">0%</p>
               </div>
             </div> */}
-
+            <div className="py-2">
+              <div className="grid gap-3 grid-cols-12">
+                <div className="col-span-6">
+                  <label htmlFor="" className="form-label m-0 text-xs">
+                    Min price 0.99990 (0%)
+                  </label>
+                  <div className="relative iconWithText">
+                    <button className="border-0 px-0 absolute left-2 absolute icn text-base font-bold">
+                      -
+                    </button>
+                    <input
+                      type="text"
+                      placeholder="3"
+                      className="form-control rounded bg-[#1a1919] h-[45px] w-full px-14 text-center"
+                    />
+                    <button className="border-0 px-2 absolute right-2 absolute icn text-base font-bold">
+                      +
+                    </button>
+                  </div>
+                </div>
+                <div className="col-span-6">
+                  <label htmlFor="" className="form-label m-0 text-xs">
+                    Max price 1.00000 (0.01%)
+                  </label>
+                  <div className="relative iconWithText">
+                    <button className="border-0 px-0 absolute left-2 absolute icn text-base font-bold">
+                      -
+                    </button>
+                    <input
+                      type="text"
+                      placeholder="3"
+                      className="form-control rounded bg-[#1a1919] h-[45px] w-full px-14 text-center"
+                    />
+                    <button className="border-0 px-2 absolute right-2 absolute icn text-base font-bold">
+                      +
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
             <div className="py-2">
               <div className="py-2">
                 <div className="my-1 flex items-center justify-between gap-10 rounded p-2 bg-[#1a1919]">
@@ -337,7 +371,7 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
                   onClick={() => exit()}
                   className="flex w-full rounded text-black items-center justify-center bg-white px-2 py-2 font-medium"
                 >
-                {load ? <BtnLoader /> : "Exit" } 
+                  {load ? <BtnLoader /> : "Exit"}
                 </button>
               </div>
             </div>
@@ -411,9 +445,9 @@ const icn1 = (
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    stroke-width="1.5"
-    stroke-linecap="round"
-    stroke-linejoin="round"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
   >
     <path d="M12 8V4H8"></path>
     <rect width="16" height="12" x="4" y="8" rx="2"></rect>
@@ -435,8 +469,8 @@ const cross = (
     <path
       d="M17 17L1 1M17 1L1 17"
       stroke="#fff"
-      stroke-width="2"
-      stroke-linecap="round"
+      strokeWidth="2"
+      strokeLinecap="round"
     />
   </svg>
 );

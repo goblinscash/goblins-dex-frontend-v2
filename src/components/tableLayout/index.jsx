@@ -8,44 +8,49 @@ const TableLayout = ({ column, data }) => {
       <div className="overflow-x-auto">
         <Table className={` text-xs w-full`}>
           <thead>
-            <tr className="">
+            <tr>
               {column &&
                 column.length > 0 &&
-                column.map((item, key) => (
-                  <>
-                    <th className="font-semibold p-3 border-0 text-left" key={key}>
-                      {item.head}
-                    </th>
-                  </>
+                column.map((item, index) => (
+                  <th
+                    key={index}
+                    className="font-semibold p-3 border-0 text-left"
+                  >
+                    {item.head}
+                  </th>
                 ))}
             </tr>
           </thead>
           <tbody>
             {data &&
-              data?.length > 0 &&
-              data.map((data, columnkey) => {
-                return (
-                  <tr>
-                    {column &&
-                      column.length > 0 &&
-                      column.map((item, key) => {
-                        if (item.component) {
-                          return (
-                            <td className="border-0 p-3 capitalize fw-sbold" key={key}>
-                              {item.component(data, columnkey, data)}
-                            </td>
-                          );
-                        }
-
+              data.length > 0 &&
+              data.map((rowData, rowIndex) => (
+                <tr key={rowIndex}>
+                  {column &&
+                    column.length > 0 &&
+                    column.map((item, colIndex) => {
+                      if (item.component) {
                         return (
-                          <td className="border-0 capitalize p-3 fw-sbold">
-                            {data[item?.accessor]}
+                          <td
+                            key={colIndex}
+                            className="border-0 p-3 capitalize fw-sbold"
+                          >
+                            {item.component(rowData, rowIndex, data)}
                           </td>
                         );
-                      })}
-                  </tr>
-                );
-              })}
+                      }
+
+                      return (
+                        <td
+                          key={colIndex}
+                          className="border-0 capitalize p-3 fw-sbold"
+                        >
+                          {rowData[item?.accessor]}
+                        </td>
+                      );
+                    })}
+                </tr>
+              ))}
           </tbody>
         </Table>
       </div>
