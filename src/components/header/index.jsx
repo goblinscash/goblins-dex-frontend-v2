@@ -112,16 +112,16 @@ const addIcn = (
     <path
       d="M10 15H22"
       stroke="#fff"
-      stroke-width="1.5"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
     <path
       d="M16 21V9"
       stroke="#fff"
-      stroke-width="1.5"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 );
@@ -190,9 +190,9 @@ const darkthemeIcn = (
     <path
       d="M1.35356 8.27997C1.59356 11.7133 4.50689 14.5066 7.99356 14.66C10.4536 14.7666 12.6536 13.62 13.9736 11.8133C14.5202 11.0733 14.2269 10.58 13.3136 10.7466C12.8669 10.8266 12.4069 10.86 11.9269 10.84C8.66689 10.7066 6.00022 7.97997 5.98689 4.75997C5.98022 3.89331 6.16022 3.07331 6.48689 2.32664C6.84689 1.49997 6.41356 1.10664 5.58022 1.45997C2.94022 2.57331 1.13356 5.23331 1.35356 8.27997Z"
       stroke="currentColor"
-      stroke-width="1.5"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 );
@@ -208,16 +208,16 @@ const lightThemeIcn = (
     <path
       d="M7.99984 12.3334C10.3931 12.3334 12.3332 10.3933 12.3332 8.00008C12.3332 5.60685 10.3931 3.66675 7.99984 3.66675C5.6066 3.66675 3.6665 5.60685 3.6665 8.00008C3.6665 10.3933 5.6066 12.3334 7.99984 12.3334Z"
       stroke="currentColor"
-      stroke-width="1.5"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
     <path
       d="M12.7602 12.7599L12.6735 12.6733M12.6735 3.32659L12.7602 3.23992L12.6735 3.32659ZM3.24016 12.7599L3.32683 12.6733L3.24016 12.7599ZM8.00016 1.38659V1.33325V1.38659ZM8.00016 14.6666V14.6133V14.6666ZM1.38683 7.99992H1.3335H1.38683ZM14.6668 7.99992H14.6135H14.6668ZM3.32683 3.32659L3.24016 3.23992L3.32683 3.32659Z"
       stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 );
@@ -233,23 +233,23 @@ const SubscribeIcn = (
     <path
       d="M13.9168 15.8166H6.0835C5.7335 15.8166 5.34183 15.5416 5.22517 15.2082L1.77517 5.55822C1.2835 4.17489 1.8585 3.74989 3.04183 4.59989L6.29183 6.92489C6.8335 7.29989 7.45017 7.10822 7.6835 6.49989L9.15017 2.59155C9.61683 1.34155 10.3918 1.34155 10.8585 2.59155L12.3252 6.49989C12.5585 7.10822 13.1752 7.29989 13.7085 6.92489L16.7585 4.74989C18.0585 3.81655 18.6835 4.29155 18.1502 5.79989L14.7835 15.2249C14.6585 15.5416 14.2668 15.8166 13.9168 15.8166Z"
       stroke="currentColor"
-      stroke-width="1.5"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
     <path
       d="M5.4165 18.3333H14.5832"
       stroke="currentColor"
-      stroke-width="1.5"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
     <path
       d="M7.9165 11.6667H12.0832"
       stroke="currentColor"
-      stroke-width="1.5"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 );
@@ -265,24 +265,24 @@ const profileIcn = (
     <path
       d="M18 18.86H17.24C16.44 18.86 15.68 19.17 15.12 19.73L13.41 21.42C12.63 22.19 11.36 22.19 10.58 21.42L8.87 19.73C8.31 19.17 7.54 18.86 6.75 18.86H6C4.34 18.86 3 17.53 3 15.89V4.97998C3 3.33998 4.34 2.01001 6 2.01001H18C19.66 2.01001 21 3.33998 21 4.97998V15.89C21 17.52 19.66 18.86 18 18.86Z"
       stroke="currentColor"
-      stroke-width="1.5"
-      stroke-miterlimit="10"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="1.5"
+      strokeMiterlimit="10"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
     <path
       d="M11.9999 10.0001C13.2868 10.0001 14.33 8.95687 14.33 7.67004C14.33 6.38322 13.2868 5.34009 11.9999 5.34009C10.7131 5.34009 9.66992 6.38322 9.66992 7.67004C9.66992 8.95687 10.7131 10.0001 11.9999 10.0001Z"
       stroke="currentColor"
-      stroke-width="1.5"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
     <path
       d="M16 15.6601C16 13.8601 14.21 12.4001 12 12.4001C9.79 12.4001 8 13.8601 8 15.6601"
       stroke="currentColor"
-      stroke-width="1.5"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 );
@@ -298,37 +298,37 @@ const webIcn = (
     <path
       d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
       stroke="currentColor"
-      stroke-width="1.5"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
     <path
       d="M7.99961 3H8.99961C7.04961 8.84 7.04961 15.16 8.99961 21H7.99961"
       stroke="currentColor"
-      stroke-width="1.5"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
     <path
       d="M15 3C16.95 8.84 16.95 15.16 15 21"
       stroke="currentColor"
-      stroke-width="1.5"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
     <path
       d="M3 16V15C8.84 16.95 15.16 16.95 21 15V16"
       stroke="currentColor"
-      stroke-width="1.5"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
     <path
       d="M3 9.0001C8.84 7.0501 15.16 7.0501 21 9.0001"
       stroke="currentColor"
-      stroke-width="1.5"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 );
@@ -344,23 +344,23 @@ const subsIcn = (
     <path
       d="M20.9498 14.55L14.5598 20.94C13.1598 22.34 10.8598 22.34 9.44978 20.94L3.05977 14.55C1.65977 13.15 1.65977 10.85 3.05977 9.44001L9.44978 3.05C10.8498 1.65 13.1498 1.65 14.5598 3.05L20.9498 9.44001C22.3498 10.85 22.3498 13.15 20.9498 14.55Z"
       stroke="currentColor"
-      stroke-width="1.5"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
     <path
       d="M6.25 6.25L17.75 17.75"
       stroke="currentColor"
-      stroke-width="1.5"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
     <path
       d="M17.75 6.25L6.25 17.75"
       stroke="currentColor"
-      stroke-width="1.5"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 );
@@ -377,18 +377,18 @@ const messageIcn = (
       <path
         d="M17 20.5H7C4 20.5 2 19 2 15.5V8.5C2 5 4 3.5 7 3.5H17C20 3.5 22 5 22 8.5V15.5C22 19 20 20.5 17 20.5Z"
         stroke="currentColor"
-        stroke-width="1.5"
-        stroke-miterlimit="10"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeWidth="1.5"
+        strokeMiterlimit="10"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
       <path
         d="M17 9L13.87 11.5C12.84 12.32 11.15 12.32 10.12 11.5L7 9"
         stroke="currentColor"
-        stroke-width="1.5"
-        stroke-miterlimit="10"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeWidth="1.5"
+        strokeMiterlimit="10"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </g>
   </svg>
@@ -406,23 +406,23 @@ const logoutIcn = (
       <path
         d="M15.0996 7.55999C14.7896 3.95999 12.9396 2.48999 8.88961 2.48999H8.75961C4.28961 2.48999 2.49961 4.27999 2.49961 8.74999V15.27C2.49961 19.74 4.28961 21.53 8.75961 21.53H8.88961C12.9096 21.53 14.7596 20.08 15.0896 16.54"
         stroke="currentColor"
-        stroke-width="1.5"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
       <path
         d="M8.99988 12H20.3799"
         stroke="currentColor"
-        stroke-width="1.5"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
       <path
         d="M18.15 8.6499L21.5 11.9999L18.15 15.3499"
         stroke="currentColor"
-        stroke-width="1.5"
-        stroke-linecap="round"
-        stroke-linejoin="round"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </g>
   </svg>
@@ -447,10 +447,10 @@ const backIcn = (
     <path
       d="M18 22.28L13.6533 17.9333C13.14 17.42 13.14 16.58 13.6533 16.0666L18 11.72"
       stroke="#9A9AAF"
-      stroke-width="1.5"
-      stroke-miterlimit="10"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="1.5"
+      strokeMiterlimit="10"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 );

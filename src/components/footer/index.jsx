@@ -188,9 +188,9 @@ const instagram = (
     <path
       d="M14.1665 1.66666H5.83317C3.53198 1.66666 1.6665 3.53214 1.6665 5.83333V14.1667C1.6665 16.4679 3.53198 18.3333 5.83317 18.3333H14.1665C16.4677 18.3333 18.3332 16.4679 18.3332 14.1667V5.83333C18.3332 3.53214 16.4677 1.66666 14.1665 1.66666Z"
       stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 );
@@ -418,9 +418,9 @@ const twitter = (
     <path
       d="M18.3332 3.33333C18.3332 3.33333 17.7498 5.08333 16.6665 6.16667C17.9998 14.5 8.83317 20.5833 1.6665 15.8333C3.49984 15.9167 5.33317 15.3333 6.6665 14.1667C2.49984 12.9167 0.416504 8 2.49984 4.16667C4.33317 6.33333 7.1665 7.58333 9.99984 7.5C9.24984 4 13.3332 2 15.8332 4.33333C16.7498 4.33333 18.3332 3.33333 18.3332 3.33333Z"
       stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 );

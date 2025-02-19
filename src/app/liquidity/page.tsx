@@ -55,16 +55,6 @@ const Liquidity = () => {
       component: (item: Data, key: number) => {
         return (
           <div key={key} className="flex items-center gap-3">
-            <div className="imgWrp flex-shrink-0">
-              <Image
-                src={""} // Add image source dynamically here
-                alt=""
-                height={1000}
-                width={1000}
-                style={{ height: 30, width: 30 }}
-                className="img-fluid object-fit-cover rounded-full"
-              />
-            </div>
             <div className="content">
               <p className="m-0 text-muted">{item?.LiquidityName}</p>
             </div>
@@ -203,10 +193,10 @@ const search = (
     <path
       d="M21 21L17 17M19 11C19 13.1217 18.1571 15.1566 16.6569 16.6569C15.1566 18.1571 13.1217 19 11 19C8.87827 19 6.84344 18.1571 5.34315 16.6569C3.84285 15.1566 3 13.1217 3 11C3 8.87827 3.84285 6.84344 5.34315 5.34315C6.84344 3.84285 8.87827 3 11 3C13.1217 3 15.1566 3.84285 16.6569 5.34315C18.1571 6.84344 19 8.87827 19 11Z"
       stroke="currentColor"
-      stroke-width="1.5"
-      stroke-miterlimit="10"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      strokeWidth="1.5"
+      strokeMiterlimit="10"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     />
   </svg>
 );

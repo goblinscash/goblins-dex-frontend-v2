@@ -319,9 +319,9 @@ const calculate = (
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
   >
     <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
     <line x1="3" x2="21" y1="9" y2="9"></line>
@@ -339,9 +339,9 @@ const exchange = (
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
   >
     <path d="m16 3 4 4-4 4"></path>
     <path d="M20 7H4"></path>
@@ -358,9 +358,9 @@ const plus = (
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
   >
     <path d="M12 3v14"></path>
     <path d="M5 10h14"></path>
@@ -376,9 +376,9 @@ const icn = (
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
   >
     <circle cx="8" cy="8" r="6"></circle>
     <path d="M18.09 10.37A6 6 0 1 1 10.34 18"></path>
@@ -395,9 +395,9 @@ const check = (
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
   >
     <polyline points="20 6 9 17 4 12"></polyline>
   </svg>
@@ -411,9 +411,9 @@ const lock = (
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
   >
     <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
     <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
@@ -428,9 +428,9 @@ const waiting = (
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
   >
     <path d="M5 22h14"></path>
     <path d="M5 2h14"></path>
@@ -468,9 +468,9 @@ const downArrow = (
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
   >
     <path d="m6 9 6 6 6-6"></path>
   </svg>
@@ -484,9 +484,9 @@ const transfer = (
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
   >
     <path d="m21 16-4 4-4-4"></path>
     <path d="M17 20V4"></path>
