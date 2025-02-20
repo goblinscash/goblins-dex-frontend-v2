@@ -265,3 +265,11 @@ export const getRebalanceParms = (
 
     return { params }
 }
+
+export const getIncreaseParams = () => {
+
+}
+
+export const getCompoundParams = () => {
+    
+}

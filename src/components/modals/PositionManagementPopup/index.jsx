@@ -290,6 +290,7 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
       handleLoad("Rebalance", false)
     }
   }
+  
   const exit = async () => {
     if (!address) return;
     handleLoad("Exit", true)
