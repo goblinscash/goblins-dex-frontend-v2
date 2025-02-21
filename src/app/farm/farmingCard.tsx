@@ -19,12 +19,19 @@ import {
 } from "@/utils/web3.utils";
 import { toUnits } from "@/utils/math.utils";
 import BtnLoader from "@/components/common/BtnLoader";
+import styled from "styled-components";
+import BarContainer from "@/components/BarContainer/BarContainer";
 
 type OptionType = {
   value: string;
   label: string;
   image: string;
 };
+
+interface Element {
+  id: number;
+  name: string;
+}
 
 // Custom styles
 const customStyles: StylesConfig<OptionType, false> = {
@@ -138,6 +145,23 @@ const FarmingCard = ({ farmPool }) => {
   const signer = useEthersSigner();
   const chainId = useChainId();
   const { address } = useAccount();
+  const initialElements: Element[] = Array.from({ length: 5 }, (_, index) => ({
+    id: index + 1,
+    name: `Element ${index + 1}`,
+  }));
+  const [elements, setElements] = useState<Element[]>(initialElements);
+  const addElement = () => {
+    const newElement: Element = {
+      id: elements.length + 1,
+      name: `Element ${elements.length + 1}`,
+    };
+    setElements([...elements, newElement]);
+  };
+  const removeElement = () => {
+    if (elements.length > 5) {
+      setElements((prevElements) => prevElements.slice(0, -1));
+    }
+  };
 
   const [data, setData] = useState({
     amount0Desired: "",
@@ -375,7 +399,10 @@ const FarmingCard = ({ farmPool }) => {
                   Max price 1.00000 (0.01%)
                 </label>
                 <div className="relative iconWithText">
-                  <button className="border-0 px-0 absolute left-2 absolute icn text-base font-bold">
+                  <button
+                    onClick={removeElement}
+                    className="border-0 px-0 absolute left-2 absolute icn text-base font-bold"
+                  >
                     -
                   </button>
                   <input
@@ -383,12 +410,18 @@ const FarmingCard = ({ farmPool }) => {
                     placeholder="3"
                     className="form-control rounded bg-[#1a1919] h-[45px] w-full px-14 text-center"
                   />
-                  <button className="border-0 px-2 absolute right-2 absolute icn text-base font-bold">
+                  <button
+                    onClick={addElement}
+                    className="border-0 px-2 absolute right-2 absolute icn text-base font-bold"
+                  >
                     +
                   </button>
                 </div>
               </div>
             </div>
+          </div>
+          <div className="py-2">
+            <BarContainer bar={elements} />
           </div>
           <div className="py-2">
             <div className="py-2">
