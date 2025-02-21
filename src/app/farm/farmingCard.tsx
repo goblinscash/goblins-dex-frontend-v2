@@ -19,7 +19,6 @@ import {
 } from "@/utils/web3.utils";
 import { toUnits } from "@/utils/math.utils";
 import BtnLoader from "@/components/common/BtnLoader";
-import styled from "styled-components";
 import BarContainer from "@/components/BarContainer/BarContainer";
 
 type OptionType = {
