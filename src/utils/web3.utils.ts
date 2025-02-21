@@ -10,8 +10,8 @@ import { toUnits } from "./math.utils";
 import { getTokenDetails } from "./requests.utils";
 
 import { TickMath } from '@uniswap/v3-sdk'
-import { Token } from '@uniswap/sdk-core'
-
+import { Price, Token } from '@uniswap/sdk-core'
+import JSBI from "jsbi";
 
 function isValidChainId(chainId: number): chainId is keyof typeof uniswapContracts & keyof RpcUrls {
     return chainId in uniswapContracts && chainId in rpcUrls;
@@ -168,6 +168,19 @@ export const getTickSpacing = async (chainId: number, pool: string) => {
     return parseFloat(spacing)
 }
 
+export const getSlot = async (chainId: number, pool: string) => {
+    if (!isValidChainId(chainId)) {
+        throw new Error(`Invalid chainId: ${chainId}`);
+    }
+    const instance = new ethers.Contract(
+        pool,
+        uniPoolAbi,
+        new ethers.JsonRpcProvider(rpcUrls[chainId])
+    );
+    const slot = await instance.slot0()
+    return parseFloat(slot.tick)
+}
+
 export const getUniswapPool = async (chainId: number, token0: string, token1: string, feeTier: number) => {
     if (!isValidChainId(chainId)) {
         throw new Error(`Invalid chainId: ${chainId}`);
@@ -180,47 +193,111 @@ export const getUniswapPool = async (chainId: number, token0: string, token1: st
     const pool = await instance.getPool(token0, token1, feeTier)
 
 
-    await calculatePriceRange(8453);
-    const currentPrice = 2725.91; // Example current price
-    const newMinPriceChange = -14; 
-    const newMaxPriceChange = 14;  
+    // await PriceRange(8453);
+    // const currentPrice = 2725.91; // Example current price
+    // const newMinPriceChange = -14;
+    // const newMaxPriceChange = 14;
 
-    const newPrices = calculatePricesFromChanges(currentPrice, newMinPriceChange, newMaxPriceChange);
-    console.log("New Prices & Ticks:", newPrices);
+    // const newPrices = calculatePricesFromChanges(currentPrice, newMinPriceChange, newMaxPriceChange);
+    // console.log("New Prices & Ticks:", newPrices);
 
 
     return pool
 }
 
-export const calculatePriceRange = async (chainId: number) => {
-    const tokenA = new Token(chainId, '0x4200000000000000000000000000000000000006', 18, 'WETH', 'Ethereum')
-    const tokenB = new Token(chainId, '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', 6, 'USDC', 'USD Coin')
+export const calculatePriceRange = async (
+    chainId: number,
+    nftId: number,
+    pool: string,
+    token0: string,
+    token1: string,
+    token0Decimal: number,
+    token1Decimal: number,
+    token0Symbol: string,
+    token1Symbol: string,
+    token0Name: string,
+    token1Name: string) => {
+    const tokenA = new Token(chainId, token0, token0Decimal, token0Symbol, token0Name)
+    const tokenB = new Token(chainId, token1, token1Decimal, token1Symbol, token1Name)
 
+    const position = await fetchPosition(chainId, nftId)
+    const tick = await getSlot(chainId, pool)
     // Compute price range
-    const priceLower = tickToPrice(-198470, tokenA, tokenB)
-    const priceUpper = tickToPrice(-195970, tokenA, tokenB)
-    const currentPrice = tickToPrice(-197171, tokenA, tokenB)
+    const priceLower = tickToPrice(parseFloat(position.tickLower), tokenA, tokenB)
+    const priceUpper = tickToPrice(parseFloat(position.tickUpper), tokenA, tokenB)
+    const currentPrice = tickToPrice(tick, tokenA, tokenB)
 
-    const widthPercentage = ((priceUpper - priceLower) / currentPrice) * 100;
-    const minPriceChange = ((priceLower - currentPrice) / currentPrice) * 100;
-    const maxPriceChange = ((priceUpper - currentPrice) / currentPrice) * 100;
+    const priceLowerNum = parseFloat(priceLower.toSignificant(6));
+    const priceUpperNum = parseFloat(priceUpper.toSignificant(6));
+    const currentPriceNum = parseFloat(currentPrice.toSignificant(6));
 
-    console.log(`Current Price %: ${currentPrice}`)
-    console.log(`Lower Bound %: ${priceLower}`)
-    console.log(`Upper Bound %: ${priceUpper}`)
+    // Compute percentages
+    const widthPercentage = ((priceUpperNum - priceLowerNum) / currentPriceNum) * 100;
+    const minPriceChange = ((priceLowerNum - currentPriceNum) / currentPriceNum) * 100;
+    const maxPriceChange = ((priceUpperNum - currentPriceNum) / currentPriceNum) * 100;
+
+    console.log(`Current Price: ${currentPriceNum}`)
+    console.log(`Lower Bound : ${priceLowerNum}`)
+    console.log(`Upper Bound: ${priceUpperNum}`)
 
     console.log(`Width: ${widthPercentage.toFixed(2)}%`);
     console.log(`Min Price Change: ${minPriceChange.toFixed(2)}%`);
     console.log(`Max Price Change: ${maxPriceChange.toFixed(2)}%`);
+    return {
+        currentPriceNum,
+        priceLowerNum,
+        priceUpperNum,
+        widthPercentage: widthPercentage.toFixed(2),
+        minPriceChange: minPriceChange.toFixed(2),
+        maxPriceChange: maxPriceChange.toFixed(2),
+    }
 }
 
-function tickToPrice(tick: number, tokenA: Token, tokenB: Token) {
+
+export function tickToPrice(tick: number, baseToken: Token, quoteToken: Token): Price<Token, Token> {
     if (tick < TickMath.MIN_TICK || tick > TickMath.MAX_TICK) {
-        throw new Error('Tick out of range')
+        throw new Error('Tick out of range');
     }
-    const price = Math.pow(1.0001, tick)
-    return tokenA.sortsBefore(tokenB) ? price : 1 / price
+
+    const sqrtPriceX96 = TickMath.getSqrtRatioAtTick(tick);
+
+    return new Price(
+        baseToken,
+        quoteToken,
+        JSBI.BigInt(2 ** 192).toString(),  // Convert JSBI to string
+        JSBI.multiply(sqrtPriceX96, sqrtPriceX96).toString()  // Convert JSBI to string
+    );
 }
+
+
+export const PriceRange = async (chainId: number) => {
+    const tokenA = new Token(chainId, '0x4200000000000000000000000000000000000006', 18, 'WETH', 'Ethereum');
+    const tokenB = new Token(chainId, '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913', 6, 'USDC', 'USD Coin');
+
+    // Compute price range
+    const priceLower = tickToPrice(-198470, tokenA, tokenB);
+    const priceUpper = tickToPrice(-195970, tokenA, tokenB);
+    const currentPrice = tickToPrice(-197171, tokenA, tokenB);
+
+    // Convert price objects to numbers
+    const priceLowerNum = parseFloat(priceLower.toSignificant(6));
+    const priceUpperNum = parseFloat(priceUpper.toSignificant(6));
+    const currentPriceNum = parseFloat(currentPrice.toSignificant(6));
+
+    // Compute percentages
+    const widthPercentage = ((priceUpperNum - priceLowerNum) / currentPriceNum) * 100;
+    const minPriceChange = ((priceLowerNum - currentPriceNum) / currentPriceNum) * 100;
+    const maxPriceChange = ((priceUpperNum - currentPriceNum) / currentPriceNum) * 100;
+
+    console.log("++++++++++++++++++++++++++++++++++++++");
+    console.log(`Current Price: ${currentPriceNum}`);
+    console.log(`Lower Bound: ${priceLowerNum}`);
+    console.log(`Upper Bound: ${priceUpperNum}`);
+    console.log(`Width: ${widthPercentage.toFixed(2)}%`);
+    console.log(`Min Price Change: ${minPriceChange.toFixed(2)}%`);
+    console.log(`Max Price Change: ${maxPriceChange.toFixed(2)}%`);
+    console.log("++++++++++++++++++++++++++++++++++++++");
+};
 
 export const calculatePricesFromChanges = (
     currentPrice: number,
@@ -233,15 +310,19 @@ export const calculatePricesFromChanges = (
 
     // Calculate new width percentage
     const widthPercentage = ((priceUpper - priceLower) / currentPrice) * 100;
+    const minPriceChange = ((priceLower - currentPrice) / currentPrice) * 100;
+    const maxPriceChange = ((priceUpper - currentPrice) / currentPrice) * 100;
 
     // Convert prices to tick values
     const newTickLower = Math.floor(Math.log(priceLower) / Math.log(1.0001));
     const newTickUpper = Math.floor(Math.log(priceUpper) / Math.log(1.0001));
 
     return {
-        priceLower: priceLower.toFixed(6),  // 6 decimal places for precision
+        priceLower: priceLower.toFixed(6),
         priceUpper: priceUpper.toFixed(6),
         widthPercentage: widthPercentage.toFixed(2),
+        minPriceChange,
+        maxPriceChange,
         newTickLower,
         newTickUpper
     };

@@ -216,6 +216,7 @@ const FarmingCard = ({ farmPool }) => {
       if (tx1Approve) {
         await tx1Approve.wait();
       }
+      
       const nftFarmStrategy = new ethers.Contract(
         vfatContracts[Number(chainId)].NftFarmStrategy as string,
         farmStrategyAbi,

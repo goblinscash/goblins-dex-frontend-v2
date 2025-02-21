@@ -266,10 +266,114 @@ export const getRebalanceParms = (
     return { params }
 }
 
-export const getIncreaseParams = () => {
+export const getIncreaseParams = (
+    token0: string,
+    token1: string,
+    tokenId: number,
+    nfpm: string,
+    feeTier: number,
+    tickLower: number,
+    tickUpper: number,
+    sweepTokens: [],
+    amount0Desired: number,
+    amount1Desired: number
+) => {
+    const position = {
+        farm: {
+            stakingContract: nfpm,
+            poolIndex: 0
+        },
+        nft: nfpm,
+        tokenId: tokenId
+    }
 
+    const harvestParams = {
+        harvest: {
+            rewardTokens: [],
+            amount0Max: MAX_UINT_128,
+            amount1Max: MAX_UINT_128,
+            extraData: "0x00"
+        },
+        swaps: [],
+        outputTokens: [],
+        sweepTokens: sweepTokens
+    }
+
+    const increaseParams = {
+        tokensIn: [token0, token1],
+        amountsIn: [amount0Desired, amount1Desired],
+        zap: {
+            swaps: [],
+            addLiquidityParams: {
+                nft: nfpm,
+                tokenId: tokenId,
+                pool: {
+                    token0: token0,
+                    token1: token1,
+                    fee: feeTier
+                },
+                tickLower: tickLower,
+                tickUpper: tickUpper,
+                amount0Desired: amount0Desired,
+                amount1Desired: amount1Desired,
+                amount0Min: "0",
+                amount1Min: "0",
+                deadline: Math.floor(Date.now() / 1000) + 600,
+                extraData: "0x00"
+            }
+        },
+        extraData: "0x00"
+    }
+
+    return { position, harvestParams, increaseParams }
 }
 
-export const getCompoundParams = () => {
-    
+export const getCompoundParams = (
+    token0: string,
+    token1: string,
+    tokenId: number,
+    nfpm: string,
+    fee: number,
+    tickLower: number,
+    tickUpper:number,
+    rewardTokens: []
+) => {
+    const position = {
+        farm: {
+            stakingContract: nfpm,
+            poolIndex: 0
+        },
+        nft: nfpm,
+        tokenId: tokenId
+    }
+
+    const params = {
+        harvest: {
+            rewardTokens: rewardTokens,
+            amount0Max: MAX_UINT_128,
+            amount1Max: MAX_UINT_128,
+            extraData: "0x00"
+        },
+        zap: {
+            swaps: [],
+            addLiquidityParams: {
+                nft: nfpm,
+                tokenId: tokenId,
+                pool: {
+                    token0: token0,
+                    token1: token1,
+                    fee: fee
+                },
+                tickLower: tickLower,
+                tickUpper: tickUpper,
+                amount0Desired: "0",
+                amount1Desired: "0",
+                amount0Min: "0",
+                amount1Min: "0",
+                extraData: "0x00"
+            }
+        },
+    }
+
+    return { position, params }
 }

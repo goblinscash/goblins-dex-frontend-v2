@@ -1,22 +1,19 @@
-import React, { useState } from "react";
+"use client";
+import React, { useEffect, useState } from "react";
 import { ToggleSwitch } from "@/components/common";
 import Select, { components } from "react-select";
-
 import { useEthersSigner } from "@/hooks/useEthersSigner";
 import { useAccount, useChainId } from "wagmi";
-import {
-  UniswapContract,
-  uniswapContracts,
-  vfatContracts,
-  zeroAddr,
-} from "@/utils/config.utils";
-import { getHarvestParams, getRebalanceParms, getWithdrawParams } from "@/utils/farmData.utils";
+import { uniswapContracts, vfatContracts } from "@/utils/config.utils";
+import { getCompoundParams, getHarvestParams, getIncreaseParams, getRebalanceParms, getWithdrawParams } from "@/utils/farmData.utils";
 import { ethers } from "ethers";
 import farmStrategyAbi from "../../../abi/farmStrategy.json";
 import BtnLoader from "@/components/common/BtnLoader";
 import Logo from "@/components/common/Logo";
-import { getUniswapPool } from "@/utils/web3.utils";
-import { type } from "os";
+import { approve, calculatePriceRange, calculatePricesFromChanges, getPredictedSickle, getUniswapPool } from "@/utils/web3.utils";
+import { toUnits } from "@/utils/math.utils";
+import PriceRangeGraph from "@/components/priceRange"
+
 
 // Custom styles
 const customStyles = {
@@ -199,14 +196,110 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
   const chainId = useChainId();
   const { address } = useAccount();
   const [load, setLoad] = useState({});
+  const [formStatus, setFormStatus] = useState({ Increase: true });
+  const [priceRange, setPriceRange] = useState({
+    currentPriceNum: "",
+    maxPriceChange: "",
+    minPriceChange: "",
+    priceLowerNum: "",
+    priceUpperNum: "",
+    widthPercentage: ""
+  });
 
-  const handlePosition = () => {
-    setPosition(!position);
+  const [data, setData] = useState({
+    amount0Desired: "",
+    amount1Desired: "",
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+
+    setData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleLoad = (action, status) => {
     setLoad((prev) => ({ ...prev, [action]: status }));
   };
+
+  const handleFormStatus = (activeForm) => {
+    setFormStatus({ [activeForm]: true });
+  };
+
+  useEffect(() => {
+    if (chainId && nftPosition) {
+      getPriceRange()
+    }
+  }, [chainId, nftPosition])
+
+  // const handlePriceChange = (e) => {
+  //   const { name, value } = e.target;
+
+  //   console.log(name, value, "+++")
+  //   setPriceRange((prev) => ({
+  //     ...prev,
+  //     [name]: value, 
+  //   }));
+  // };
+
+  const handlePriceChange = (e) => {
+    const { name, value } = e.target;
+
+    const numericValue = value === "" ? 0 : parseFloat(value);
+
+    setPriceRange((prev) => {
+      const updatedRange = {
+        ...prev,
+        [name]: value,
+      };
+
+      const currentPrice = parseFloat(prev.currentPriceNum) || 0;
+      const newMinPriceChange = parseFloat(updatedRange.minPriceChange) || 0;
+      const newMaxPriceChange = parseFloat(updatedRange.maxPriceChange) || 0;
+
+      if (currentPrice > 0) {
+        const calculatedPrices = calculatePricesFromChanges(
+          currentPrice,
+          newMinPriceChange,
+          newMaxPriceChange
+        );
+
+        return {
+          ...updatedRange,
+          priceLowerNum: calculatedPrices.priceLower,
+          priceUpperNum: calculatedPrices.priceUpper,
+          widthPercentage: calculatedPrices.widthPercentage,
+        };
+      }
+
+      return updatedRange;
+    });
+  };
+
+
+  const getPriceRange = async () => {
+    const token0 = nftPosition.token0.id;
+    const token1 = nftPosition.token1.id;
+    const fee = nftPosition.position.fee
+    const pool = await getUniswapPool(chainId, token0, token1, fee)
+    const _priceRange = await calculatePriceRange(
+      chainId,
+      nftPosition.nftId,
+      pool,
+      token0,
+      token1,
+      parseInt(nftPosition.token0.decimals),
+      parseInt(nftPosition.token1.decimals),
+      nftPosition.token0.symbol,
+      nftPosition.token1.symbol,
+      nftPosition.token0.name,
+      nftPosition.token1.name,
+    )
+    setPriceRange(_priceRange)
+    console.log(_priceRange, "priceRange")
+  }
 
   const harvest = async () => {
     if (!address) return;
@@ -290,7 +383,146 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
       handleLoad("Rebalance", false)
     }
   }
-  
+
+  const increase = async () => {
+    try {
+      if (!address) return;
+      handleLoad("Increase", true)
+      const uniswapContract = uniswapContracts[Number(chainId)];
+      const token0 = nftPosition.token0.id;
+      const token1 = nftPosition.token1.id;
+      const sweepTokens = [token0, token1]
+      const inPlace = true;
+
+      const { position, harvestParams, increaseParams } = getIncreaseParams(
+        token0,
+        token1,
+        nftPosition.nftId.toString(),
+        uniswapContract.nfpm,
+        nftPosition.position.fee,
+        nftPosition?.position.tickLower,
+        nftPosition?.position.tickUpper,
+        sweepTokens,
+        toUnits(data.amount0Desired, parseInt(nftPosition.token0.decimals)).toString(),
+        toUnits(data.amount1Desired, parseInt(nftPosition.token1.decimals)).toString(),
+      )
+
+      //@ts-expect-error ts warning
+      const predictedSickle = await getPredictedSickle(chainId, address);
+      const tx0Approve = await approve(
+        token0,
+        await signer,
+        predictedSickle,
+        parseFloat(data.amount0Desired),
+        parseInt(nftPosition.token0.decimals)
+      );
+      if (tx0Approve) {
+        await tx0Approve.wait();
+      }
+
+      const tx1Approve = await approve(
+        token1,
+        await signer,
+        predictedSickle,
+        parseFloat(data.amount1Desired),
+        parseInt(nftPosition.token1.decimals)
+      );
+      if (tx1Approve) {
+        await tx1Approve.wait();
+      }
+
+      const nftFarmStrategy = new ethers.Contract(
+        vfatContracts[Number(chainId)].NftFarmStrategy,
+        farmStrategyAbi,
+        await signer
+      );
+
+      const tx = await nftFarmStrategy.increase(
+        position,
+        harvestParams,
+        increaseParams,
+        inPlace,
+        sweepTokens,
+        { gasLimit: 5000000 }
+      );
+
+      await tx.wait();
+      handleLoad("Increase", false)
+    } catch (error) {
+      console.log(error)
+      handleLoad("Increase", false)
+    }
+  }
+
+  const compound = async () => {
+    try {
+      if (!address) return;
+      handleLoad("Compound", true)
+      const uniswapContract = uniswapContracts[Number(chainId)];
+      const token0 = nftPosition.token0.id;
+      const token1 = nftPosition.token1.id;
+      const sweepTokens = [token0, token1]
+      const inPlace = true
+
+      const { position, params } = getCompoundParams(
+        token0,
+        token1,
+        nftPosition.nftId.toString(),
+        uniswapContract.nfpm,
+        nftPosition.position.fee,
+        nftPosition?.position.tickLower.toString(),
+        nftPosition?.position.tickUpper.toString(),
+        sweepTokens
+      )
+
+      //@ts-expect-error ts warning
+      const predictedSickle = await getPredictedSickle(chainId, address);
+      const tx0Approve = await approve(
+        token0,
+        await signer,
+        predictedSickle,
+        parseFloat(1),
+        parseInt(nftPosition.token0.decimals)
+      );
+      if (tx0Approve) {
+        await tx0Approve.wait();
+      }
+
+      const tx1Approve = await approve(
+        token1,
+        await signer,
+        predictedSickle,
+        parseFloat(1),
+        parseInt(nftPosition.token1.decimals)
+      );
+      if (tx1Approve) {
+        await tx1Approve.wait();
+      }
+
+      const nftFarmStrategy = new ethers.Contract(
+        vfatContracts[Number(chainId)].NftFarmStrategy,
+        farmStrategyAbi,
+        await signer
+      );
+
+      const tx = await nftFarmStrategy.compound(
+        position,
+        params,
+        inPlace,
+        sweepTokens,
+        { gasLimit: 5000000 }
+      );
+
+      await tx.wait();
+      console.log("Compound Successful!");
+      handleLoad("Compound", false)
+    } catch (error) {
+      console.log(error)
+      handleLoad("Compound", false)
+    }
+  }
+
+
   const exit = async () => {
     if (!address) return;
     handleLoad("Exit", true)
@@ -378,19 +610,35 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
             </div>
             <div className="mt-2">
               <div className="p-1 inline-flex items-center rounded bg-[#353231]">
-                <button className="flex items-center justify-center px-3 py-1 font-medium text-xs">
+                <button
+                  onClick={() => handleFormStatus("Increase")}
+                  className={`${formStatus.Increase && "bg-[#000]"} flex items-center rounded  justify-center px-3 py-1 text-xs font-medium `}
+                >
                   Increase
                 </button>
-                <button className="flex items-center justify-center px-3 py-1 font-medium text-xs">
+                <button
+                  onClick={() => handleFormStatus("Rebalance")}
+                  className={`${formStatus.Rebalance && "bg-[#000]"} flex items-center rounded  justify-center px-3 py-1 text-xs font-medium `}
+                >
                   Rebalance
                 </button>
-                <button className="flex items-center rounded bg-[#000] justify-center px-3 py-1 text-xs font-medium ">
-                  Withdraw
+                {/* formStatus */}
+                <button
+                  onClick={() => handleFormStatus("Exit")}
+                  className={`${formStatus.Exit && "bg-[#000]"} flex items-center rounded  justify-center px-3 py-1 text-xs font-medium `}
+                >
+                  Exit
                 </button>
-                <button className="flex items-center justify-center px-3 py-1 font-medium text-xs">
+                <button
+                  onClick={() => handleFormStatus("Compound")}
+                  className={`${formStatus.Compound && "bg-[#000]"} flex items-center rounded  justify-center px-3 py-1 text-xs font-medium `}
+                >
                   Compound
                 </button>
-                <button className="flex items-center justify-center px-3 py-1 font-medium text-xs">
+                <button
+                  onClick={() => handleFormStatus("Harvest")}
+                  className={`${formStatus.Harvest && "bg-[#000]"} flex items-center rounded  justify-center px-3 py-1 text-xs font-medium `}
+                >
                   Harvest
                 </button>
               </div>
@@ -425,55 +673,69 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
                 />
               </div>
             </div>
-            {/* <div className="py-2">
-              <div className="flex items-center justify-between pb-1">
-                <span className="text-xs font-medium">USDT Amount</span>
-                <span className="text-xs text-gray-400">Balance: 0</span>
+
+            <PriceRangeGraph
+              lowerPrice={priceRange?.priceLowerNum}
+              upperPrice={priceRange?.priceUpperNum}
+              currentPrice={priceRange?.currentPriceNum}
+              widthPercentage={priceRange?.widthPercentage}
+              apr={28.43}
+            />
+
+
+
+            {formStatus.Increase && <>
+              <div className="py-2">
+                <div className="flex items-center justify-between pb-1">
+                  <span className="text-xs font-medium">
+                    {nftPosition?.token0?.symbol} Amount
+                  </span>
+                  <span className="text-xs text-gray-400">Balance: 0</span>
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <input
+                    name="amount0Desired"
+                    onChange={handleChange}
+                    type="text"
+                    className="form-control bg-[#1a1919] text-xs h-[40px] w-full px-2 text-white font-medium"
+                  />
+                  <input
+                    type="text"
+                    className="form-control bg-[#1a1919] text-xs h-[40px] px-2 text-white font-medium"
+                    style={{ maxWidth: 60 }}
+                  />
+                </div>
               </div>
-              <div className="flex items-center justify-between gap-2">
-                <input
-                  name="amount0Desired"
-                  type="text"
-                  className="form-control bg-[#1a1919] text-xs h-[40px] w-full px-2 text-white font-medium"
-                />
-                <input
-                  type="text"
-                  className="form-control bg-[#1a1919] text-xs h-[40px] px-2 text-white font-medium"
-                  style={{ maxWidth: 60 }}
-                />
+
+              <div className="py-2">
+                <div className="flex items-center justify-between pb-1">
+                  <span className="text-xs font-medium">
+                    {nftPosition?.token1?.symbol} Amount
+                  </span>
+                  <span className="text-xs text-gray-400">Balance: 0</span>
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <input
+                    name="amount1Desired"
+                    onChange={handleChange}
+                    type="text"
+                    className="form-control bg-[#1a1919] text-xs h-[40px] w-full px-2 text-white font-medium"
+                  />
+                  <input
+                    type="text"
+                    className="form-control bg-[#1a1919] text-xs h-[40px] px-2 text-white font-medium"
+                    style={{ maxWidth: 60 }}
+                  />
+                </div>
               </div>
-              <div className="mt-1">
-                <input type="range" className="form-control w-full" />
-                <p className="text-right text-xs font-gray-400">0%</p>
-              </div>
-            </div>
-            <div className="py-2">
-              <div className="flex items-center justify-between pb-1">
-                <span className="text-xs font-medium">USDC Amount</span>
-                <span className="text-xs text-gray-400">Balance: 0</span>
-              </div>
-              <div className="flex items-center justify-between gap-2">
-                <input
-                  name="amount1Desired"
-                  type="text"
-                  className="form-control bg-[#1a1919] text-xs h-[40px] w-full px-2 text-white font-medium"
-                />
-                <input
-                  type="text"
-                  className="form-control bg-[#1a1919] text-xs h-[40px] px-2 text-white font-medium"
-                  style={{ maxWidth: 60 }}
-                />
-              </div>
-              <div className="mt-1">
-                <input type="range" className="form-control w-full" />
-                <p className="text-right text-xs font-gray-400">0%</p>
-              </div>
-            </div> */}
-            <div className="py-2">
+            </>}
+
+
+            {formStatus.Rebalance && <div className="py-2">
               <div className="grid gap-3 grid-cols-12">
                 <div className="col-span-6">
                   <label htmlFor="" className="form-label m-0 text-xs">
-                    Min price 0.99990 (0%)
+                    Min price {priceRange?.priceLowerNum} ({priceRange?.minPriceChange}%)
                   </label>
                   <div className="relative iconWithText">
                     <button className="border-0 px-0 absolute left-2 absolute icn text-base font-bold">
@@ -481,7 +743,9 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
                     </button>
                     <input
                       type="text"
-                      placeholder="3"
+                      name="minPriceChange"
+                      value={priceRange?.minPriceChange}
+                      onChange={handlePriceChange}
                       className="form-control rounded bg-[#1a1919] h-[45px] w-full px-14 text-center"
                     />
                     <button className="border-0 px-2 absolute right-2 absolute icn text-base font-bold">
@@ -491,7 +755,7 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
                 </div>
                 <div className="col-span-6">
                   <label htmlFor="" className="form-label m-0 text-xs">
-                    Max price 1.00000 (0.01%)
+                    Max price {priceRange?.priceUpperNum} ({priceRange?.maxPriceChange}%)
                   </label>
                   <div className="relative iconWithText">
                     <button className="border-0 px-0 absolute left-2 absolute icn text-base font-bold">
@@ -499,7 +763,9 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
                     </button>
                     <input
                       type="text"
-                      placeholder="3"
+                      name="maxPriceChange"
+                      onChange={handlePriceChange}
+                      value={priceRange?.maxPriceChange}
                       className="form-control rounded bg-[#1a1919] h-[45px] w-full px-14 text-center"
                     />
                     <button className="border-0 px-2 absolute right-2 absolute icn text-base font-bold">
@@ -508,7 +774,8 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
                   </div>
                 </div>
               </div>
-            </div>
+            </div>}
+
             <div className="py-2">
               <div className="py-2">
                 <div className="my-1 flex items-center justify-between gap-10 rounded p-2 bg-[#1a1919]">
@@ -526,10 +793,11 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
                   <ToggleSwitch />
                 </div>
               </div>
-              <ActButton label="Exit" onClick={() => exit()} load={load["Exit"]} />
-              <ActButton label="Rebalance" onClick={() => rebalance()} load={load["Rebalance"]} />
-              <ActButton label="Harvest" onClick={() => harvest()} load={load["Harvest"]} />
-
+              {formStatus.Increase && <ActButton label="Increase" onClick={() => increase()} load={load["Increase"]} />}
+              {formStatus.Rebalance && <ActButton label="Rebalance" onClick={() => rebalance()} load={load["Rebalance"]} />}
+              {formStatus.Harvest && <ActButton label="Harvest" onClick={() => harvest()} load={load["Harvest"]} />}
+              {formStatus.Exit && <ActButton label="Exit" onClick={() => exit()} load={load["Exit"]} />}
+              {formStatus.Compound && <ActButton label="Compound" onClick={() => compound()} load={load["Compound"]} />}
             </div>
           </div>
           <div className="py-2">

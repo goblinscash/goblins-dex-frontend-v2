@@ -61,6 +61,7 @@ export const getTokenQuery = `
         id
         name
         symbol
+        decimals
         totalSupply
      }
   }
