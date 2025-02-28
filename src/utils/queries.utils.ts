@@ -67,6 +67,22 @@ export const getTokenQuery = `
   }
 `;
 
+export const getPoolDayDataQuery = `
+  query ($id: String!) {
+    pools(where: {id: $id}) {
+    collectedFeesUSD
+    collectedFeesToken1
+    collectedFeesToken0
+    totalValueLockedUSD
+    poolDayData(orderBy: date, orderDirection: desc) {
+      date
+      feesUSD
+    }
+  }
+  }
+`;
+
+
 
 
 

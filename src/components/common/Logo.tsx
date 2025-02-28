@@ -4,9 +4,11 @@ import React from 'react';
 interface LogoProps {
   chainId: number;
   token: string;
+  margin: number;
+  height: number;
 }
 
-const Logo: React.FC<LogoProps> = ({ chainId, token }) => {
+const Logo: React.FC<LogoProps> = ({ chainId, token, margin= -10, height= 30 }) => {
   const logoUrl = useTokenLogoUrl(chainId, token);
 
   return (
@@ -16,7 +18,7 @@ const Logo: React.FC<LogoProps> = ({ chainId, token }) => {
           src={logoUrl}
           alt={`${token} logo`}
           title={token}
-          style={{ height: 30, marginLeft: -10 }}
+          style={{ height: height, marginLeft: margin }}
           className='max-w-full w-auto rounded-full'
         />
       ) : null}

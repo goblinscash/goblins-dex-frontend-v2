@@ -5,23 +5,24 @@ export const getUniswapQuote = async (
   chain: number, 
   tokenIn: string, 
   tokenOut: string, 
-  decimals: number
-): Promise<string | null> => {
+  decimals: number,
+  amounts: number
+) => {
   try {
-    const amount = 1 * 10 ** decimals;
+    const amount = amounts * 10 ** decimals;
 
     const params = {
       tokenInAddress: tokenIn,
       tokenInChainId: chain,
       tokenOutAddress: tokenOut,
       tokenOutChainId: chain,
-      amount: amount.toString(),
+      amount: Math.floor(amount).toString(),
       type: "exactIn",
     };
 
     const result = await axios.get<{ quoteDecimals: string }>(`${UNI_ROUTING_API_URL}/quote`, { params });
 
-    return parseFloat(result.data?.quoteDecimals).toFixed(2);
+    return result.data
   } catch (error) {
     console.log(error)
     return null;

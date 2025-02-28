@@ -9,7 +9,6 @@ const BarContainer = ({ bar }) => {
 
   const percentage = calculatePercentage(bar.length);
 
-  console.log(percentage, bar, "percentage");
   return (
     <>
       <BarContainerWrp>

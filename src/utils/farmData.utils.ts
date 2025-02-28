@@ -196,6 +196,11 @@ export const getRebalanceParms = (
     tickUpper: number,
     rewardTokens: [],
     sweepTokens: [],
+    rawSwapAmount: number,
+    rawReceivedAmount: number,
+    tokenSwapIn: string,
+    extraData: string,  
+    router: string,
     amount0Max = MAX_UINT_128,
     amount1Max = MAX_UINT_128
 ) => {
@@ -241,7 +246,13 @@ export const getRebalanceParms = (
             tokensIn: [],
             amountsIn: [],
             zap: {
-                swaps: [],
+                swaps: [{
+                    router: router, 
+                    amountIn: rawSwapAmount,
+                    minAmountOut: 0, //rawReceivedAmount, 
+                    tokenIn: tokenSwapIn,
+                    extraData: extraData
+                }],
                 addLiquidityParams: {
                     nft: nfpm,
                     tokenId: 0,

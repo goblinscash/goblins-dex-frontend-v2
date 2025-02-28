@@ -1,18 +1,20 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { ToggleSwitch } from "@/components/common";
-import Select, { components } from "react-select";
+import { components } from "react-select";
 import { useEthersSigner } from "@/hooks/useEthersSigner";
 import { useAccount, useChainId } from "wagmi";
-import { uniswapContracts, vfatContracts } from "@/utils/config.utils";
+import { subGraphUrls, uniswapContracts, vfatContracts } from "@/utils/config.utils";
 import { getCompoundParams, getHarvestParams, getIncreaseParams, getRebalanceParms, getWithdrawParams } from "@/utils/farmData.utils";
 import { ethers } from "ethers";
 import farmStrategyAbi from "../../../abi/farmStrategy.json";
 import BtnLoader from "@/components/common/BtnLoader";
 import Logo from "@/components/common/Logo";
-import { approve, calculatePriceRange, calculatePricesFromChanges, getPredictedSickle, getUniswapPool } from "@/utils/web3.utils";
+import { approve, calculatePriceRange, calculatePricesFromChanges, encodeData, getClaimableAmount, getPredictedSickle, getUniswapPool } from "@/utils/web3.utils";
 import { toUnits } from "@/utils/math.utils";
 import PriceRangeGraph from "@/components/priceRange"
+import { getPoolDayData } from "@/utils/requests.utils";
+import { fetchSwapRoute } from "@/utils/kyberswap.utils";
 
 
 // Custom styles
@@ -196,6 +198,8 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
   const chainId = useChainId();
   const { address } = useAccount();
   const [load, setLoad] = useState({});
+  const [apr, setApr] = useState({});
+  const [claimInfo, setClaimInfo] = useState(null);
   const [formStatus, setFormStatus] = useState({ Increase: true });
   const [priceRange, setPriceRange] = useState({
     currentPriceNum: "",
@@ -203,13 +207,47 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
     minPriceChange: "",
     priceLowerNum: "",
     priceUpperNum: "",
-    widthPercentage: ""
+    widthPercentage: "",
+    tickLower: "",
+    tickUpper: ""
   });
 
   const [data, setData] = useState({
     amount0Desired: "",
     amount1Desired: "",
   });
+
+  const fetchPoolData = async () => {
+    const token0 = nftPosition.position.token0;
+    const token1 = nftPosition.position.token1;
+    const fee = nftPosition.position.fee
+    const pool = await getUniswapPool(chainId, token0, token1, fee)
+    const poolFc = getPoolDayData(subGraphUrls[Number(chainId) || 8453]);
+    const _apr = await poolFc(pool.toLowerCase());
+    setApr(_apr)
+  };
+
+  const swapRootInfo = async () => {
+    const token0 = nftPosition.position.token0;
+    const token1 = nftPosition.position.token1;
+    const fee = nftPosition.position.fee
+    const pool = await getUniswapPool(chainId, token0, token1, fee)
+    const _info = await getClaimableAmount(
+      chainId,
+      nftPosition.nftId.toString(),
+      address,
+      pool,
+      parseInt(nftPosition.position.tickLower),
+      parseInt(nftPosition.position.tickUpper),
+      nftPosition.position.liquidity,
+      parseInt(nftPosition.token0.decimals),
+      parseInt(nftPosition.token1.decimals),
+      token0,
+      token1,
+      fee
+    )
+    setClaimInfo(_info)
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -231,18 +269,15 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
   useEffect(() => {
     if (chainId && nftPosition) {
       getPriceRange()
+      fetchPoolData()
     }
   }, [chainId, nftPosition])
 
-  // const handlePriceChange = (e) => {
-  //   const { name, value } = e.target;
-
-  //   console.log(name, value, "+++")
-  //   setPriceRange((prev) => ({
-  //     ...prev,
-  //     [name]: value, 
-  //   }));
-  // };
+  useEffect(() => {
+    if (chainId && nftPosition) {
+      swapRootInfo()
+    }
+  }, [chainId, nftPosition])
 
   const handlePriceChange = (e) => {
     const { name, value } = e.target;
@@ -271,6 +306,8 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
           priceLowerNum: calculatedPrices.priceLower,
           priceUpperNum: calculatedPrices.priceUpper,
           widthPercentage: calculatedPrices.widthPercentage,
+          tickLower: calculatedPrices.newTickLower,
+          tickUpper: calculatedPrices.newTickUpper
         };
       }
 
@@ -344,11 +381,44 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
     try {
       if (!address) return;
       handleLoad("Rebalance", true)
+      const router= "0xE29A829a1C86516b1d24b7966AF14Eb1BE2cD5d4"
       const uniswapContract = uniswapContracts[Number(chainId)];
       const token0 = nftPosition.token0.id;
       const token1 = nftPosition.token1.id;
       const sweepTokens = [token0, token1]
       const pool = await getUniswapPool(chainId, token0, token1, nftPosition.position.fee)
+      //@ts-expect-error ts warning
+      const predictedSickle = await getPredictedSickle(chainId, address);
+
+      const tx0Approve = await approve(
+        token0,
+        await signer,
+        predictedSickle,
+        parseInt(claimInfo.removeLp.rawSwapAmount),
+        parseInt(nftPosition.token0.decimals)
+      );
+      if (tx0Approve) {
+        await tx0Approve.wait();
+      }
+
+      const tx1Approve = await approve(
+        token1,
+        await signer,
+        predictedSickle,
+        5,
+        parseInt(nftPosition.token1.decimals)
+      );
+      if (tx1Approve) {
+        await tx1Approve.wait();
+      }
+
+      const route = await fetchSwapRoute(
+        claimInfo.removeLp.token0,
+        token1,
+        parseInt(claimInfo.removeLp.rawSwapAmount),
+        100,
+        predictedSickle
+      )
 
       const { params } = getRebalanceParms(
         pool,
@@ -358,10 +428,15 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
         nftPosition.position.liquidity,
         uniswapContract.nfpm,
         nftPosition.position.fee,
-        nftPosition.position.tickLower.toString() * 2,
-        nftPosition.position.tickUpper.toString() * 2,
+        -299600, //nftPosition.position.tickLower.toString() * 2,
+        -215200, //nftPosition.position.tickUpper.toString() * 2,
         sweepTokens,
-        sweepTokens
+        sweepTokens,
+        route.data.amountIn,
+        route.data.amountOut,
+        claimInfo.removeLp.token0,
+        claimInfo.removeLp.extraData,//route.data?.data,
+        router //route.data?.routerAddress
       )
 
       const nftFarmStrategy = new ethers.Contract(
@@ -373,7 +448,7 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
       const tx = await nftFarmStrategy.rebalance(
         params,
         sweepTokens,
-        { gasLimit: 5000000 }
+        { gasLimit: 8000000 }
       );
 
       await tx.wait();
@@ -566,7 +641,7 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
     }
   };
 
-  console.log(nftPosition, "nftPosition");
+  console.log(nftPosition, "nftPosition", claimInfo, "priceRange", priceRange);
 
   return (
     <>
@@ -643,7 +718,7 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
                 </button>
               </div>
             </div>
-            <div className="mt-2">
+            {/* <div className="mt-2">
               <div className="p-1 inline-flex items-center rounded bg-[#353231]">
                 <button className="flex items-center rounded bg-[#000] justify-center px-3 py-1 text-xs font-medium ">
                   Price in USD
@@ -652,18 +727,17 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
                   Price in ETH
                 </button>
               </div>
-            </div>
+            </div> */}
           </div>
           <div className="cstmBody">
-            <div className="py-2">
+            {/* <div className="py-2">
               <span className="text-xs font-medium">Token to send</span>
               <div className="relative iconWithText">
                 <span className="icn absolute">{exhangeIcn}</span>
                 <Select
-                  // menuIsOpen
                   components={{
                     DropdownIndicator: CustomDropdownIndicator,
-                    IndicatorSeparator: () => null, // Removes default separator
+                    IndicatorSeparator: () => null, 
                     Option: CustomOption,
                     SingleValue,
                   }}
@@ -672,16 +746,15 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
                   options={options}
                 />
               </div>
-            </div>
+            </div> */}
 
             <PriceRangeGraph
               lowerPrice={priceRange?.priceLowerNum}
               upperPrice={priceRange?.priceUpperNum}
               currentPrice={priceRange?.currentPriceNum}
               widthPercentage={priceRange?.widthPercentage}
-              apr={28.43}
+              apr={apr?.apr}
             />
-
 
 
             {formStatus.Increase && <>
@@ -800,6 +873,298 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
               {formStatus.Compound && <ActButton label="Compound" onClick={() => compound()} load={load["Compound"]} />}
             </div>
           </div>
+
+          {
+            !formStatus.Increase && <div className="py-2">
+              <div className="lg:p-4 p-3 bg-[#1a1919] rounded">
+                <h4 className="m-0 text-base font-semibold border-b border-[#353231] pb-1">
+                  {formStatus.Rebalance && "Rebalance"} {formStatus.Harvest && "Harvest"} {formStatus.Exit && "Exit"} {formStatus.Compound && "Compound"}
+                </h4>
+                <ul className="list-none pl-0 mb-0">
+                  <li className="flex items-center justify-between gap-2 flex-wrap py-2 ">
+                    <div className="flex flex-wrap items-center gap-1 min-h-[24px]">
+                      Claim{" "}
+                      <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-end gap-1 text-foreground">
+                          {" "}
+                          <button
+                            aria-describedby="b8HlRM1m5D"
+                            id="PuHO6WGvWP"
+                            data-state="closed"
+                            data-melt-tooltip-trigger=""
+                            data-tooltip-trigger=""
+                            type="button"
+                            className=""
+                          >
+                            <span slot="trigger">{claimInfo?.amount0}</span>
+                          </button>{" "}
+                        </div>{" "}
+                        <div className="flex items-center gap-2">
+                          <Logo chainId={chainId} token={nftPosition?.position?.token0} margin={0} height={20} /> {" "}{" "}
+                        </div>
+                      </div>
+                      for
+                      <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-end gap-1 text-foreground">
+                          {" "}
+                          <button
+                            aria-describedby="BUPumbPTOV"
+                            id="Rcr8xfnLI2"
+                            data-state="closed"
+                            data-melt-tooltip-trigger=""
+                            data-tooltip-trigger=""
+                            type="button"
+                            className=""
+                          >
+                            <span slot="trigger">{claimInfo?.amount1}</span>
+                          </button>{" "}
+                        </div>{" "}
+                        <div className="flex items-center gap-2">
+                          <Logo chainId={chainId} token={nftPosition?.position?.token1} margin={0} height={20} /> {" "}{" "}{" "}
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+
+                  {(formStatus.Rebalance || formStatus.Exit) && <li className="flex items-center justify-between gap-2 flex-wrap py-2">
+                    <div className="flex flex-wrap items-center gap-1 min-h-[24px]">
+                      Unstake{" "}
+                      <button
+                        aria-describedby="US-axoI8KX"
+                        id="Bgk_P07Eev"
+                        data-state="closed"
+                        data-melt-tooltip-trigger=""
+                        data-tooltip-trigger=""
+                        type="button"
+                      >
+                        <span className="focus:ring-ring inline-flex select-none items-center rounded-md border py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 text-primary-foreground hover:bg-primary/80 border-transparent shadow bg-green-500 gap-1 px-1">
+                          NFT{" "}
+                          #{nftPosition?.nftId}
+                        </span>
+                      </button>
+                    </div>
+                  </li>}
+
+                  {(formStatus.Rebalance || formStatus.Exit) && <li className="flex items-center justify-between gap-2 flex-wrap py-2">
+                    <div className="flex flex-wrap items-center gap-1 min-h-[24px]">
+                      Remove Liquidity{" "}
+                      <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-end gap-1 text-foreground">
+                          {" "}
+                          <button
+                            aria-describedby="b8HlRM1m5D"
+                            id="PuHO6WGvWP"
+                            data-state="closed"
+                            data-melt-tooltip-trigger=""
+                            data-tooltip-trigger=""
+                            type="button"
+                            className=""
+                          >
+                            <span slot="trigger">{claimInfo?.removeLp?.amount0 || 0}</span>
+                          </button>{" "}
+                        </div>{" "}
+                        <div className="flex items-center gap-2">
+                          <Logo chainId={chainId} token={nftPosition?.position?.token0} margin={0} height={20} /> {" "}{" "}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-end gap-1 text-foreground">
+                          {" "}
+                          <button
+                            aria-describedby="BUPumbPTOV"
+                            id="Rcr8xfnLI2"
+                            data-state="closed"
+                            data-melt-tooltip-trigger=""
+                            data-tooltip-trigger=""
+                            type="button"
+                            className=""
+                          >
+                            <span slot="trigger">{claimInfo?.removeLp?.amount1 || 0}</span>
+                          </button>{" "}
+                        </div>{" "}
+                        <div className="flex items-center gap-2">
+                          <Logo chainId={chainId} token={nftPosition?.position?.token1} margin={0} height={20} /> {" "}{" "}{" "}
+                        </div>
+                      </div>
+                    </div>
+                  </li>}
+
+                  {(formStatus.Rebalance) && <li className="border-b flex items-center justify-between gap-2 flex-wrap py-2 border-[#353231]">
+                    <div className="flex flex-wrap items-center gap-1 min-h-[24px]">
+                      Swap{" "}
+                      <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-end gap-1 text-foreground">
+                          {" "}
+                          <button
+                            aria-describedby="BUPumbPTOV"
+                            id="Rcr8xfnLI2"
+                            data-state="closed"
+                            data-melt-tooltip-trigger=""
+                            data-tooltip-trigger=""
+                            type="button"
+                            className=""
+                          >
+                            <span slot="trigger">{claimInfo?.removeLp?.swapAmount}</span>
+                          </button>{" "}
+                        </div>{" "}
+                        <div className="flex items-center gap-2">
+                          <Logo chainId={chainId} token={nftPosition?.position?.token0} margin={0} height={20} /> {" "}{" "}{" "}
+                        </div>
+                      </div>
+                      for
+                      <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-end gap-1 text-foreground">
+                          {" "}
+                          <button
+                            aria-describedby="BUPumbPTOV"
+                            id="Rcr8xfnLI2"
+                            data-state="closed"
+                            data-melt-tooltip-trigger=""
+                            data-tooltip-trigger=""
+                            type="button"
+                            className=""
+                          >
+                            <span slot="trigger">{claimInfo?.removeLp?.receivedAmount}</span>
+                          </button>{" "}
+                        </div>{" "}
+                        <div className="flex items-center gap-2">
+                          <Logo chainId={chainId} token={nftPosition?.position?.token1} margin={0} height={20} /> {" "}{" "}{" "}
+                        </div>
+                      </div>
+                      via
+                      <img
+                        src="https://imagedelivery.net/tLQGX6fO2lhA7EXY2jvPQQ/project-openocean/public"
+                        className="border bg-muted logo square h-[20px] rounded-full"
+                        alt="openocean logo"
+                        title="openocean"
+                      />{" "}
+                      <button
+                        aria-describedby="US-axoI8KX"
+                        id="Bgk_P07Eev"
+                        data-state="closed"
+                        data-melt-tooltip-trigger=""
+                        data-tooltip-trigger=""
+                        type="button"
+                      >
+                        <span className="focus:ring-ring inline-flex select-none items-center rounded-md border py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 text-primary-foreground hover:bg-primary/80 border-transparent shadow bg-green-500 gap-1 px-1">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width={16}
+                            height={16}
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="lucide-icon lucide lucide-activity"
+                          >
+                            <path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2" />
+                          </svg>{" "}
+                          0.11%
+                        </span>
+                      </button>
+                    </div>
+
+                  </li>}
+
+                  {(formStatus.Rebalance || formStatus.compound) && <li className="flex items-center justify-between gap-2 flex-wrap py-2">
+                    <div className="flex flex-wrap items-center gap-1 min-h-[24px]">
+                      Add Liquidity{" "}
+                      <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-end gap-1 text-foreground">
+                          {" "}
+                          <button
+                            aria-describedby="b8HlRM1m5D"
+                            id="PuHO6WGvWP"
+                            data-state="closed"
+                            data-melt-tooltip-trigger=""
+                            data-tooltip-trigger=""
+                            type="button"
+                            className=""
+                          >
+                            <span slot="trigger">{claimInfo?.removeLp?.finalAmount0 || 0}</span>
+                          </button>{" "}
+                        </div>{" "}
+                        <div className="flex items-center gap-2">
+                          <Logo chainId={chainId} token={nftPosition?.position?.token0} margin={0} height={20} /> {" "}{" "}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-end gap-1 text-foreground">
+                          {" "}
+                          <button
+                            aria-describedby="BUPumbPTOV"
+                            id="Rcr8xfnLI2"
+                            data-state="closed"
+                            data-melt-tooltip-trigger=""
+                            data-tooltip-trigger=""
+                            type="button"
+                            className=""
+                          >
+                            <span slot="trigger">{claimInfo?.removeLp?.finalAmount1 || 0}</span>
+                          </button>{" "}
+                        </div>{" "}
+                        <div className="flex items-center gap-2">
+                          <Logo chainId={chainId} token={nftPosition?.position?.token1} margin={0} height={20} /> {" "}{" "}{" "}
+                        </div>
+                      </div>
+                    </div>
+                  </li>}
+
+                  {(formStatus.Rebalance) && <li className="flex items-center justify-between gap-2 flex-wrap py-2 ">
+                    <div className="flex flex-wrap items-center gap-1 min-h-[24px]">
+                      Withdraw{" "}
+                      <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-end gap-1 text-foreground">
+                          {" "}
+                          <button
+                            aria-describedby="b8HlRM1m5D"
+                            id="PuHO6WGvWP"
+                            data-state="closed"
+                            data-melt-tooltip-trigger=""
+                            data-tooltip-trigger=""
+                            type="button"
+                            className=""
+                          >
+                            <span slot="trigger">{claimInfo?.amount0}</span>
+                          </button>{" "}
+                        </div>{" "}
+                        <div className="flex items-center gap-2">
+                          <Logo chainId={chainId} token={nftPosition?.position?.token0} margin={0} height={20} /> {" "}{" "}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-end gap-1 text-foreground">
+                          {" "}
+                          <button
+                            aria-describedby="BUPumbPTOV"
+                            id="Rcr8xfnLI2"
+                            data-state="closed"
+                            data-melt-tooltip-trigger=""
+                            data-tooltip-trigger=""
+                            type="button"
+                            className=""
+                          >
+                            <span slot="trigger">{claimInfo?.amount1}</span>
+                          </button>{" "}
+                        </div>{" "}
+                        <div className="flex items-center gap-2">
+                          <Logo chainId={chainId} token={nftPosition?.position?.token1} margin={0} height={20} /> {" "}{" "}{" "}
+                        </div>
+                      </div>
+                    </div>
+                  </li>}
+
+
+
+                </ul>
+              </div>
+            </div>
+          }
+
+
+
           <div className="py-2">
             <div className="lg:p-4 p-3 bg-[#1a1919] rounded">
               <h4 className="m-0 text-base font-semibold border-b border-[#353231] pb-1">
@@ -835,7 +1200,7 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
             </div>
           </div>
         </div>
-      </div>
+      </div >
     </>
   );
 };

@@ -1,5 +1,6 @@
-import { ethers } from "ethers";
+import { ethers, AbiCoder } from "ethers";
 import { RpcUrls, rpcUrls, subGraphUrls, uniswapContracts, vfatContracts } from "./config.utils";
+
 import nfpmAbi from "../abi/nfpm.json"
 import sickleFactoryAbi from "../abi/sickleFactory.json"
 import erc20Abi from "../abi/erc20.json"
@@ -9,9 +10,15 @@ import uniswapFactoryAbi from "../abi/uniswapFactory.json"
 import { toUnits } from "./math.utils";
 import { getTokenDetails } from "./requests.utils";
 
-import { TickMath } from '@uniswap/v3-sdk'
 import { Price, Token } from '@uniswap/sdk-core'
+import { TickMath } from '@uniswap/v3-sdk';
 import JSBI from "jsbi";
+// import JSBI from '@uniswap/sdk-core'
+
+
+
+import { MAX_UINT_128 } from "./constant.utils";
+import { getUniswapQuote } from "./quote.utils";
 
 function isValidChainId(chainId: number): chainId is keyof typeof uniswapContracts & keyof RpcUrls {
     return chainId in uniswapContracts && chainId in rpcUrls;
@@ -178,7 +185,7 @@ export const getSlot = async (chainId: number, pool: string) => {
         new ethers.JsonRpcProvider(rpcUrls[chainId])
     );
     const slot = await instance.slot0()
-    return parseFloat(slot.tick)
+    return slot
 }
 
 export const getUniswapPool = async (chainId: number, token0: string, token1: string, feeTier: number) => {
@@ -216,16 +223,17 @@ export const calculatePriceRange = async (
     token0Symbol: string,
     token1Symbol: string,
     token0Name: string,
-    token1Name: string) => {
+    token1Name: string
+) => {
     const tokenA = new Token(chainId, token0, token0Decimal, token0Symbol, token0Name)
     const tokenB = new Token(chainId, token1, token1Decimal, token1Symbol, token1Name)
 
     const position = await fetchPosition(chainId, nftId)
-    const tick = await getSlot(chainId, pool)
+    const slot = await getSlot(chainId, pool)
     // Compute price range
     const priceLower = tickToPrice(parseFloat(position.tickLower), tokenA, tokenB)
     const priceUpper = tickToPrice(parseFloat(position.tickUpper), tokenA, tokenB)
-    const currentPrice = tickToPrice(tick, tokenA, tokenB)
+    const currentPrice = tickToPrice(parseFloat(slot.tick), tokenA, tokenB)
 
     const priceLowerNum = parseFloat(priceLower.toSignificant(6));
     const priceUpperNum = parseFloat(priceUpper.toSignificant(6));
@@ -253,7 +261,6 @@ export const calculatePriceRange = async (
     }
 }
 
-
 export function tickToPrice(tick: number, baseToken: Token, quoteToken: Token): Price<Token, Token> {
     if (tick < TickMath.MIN_TICK || tick > TickMath.MAX_TICK) {
         throw new Error('Tick out of range');
@@ -268,7 +275,6 @@ export function tickToPrice(tick: number, baseToken: Token, quoteToken: Token): 
         JSBI.multiply(sqrtPriceX96, sqrtPriceX96).toString()  // Convert JSBI to string
     );
 }
-
 
 export const PriceRange = async (chainId: number) => {
     const tokenA = new Token(chainId, '0x4200000000000000000000000000000000000006', 18, 'WETH', 'Ethereum');
@@ -327,3 +333,152 @@ export const calculatePricesFromChanges = (
         newTickUpper
     };
 };
+
+export const getClaimableAmount = async (
+    chainId: number,
+    nftId: number,
+    wallet: string,
+    pool: string,
+    tickLower: number,
+    tickUpper: number,
+    liquidity: number,
+    token0Decimal: number,
+    token1Decimal: number,
+    tokenIn: string,
+    tokenOut: string,
+    fee: number
+) => {
+    console.log(tokenIn, "tokenIntokenIn")
+    if (!isValidChainId(chainId)) {
+        throw new Error(`Invalid chainId: ${chainId}`);
+    }
+
+    const instance = new ethers.Contract(
+        uniswapContracts[chainId].nfpm as string,
+        nfpmAbi,
+        new ethers.JsonRpcProvider(rpcUrls[chainId])
+    );
+
+    const sickle = await getSickle(chainId, wallet)
+    const results = await instance.collect.staticCall(
+        {
+            tokenId: nftId,
+            recipient: sickle,
+            amount0Max: MAX_UINT_128,
+            amount1Max: MAX_UINT_128,
+        }, { from: sickle }
+    )
+
+    const slot0 = await getSlot(chainId, pool)
+
+    const sqrtPriceX96 = slot0.sqrtPriceX96;
+
+    const tickCurrent = slot0.tick;
+
+    // Convert sqrtPriceX96 to float
+    const sqrtPrice = Number(sqrtPriceX96) / (2 ** 96);
+    const sqrtPriceLower = Math.sqrt(1.0001 ** tickLower);
+    const sqrtPriceUpper = Math.sqrt(1.0001 ** tickUpper);
+
+    let amount0 = 0, amount1 = 0;
+
+    if (tickCurrent < tickLower) {
+        amount0 = liquidity * (1 / sqrtPriceLower - 1 / sqrtPriceUpper);
+    } else if (tickCurrent > tickUpper) {
+        amount1 = liquidity * (sqrtPriceUpper - sqrtPriceLower);
+    } else {
+        amount0 = liquidity * (1 / sqrtPrice - 1 / sqrtPriceUpper);
+        amount1 = liquidity * (sqrtPrice - sqrtPriceLower);
+    }
+
+    amount0 = amount0 / 10 ** token0Decimal
+    amount1 = amount1 / 10 ** token1Decimal
+    const result = await getUniswapQuote(chainId, tokenIn, tokenOut, token0Decimal, 1)
+    //@ts-expect-error ignore the warning
+    const quote = parseFloat(result?.quoteDecimals)
+
+    const a0 = amount0 * quote;
+    const a1 = amount1;
+    let swapAmount = 0;
+    let token0 = "";
+    let token1 = "";
+    let receivedAmount = 0;
+    let decimals = 0;
+    let decimals1 = 0;
+
+    if (a0 > a1) {
+        // Swap Token0 into Token1
+        swapAmount = (a0 - a1) / 2;
+        token0 = tokenIn;
+        token1 = tokenOut;
+        decimals = token0Decimal;
+        decimals1 = token1Decimal;
+        // Convert from Token1 terms to Token0
+        swapAmount = swapAmount / quote;
+    } else if (a1 > a0) {
+        // Swap Token1 into Token0
+        swapAmount = (a1 - a0) / 2;
+        token0 = tokenIn;
+        token1 = tokenOut;
+        decimals = token1Decimal;
+        decimals1 = token0Decimal;
+    }
+
+    const result_ = await getUniswapQuote(chainId, token0, token1, decimals, swapAmount)
+    console.log(chainId, token0, token1, typeof (decimals), decimals, typeof (swapAmount), swapAmount)
+    //@ts-expect-error ignore the warning
+    receivedAmount = parseFloat(result_?.quoteDecimals)
+
+    let finalAmount0 = amount0;
+    let finalAmount1 = amount1;
+
+    if (token0 === tokenIn) {
+        finalAmount0 -= swapAmount;
+        finalAmount1 += receivedAmount;
+    } else {
+        finalAmount1 -= swapAmount;
+        finalAmount0 += receivedAmount;
+    }
+
+    return {
+        amount0: results.amount0.toString(),
+        amount1: results.amount1.toString(),
+        removeLp: {
+            amount0: amount0.toFixed(4),
+            amount1: amount1.toFixed(4),
+            sqrtPrice,
+            quote,
+            receivedAmount,
+            //@ts-expect-error ingore the warning
+            route: result_?.route || "",
+            swapAmount: swapAmount.toFixed(5),
+            token0,
+            token1,
+            rawSwapAmount: toUnits(swapAmount.toFixed(5), decimals),
+            rawReceivedAmount: toUnits(receivedAmount.toFixed(6), decimals1),
+            extraData: encodeData(token0, fee, token1),
+            finalAmount0: finalAmount0.toFixed(5),
+            finalAmount1: finalAmount1.toFixed(5),
+
+        }
+    }
+}
+
+
+export const encodeData = (tokenIn: string, fee: number, tokenOut: string) => {
+    const abiCoder = new AbiCoder();
+
+    const routerAddress = '0xE29A829a1C86516b1d24b7966AF14Eb1BE2cD5d4'; 
+    // Encode the path
+    const path = ethers.solidityPacked(
+        ['address', 'uint24', 'address'],
+        [tokenIn, fee, tokenOut]
+    );
+    
+    // Encode the UniswapV3SwapExtraData struct
+    const extraData = abiCoder.encode(
+        ['tuple(address, bytes)'], 
+        [[routerAddress, path]]
+    );
+    return extraData;
+}

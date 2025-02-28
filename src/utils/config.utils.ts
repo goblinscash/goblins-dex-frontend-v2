@@ -1,6 +1,7 @@
 export type UniswapContract = {
     factory?: string;
     nfpm?: string;
+    quoterv2: string
 };
 
 type UniswapContracts = Record<number, UniswapContract>;
@@ -9,12 +10,18 @@ export const uniswapContracts: UniswapContracts = {
     84532: {
         factory: "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24",
         nfpm: "0x27F971cb582BF9E50F397e4d29a5C7A34f11faA2",
+        quoterv2: ""
     },
     8453: {
         factory: "0xE82Fa4d4Ff25bad8B07c4d1ebd50e83180DD5eB8",
         nfpm: "0x3f11feF6633f9aF950426fEe3eaE6e68943E28A0",
+        quoterv2: "0xcbf872c837bAd15b0a0283A5C5936FBD1b66BEaf"
     },
-    56: {}
+    56: {
+        factory: "",
+        nfpm: "",
+        quoterv2: ""
+    }
 };
 
 
@@ -56,7 +63,7 @@ export const vfatContracts: ChainContracts = {
         NftZapLib: "0x758a3B49A4Fee14B18CC8dFA5CeB547Acc594f21"
     },
     8453: {
-        UniswapV3Connector: "0x5d53c9614C9054E622b1eA35231cEc2049A3a44e",        
+        UniswapV3Connector: "0x5d53c9614C9054E622b1eA35231cEc2049A3a44e",
         AerodromeRouterConnector: "",
         NftFarmStrategy: "0x63B7CB79f503cB9BB154DD3bfFC1095edb272df3",
         SickleImplementation: "0x72a72C80fe211bEaBce5516974fffa2c9aECBb3D",
