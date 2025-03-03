@@ -81,8 +81,3 @@ export const getPoolDayDataQuery = `
   }
   }
 `;
-
-
-
-
-

@@ -15,11 +15,13 @@ import { useAccount, useChainId } from "wagmi";
 import {
   approve,
   getPredictedSickle,
+  getSlot,
   getTickSpacing,
 } from "@/utils/web3.utils";
 import { toUnits } from "@/utils/math.utils";
 import BtnLoader from "@/components/common/BtnLoader";
 import BarContainer from "@/components/BarContainer/BarContainer";
+import { nearestUsableTick } from "@uniswap/v3-sdk";
 
 type OptionType = {
   value: string;
@@ -181,6 +183,7 @@ const FarmingCard = ({ farmPool }) => {
     try {
       setLoad(true);
       const tickSpacing = await getTickSpacing(chainId, farmPool.id);
+      const slot = await getSlot(chainId, farmPool.id)
       const uniswapContract = uniswapContracts[
         Number(chainId)
       ] as UniswapContract;
@@ -189,8 +192,8 @@ const FarmingCard = ({ farmPool }) => {
       const token1 = farmPool.token1.id;
       const pool = farmPool.id;
       const zero = zeroAddr;
-      const tickLower = -tickSpacing; //farmPool.tick;
-      const tickUpper = tickSpacing; //Math.abs(parseFloat(farmPool.tick));
+      const tickLower = nearestUsableTick(parseFloat(slot.tick), tickSpacing) - 500;
+      const tickUpper = tickLower + 500; 
       const fee = farmPool.feeTier;
 
       const { params, settings, sweepTokens, approved, referralCode } =
@@ -343,10 +346,7 @@ const FarmingCard = ({ farmPool }) => {
                 style={{ maxWidth: 60 }}
               />
             </div>
-            <div className="mt-1">
-              <input type="range" className="form-control w-full" />
-              <p className="text-right text-xs font-gray-400">0%</p>
-            </div>
+          
           </div>
           <div className="py-2">
             <div className="flex items-center justify-between pb-1">
@@ -368,10 +368,7 @@ const FarmingCard = ({ farmPool }) => {
                 style={{ maxWidth: 60 }}
               />
             </div>
-            <div className="mt-1">
-              <input type="range" className="form-control w-full" />
-              <p className="text-right text-xs font-gray-400">0%</p>
-            </div>
+           
           </div>
           <div className="py-2">
             <div className="grid gap-3 grid-cols-12">

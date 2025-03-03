@@ -11,7 +11,7 @@ import { toUnits } from "./math.utils";
 import { getTokenDetails } from "./requests.utils";
 
 import { Price, Token } from '@uniswap/sdk-core'
-import { TickMath } from '@uniswap/v3-sdk';
+import { TickMath, nearestUsableTick } from '@uniswap/v3-sdk';
 import JSBI from "jsbi";
 // import JSBI from '@uniswap/sdk-core'
 
@@ -310,6 +310,7 @@ export const calculatePricesFromChanges = (
     newMinPriceChange: number,
     newMaxPriceChange: number
 ) => {
+    console.log(nearestUsableTick(-198304,200), "nearestUsableTick")
     // Calculate priceLower and priceUpper from the given percentage changes
     const priceLower = currentPrice * (1 + newMinPriceChange / 100);
     const priceUpper = currentPrice * (1 + newMaxPriceChange / 100);

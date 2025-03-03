@@ -76,13 +76,3 @@ export const fetchSwapRoute = async (
     const route = await fetchKyberSwapRoute(tokenIn, tokenOut, amountIn, slippage, spender);
     return route;
 }
-
-
-// "deadline": 1800000000,
-// "slippageTolerance": 1,
-// "referral": "",
-// "source": "",
-// "enableGasEstimation": true,
-// "permit": "",
-// "ignoreCappedSlippage": true,
-
