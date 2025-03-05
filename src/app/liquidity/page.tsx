@@ -157,7 +157,7 @@ const Liquidity = () => {
 
   useEffect(() => {
     if (chainId) {
-      all(chainId, 2, 1).then(result => setPools(result))
+      all(chainId, 1, 1).then(result => setPools(result))
     }
   }, [chainId])
 

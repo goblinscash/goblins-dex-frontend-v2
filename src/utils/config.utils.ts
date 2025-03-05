@@ -55,7 +55,7 @@ export const aerodromeContracts: AerodromeContracts = {
     84532: {
         router: "0x88B07fb0D2d74e4D8e2378517AC2442169238c34",
         factory: "0x265188117FD24Ea591cE2113A2bE5fd80fC78E09",
-        lpSugar: "0x1e9279d36E314DB0f88b0f7451DA8E59E24c5492"
+        lpSugar: "0x62F64f00F933e36D5414ae80Ecd52c37E1509218"
     },
     8453: {
         router: "",
