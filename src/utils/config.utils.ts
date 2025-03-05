@@ -6,24 +6,13 @@ export type UniswapContract = {
 
 type UniswapContracts = Record<number, UniswapContract>;
 
-export const uniswapContracts: UniswapContracts = {
-    84532: {
-        factory: "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24",
-        nfpm: "0x27F971cb582BF9E50F397e4d29a5C7A34f11faA2",
-        quoterv2: ""
-    },
-    8453: {
-        factory: "0xE82Fa4d4Ff25bad8B07c4d1ebd50e83180DD5eB8",
-        nfpm: "0x3f11feF6633f9aF950426fEe3eaE6e68943E28A0",
-        quoterv2: "0xcbf872c837bAd15b0a0283A5C5936FBD1b66BEaf"
-    },
-    56: {
-        factory: "",
-        nfpm: "",
-        quoterv2: ""
-    }
-};
+export type AerodromeContract = {
+    router: string;
+    factory: string;
+    lpSugar: string;
+}
 
+type AerodromeContracts = Record<number, AerodromeContract>;
 
 type ChainContracts = {
     [key: number]: {
@@ -42,6 +31,42 @@ type ChainContracts = {
         SwapLib?: string;
         NftZapLib?: string;
     };
+};
+
+export const uniswapContracts: UniswapContracts = {
+    84532: {
+        factory: "0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24",
+        nfpm: "0x27F971cb582BF9E50F397e4d29a5C7A34f11faA2",
+        quoterv2: ""
+    },
+    8453: {
+        factory: "0xE82Fa4d4Ff25bad8B07c4d1ebd50e83180DD5eB8",
+        nfpm: "0x3f11feF6633f9aF950426fEe3eaE6e68943E28A0",
+        quoterv2: "0xcbf872c837bAd15b0a0283A5C5936FBD1b66BEaf"
+    },
+    56: {
+        factory: "",
+        nfpm: "",
+        quoterv2: ""
+    }
+};
+
+export const aerodromeContracts: AerodromeContracts = {
+    84532: {
+        router: "0x88B07fb0D2d74e4D8e2378517AC2442169238c34",
+        factory: "0x265188117FD24Ea591cE2113A2bE5fd80fC78E09",
+        lpSugar: "0x1e9279d36E314DB0f88b0f7451DA8E59E24c5492"
+    },
+    8453: {
+        router: "",
+        factory: "",
+        lpSugar: "0x8D1eaAFe47D6b2d560d69Ff44A7e0D48980ab69b"
+    },
+    56: {
+        router: "",
+        factory: "",
+        lpSugar: ""
+    }
 };
 
 
@@ -97,6 +122,7 @@ export const rpcUrls: RpcUrls = {
 export type SubgraphUrls = {
     [key: number]: string;
 };
+
 export const subGraphUrls: SubgraphUrls = {
     8453: "https://graph-base.goblins.cash/subgraphs/name/goblins/base-subgraph-v3",
     10000: "https://graph.dfd.cash/subgraphs/name/goblins/subgraph-v3",

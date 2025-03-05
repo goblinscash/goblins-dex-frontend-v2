@@ -7,7 +7,7 @@ import {
     SettingsConfig,
     WithdrawParams
 } from "./farmDataInterface.utils";
-import { MAX_UINT_128 } from "./constant.utils";
+import { MAX_UINT_128 } from "../constant.utils";
 
 export const getDepositParams = (
     nfpm: string,

@@ -5,7 +5,7 @@ import { components } from "react-select";
 import { useEthersSigner } from "@/hooks/useEthersSigner";
 import { useAccount, useChainId } from "wagmi";
 import { subGraphUrls, uniswapContracts, vfatContracts } from "@/utils/config.utils";
-import { getCompoundParams, getHarvestParams, getIncreaseParams, getRebalanceParms, getWithdrawParams } from "@/utils/farmData.utils";
+import { getCompoundParams, getHarvestParams, getIncreaseParams, getRebalanceParms, getWithdrawParams } from "@/utils/vfat/farmData.utils";
 import { ethers } from "ethers";
 import farmStrategyAbi from "../../../abi/farmStrategy.json";
 import BtnLoader from "@/components/common/BtnLoader";
@@ -14,7 +14,8 @@ import { approve, calculatePriceRange, calculatePricesFromChanges, encodeData, g
 import { toUnits } from "@/utils/math.utils";
 import PriceRangeGraph from "@/components/priceRange"
 import { getPoolDayData } from "@/utils/requests.utils";
-import { fetchSwapRoute } from "@/utils/kyberswap.utils";
+import { fetchSwapRoute } from "@/utils/vfat/kyberswap.utils";
+import ActButton from "@/components/common/ActButton";
 
 
 // Custom styles
@@ -179,19 +180,6 @@ const cross = (
     />
   </svg>
 );
-
-const ActButton = ({ label, onClick, load }) => {
-  return (
-    <div className="pt-2">
-      <button
-        onClick={onClick}
-        className="flex w-full rounded text-black items-center justify-center bg-white px-2 py-2 font-medium"
-      >
-        {load ? <BtnLoader /> : label}
-      </button>
-    </div>
-  );
-};
 
 const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
   const signer = useEthersSigner();

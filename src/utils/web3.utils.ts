@@ -13,9 +13,6 @@ import { getTokenDetails } from "./requests.utils";
 import { Price, Token } from '@uniswap/sdk-core'
 import { TickMath, nearestUsableTick } from '@uniswap/v3-sdk';
 import JSBI from "jsbi";
-// import JSBI from '@uniswap/sdk-core'
-
-
 
 import { MAX_UINT_128 } from "./constant.utils";
 import { getUniswapQuote } from "./quote.utils";
@@ -465,7 +462,6 @@ export const getClaimableAmount = async (
     }
 }
 
-
 export const encodeData = (tokenIn: string, fee: number, tokenOut: string) => {
     const abiCoder = new AbiCoder();
 
@@ -483,3 +479,6 @@ export const encodeData = (tokenIn: string, fee: number, tokenOut: string) => {
     );
     return extraData;
 }
+
+
+

@@ -8,7 +8,7 @@ import {
   vfatContracts,
   zeroAddr,
 } from "@/utils/config.utils";
-import { getDepositParams } from "@/utils/farmData.utils";
+import { getDepositParams } from "@/utils/vfat/farmData.utils";
 import { ethers } from "ethers";
 import farmStrategyAbi from "../../abi/farmStrategy.json";
 import { useAccount, useChainId } from "wagmi";
