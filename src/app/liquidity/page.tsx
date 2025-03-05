@@ -4,8 +4,7 @@ import styled from "styled-components";
 import TableLayout from "@/components/tableLayout";
 import { useAccount, useChainId } from "wagmi";
 import { all } from "@/utils/sugar.utils";
-
-
+import Link from "next/link";
 
 const Nav = styled.div`
   button {
@@ -118,6 +117,22 @@ const column: Column[] = [
     head: "Pool Balance",
     accessor: "PoolBalance",
   },
+  {
+    head: "",
+    accessor: "action",
+    component: (item: Data, key: number) => {
+      return (
+        <div className="flex items-center gap-3">
+          <Link
+            href={"/pools"}
+            className="flex items-center justify-center btn commonBtn rounded-lg h-[40px] px-4 font-medium "
+          >
+            Deposit
+          </Link>
+        </div>
+      );
+    },
+  },
 ];
 
 const data: Data[] = [
@@ -148,7 +163,6 @@ const Liquidity = () => {
   const [activeTab, setActiveTab] = useState<number>(1);
   const [pools, setPools] = useState([]);
 
-
   const showTab = (tab: number) => {
     setActiveTab(tab);
   };
@@ -157,11 +171,11 @@ const Liquidity = () => {
 
   useEffect(() => {
     if (chainId) {
-      all(chainId, 2, 1).then(result => setPools(result))
+      all(chainId, 2, 1).then((result) => setPools(result));
     }
-  }, [chainId])
+  }, [chainId]);
 
-  console.log(pools, "pool++")
+  console.log(pools, "pool++");
   return (
     <section className="Liquidity py-5 relative">
       <div className="container ">
@@ -170,13 +184,21 @@ const Liquidity = () => {
             <div className="flex items-center justify-between flex-wrap">
               <h4 className="m-0 font-bold text-2xl">Liquidity Pools</h4>
               <form action="">
-                <div className="relative iconWithText">
-                  <span className="absolute icn left-2">{search}</span>
-                  <input
-                    placeholder="Search..."
-                    type="search"
-                    className="form-control text-xs h-[40px] border border-gray-600 pl-8 rounded bg-[var(--backgroundColor2)] focus:bg-[var(--backgroundColor2)]"
-                  />
+                <div className="flex items-center gap-3">
+                  <div className="relative iconWithText">
+                    <span className="absolute icn left-2">{search}</span>
+                    <input
+                      placeholder="Search..."
+                      type="search"
+                      className="form-control text-xs h-[40px] border border-gray-600 pl-8 rounded bg-[var(--backgroundColor2)] focus:bg-[var(--backgroundColor2)]"
+                    />
+                  </div>
+                  <Link
+                    href={"/pools"}
+                    className="flex items-center justify-center btn text-xs commonBtn rounded-lg h-[40px] px-4 font-medium "
+                  >
+                    Deposit Liquidity
+                  </Link>
                 </div>
               </form>
             </div>
@@ -193,8 +215,9 @@ const Liquidity = () => {
                     <button
                       key={key}
                       onClick={() => showTab(key)}
-                      className={`${activeTab === key && "active"
-                        } tab-button font-medium relative py-2 flex-shrink-0  text-xs text-gray-400`}
+                      className={`${
+                        activeTab === key && "active"
+                      } tab-button font-medium relative py-2 flex-shrink-0  text-xs text-gray-400`}
                     >
                       {item.title}
                     </button>
@@ -211,6 +234,4 @@ const Liquidity = () => {
   );
 };
 
-
 export default Liquidity;
-
