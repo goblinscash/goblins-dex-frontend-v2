@@ -155,6 +155,7 @@ export const approve = async (token: string, signer, spendor: string, amount: nu
         const tx1 = await tokenContract.approve(spendor, _amount);
         return tx1;
     } else {
+    console.log(allowance, "allowance", _amount, amount)
         return null
     }
 }
@@ -480,5 +481,14 @@ export const encodeData = (tokenIn: string, fee: number, tokenOut: string) => {
     return extraData;
 }
 
+export const fetchTokenDetails = async (chainId: number,token: string) => {
+    const tokenContract = new ethers.Contract(token, erc20Abi, new ethers.JsonRpcProvider(rpcUrls[chainId]));
+    const symbol = await tokenContract.symbol();
+    const decimals = await tokenContract.decimals();
 
-
+    return {
+        address: token,
+        symbol,
+        decimals: Number(decimals)
+    }    
+}

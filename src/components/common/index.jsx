@@ -40,7 +40,7 @@ export const AccordionItem = ({
                 cy="29.5"
                 r="25.5"
                 fill="#545454"
-                fill-opacity="0.1"
+                fillOpacity="0.1"
                 shape-rendering="crispEdges"
               />
               <circle

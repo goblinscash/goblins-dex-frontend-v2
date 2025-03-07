@@ -441,7 +441,7 @@ const backIcn = (
       cy="16.5"
       r="16"
       fill="#545454"
-      fill-opacity="0.1"
+      fillOpacity="0.1"
       stroke="#404040"
     />
     <path

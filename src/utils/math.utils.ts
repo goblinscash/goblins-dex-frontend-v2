@@ -15,4 +15,4 @@ export const toUnits = (value: string | number, decimals: number): bigint => {
     return ethers.parseUnits(value.toString(), decimals);
 }
 
-export const formatValue = (value: any) => (typeof value === "bigint" ? value.toString() : value);
+export const formatValue = (value: bigint | string | number | boolean | null | undefined) => (typeof value === "bigint" ? value.toString() : value);

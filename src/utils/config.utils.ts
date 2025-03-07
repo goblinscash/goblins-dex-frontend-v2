@@ -53,14 +53,14 @@ export const uniswapContracts: UniswapContracts = {
 
 export const aerodromeContracts: AerodromeContracts = {
     84532: {
-        router: "0x88B07fb0D2d74e4D8e2378517AC2442169238c34",
-        factory: "0x265188117FD24Ea591cE2113A2bE5fd80fC78E09",
-        lpSugar: "0x62F64f00F933e36D5414ae80Ecd52c37E1509218"
+        router: "0x1B683c08f448eA190Dd9B53EA756aB7B00085DE1",
+        factory: "0x5F47613A76C1c01BcE11b3D398de16E38c3d4DCb",
+        lpSugar: "0x7C5B8fF7d833020085538F5c4dFdE3B1E03f52A3"
     },
     8453: {
         router: "",
         factory: "",
-        lpSugar: "0x8D1eaAFe47D6b2d560d69Ff44A7e0D48980ab69b"
+        lpSugar: "0x2Efe0713EfA0221070A2202b14bD1a6E3E12CEbE", //"0x5C6E33241DC70dF8cbEe2916Ac1bDa50d1eaa0A1", //"0x799351F408a51A0Ca5fdB4CD9E93157D8703b70A" //"0x8D1eaAFe47D6b2d560d69Ff44A7e0D48980ab69b"
     },
     56: {
         router: "",

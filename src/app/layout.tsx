@@ -31,7 +31,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  //@ts-expect-error type warning
+  //@ts-expect-error ignore the warning
   const initialState = cookieToInitialState(config, headers().get('cookie'))
   return (
     <html lang="en">
