@@ -26,13 +26,14 @@ export const metadata: Metadata = {
 };
 
 
-export default function RootLayout({
+export default async function RootLayout({
   children
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  //@ts-expect-error ignore the warning
-  const initialState = cookieToInitialState(config, headers().get('cookie'))
+  const cookieHeader = await headers();
+  const initialState = cookieToInitialState(config, cookieHeader.get("cookie"));
+
   return (
     <html lang="en">
       <body>

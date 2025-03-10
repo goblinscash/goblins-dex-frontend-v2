@@ -1,8 +1,73 @@
 "use client";
-import React from "react";
+import { useEthersSigner } from "@/hooks/useEthersSigner";
+import { approve, encodeInput } from "@/utils/web3.utils";
+import { ethers } from "ethers";
+import React, { useState } from "react";
 import styled, { keyframes } from "styled-components";
+import { useAccount, useChainId } from "wagmi";
+const { tokens, tokenLogos } = require("@myswap/token-list")
+import universalRouterAbi from "../../abi/aerodrome/universalRouter.json";
+import { aerodromeContracts } from "@/utils/config.utils";
 
 const Swap = () => {
+  const [load, setLoad] = useState<{ [key: string]: boolean }>({});
+  const [status, setStatus] = useState<{ [key: string]: boolean }>({ "selectToken": false });
+
+  const signer = useEthersSigner();
+  const chainId = useChainId();
+  const { address } = useAccount();
+
+  const handleLoad = (action: string, status: boolean) => {
+    setLoad((prev) => ({ ...prev, [action]: status }));
+  };
+  const handProgress = (action: string, status: boolean) => {
+    setStatus((prev) => ({ ...prev, [action]: status }));
+  };
+
+  // console.log(tokens, "tokens")
+  const swap = async () => {
+    try {
+      if (!address) return
+      console.log("execute")
+      const commands = "0x00" //ethers.hexlify([]);
+
+      const swapRoutes = [
+        { from: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", fee: 1, to: "0xfde4c96c8593536e31f229ea8f37b2ada2699bb2" }
+      ];
+
+      const inputs = encodeInput(swapRoutes, address, 1, 0, 6)
+      console.log(inputs, "inputs")
+      const deadline = Math.floor(Date.now() / 1000) + 300; // 5 minutes from now
+
+
+      const tx0Approve = await approve(
+        "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        await signer,
+        aerodromeContracts[chainId].universalRouter,
+        1,
+        6
+      );
+      if (tx0Approve) {
+        await tx0Approve.wait();
+      }
+
+      const universalRouter = new ethers.Contract(
+        aerodromeContracts[chainId].universalRouter,
+        universalRouterAbi,
+        await signer
+      );
+
+      const tx = await universalRouter["execute(bytes,bytes[])"](commands, inputs, {
+        value: 0,
+        gasLimit: 500000
+      });
+      await tx.wait();
+
+    } catch (error) {
+      console.log(error, "error+")
+    }
+  }
+
   return (
     <>
       <section className="py-5 relative">
@@ -261,7 +326,10 @@ const Swap = () => {
                         </li>
                       </SwapList>
                       <div className="btnWrpper mt-3">
-                        <button className="btn flex items-center font-medium justify-center w-full rounded btn commonBtn">
+                        <button
+                          onClick={swap}
+                          className="btn flex items-center font-medium justify-center w-full rounded btn commonBtn"
+                        >
                           Swap ETH for AERO
                         </button>
                       </div>
@@ -276,6 +344,9 @@ const Swap = () => {
     </>
   );
 };
+
+export default Swap;
+
 
 const fadeInOut = keyframes`
   0% {
@@ -309,7 +380,6 @@ const SwapList = styled.ul`
   }
 `;
 
-export default Swap;
 
 const calculate = (
   <svg

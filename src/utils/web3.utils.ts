@@ -7,7 +7,7 @@ import erc20Abi from "../abi/erc20.json"
 import uniPoolAbi from "../abi/uniPool.json"
 import uniswapFactoryAbi from "../abi/uniswapFactory.json"
 
-import { toUnits } from "./math.utils";
+import { fromUnits, toUnits } from "./math.utils";
 import { getTokenDetails } from "./requests.utils";
 
 import { Price, Token } from '@uniswap/sdk-core'
@@ -16,6 +16,12 @@ import JSBI from "jsbi";
 
 import { MAX_UINT_128 } from "./constant.utils";
 import { getUniswapQuote } from "./quote.utils";
+
+type SwapRoute = {
+    from: string;
+    fee: number;
+    to: string;
+};
 
 function isValidChainId(chainId: number): chainId is keyof typeof uniswapContracts & keyof RpcUrls {
     return chainId in uniswapContracts && chainId in rpcUrls;
@@ -155,7 +161,7 @@ export const approve = async (token: string, signer, spendor: string, amount: nu
         const tx1 = await tokenContract.approve(spendor, _amount);
         return tx1;
     } else {
-    console.log(allowance, "allowance", _amount, amount)
+        console.log(allowance, "allowance", _amount, amount)
         return null
     }
 }
@@ -308,7 +314,7 @@ export const calculatePricesFromChanges = (
     newMinPriceChange: number,
     newMaxPriceChange: number
 ) => {
-    console.log(nearestUsableTick(-198304,200), "nearestUsableTick")
+    console.log(nearestUsableTick(-198304, 200), "nearestUsableTick")
     // Calculate priceLower and priceUpper from the given percentage changes
     const priceLower = currentPrice * (1 + newMinPriceChange / 100);
     const priceUpper = currentPrice * (1 + newMaxPriceChange / 100);
@@ -466,22 +472,40 @@ export const getClaimableAmount = async (
 export const encodeData = (tokenIn: string, fee: number, tokenOut: string) => {
     const abiCoder = new AbiCoder();
 
-    const routerAddress = '0xE29A829a1C86516b1d24b7966AF14Eb1BE2cD5d4'; 
+    const routerAddress = '0xE29A829a1C86516b1d24b7966AF14Eb1BE2cD5d4';
     // Encode the path
     const path = ethers.solidityPacked(
         ['address', 'uint24', 'address'],
         [tokenIn, fee, tokenOut]
     );
-    
+
     // Encode the UniswapV3SwapExtraData struct
     const extraData = abiCoder.encode(
-        ['tuple(address, bytes)'], 
+        ['tuple(address, bytes)'],
         [[routerAddress, path]]
     );
     return extraData;
 }
 
-export const fetchTokenDetails = async (chainId: number,token: string) => {
+
+export const encodeInput = (swapRoutes: SwapRoute[], signer: string, amountIn: number, amountOut: number, decimals: number) => {
+    const abiCoder = new AbiCoder();
+
+    const path = ethers.solidityPacked(
+        Array(swapRoutes.length).fill(['address', 'uint24']).flat().concat('address'), 
+        swapRoutes.flatMap(route => [route.from, route.fee]).concat(swapRoutes[swapRoutes.length - 1].to)
+    );
+
+    const inputData = abiCoder.encode(
+        ["address", "uint256", "uint256", "bytes", "address"],
+        [signer, toUnits(amountIn, decimals), amountOut, path, signer]
+    );
+
+    return [inputData];
+};
+
+
+export const fetchTokenDetails = async (chainId: number, token: string) => {
     const tokenContract = new ethers.Contract(token, erc20Abi, new ethers.JsonRpcProvider(rpcUrls[chainId]));
     const symbol = await tokenContract.symbol();
     const decimals = await tokenContract.decimals();
@@ -490,5 +514,5 @@ export const fetchTokenDetails = async (chainId: number,token: string) => {
         address: token,
         symbol,
         decimals: Number(decimals)
-    }    
+    }
 }
