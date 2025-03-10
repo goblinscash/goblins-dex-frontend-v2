@@ -7,7 +7,7 @@ import erc20Abi from "../abi/erc20.json"
 import uniPoolAbi from "../abi/uniPool.json"
 import uniswapFactoryAbi from "../abi/uniswapFactory.json"
 
-import { fromUnits, toUnits } from "./math.utils";
+import { toUnits } from "./math.utils";
 import { getTokenDetails } from "./requests.utils";
 
 import { Price, Token } from '@uniswap/sdk-core'

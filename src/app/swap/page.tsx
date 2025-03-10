@@ -2,27 +2,27 @@
 import { useEthersSigner } from "@/hooks/useEthersSigner";
 import { approve, encodeInput } from "@/utils/web3.utils";
 import { ethers } from "ethers";
-import React, { useState } from "react";
+// import React, { useState } from "react";
 import styled, { keyframes } from "styled-components";
 import { useAccount, useChainId } from "wagmi";
-const { tokens, tokenLogos } = require("@myswap/token-list")
+// const { tokens, tokenLogos } = require("@myswap/token-list")
 import universalRouterAbi from "../../abi/aerodrome/universalRouter.json";
 import { aerodromeContracts } from "@/utils/config.utils";
 
 const Swap = () => {
-  const [load, setLoad] = useState<{ [key: string]: boolean }>({});
-  const [status, setStatus] = useState<{ [key: string]: boolean }>({ "selectToken": false });
+  // const [load, setLoad] = useState<{ [key: string]: boolean }>({});
+  // const [status, setStatus] = useState<{ [key: string]: boolean }>({ "selectToken": false });
 
   const signer = useEthersSigner();
   const chainId = useChainId();
   const { address } = useAccount();
 
-  const handleLoad = (action: string, status: boolean) => {
-    setLoad((prev) => ({ ...prev, [action]: status }));
-  };
-  const handProgress = (action: string, status: boolean) => {
-    setStatus((prev) => ({ ...prev, [action]: status }));
-  };
+  // const handleLoad = (action: string, status: boolean) => {
+  //   setLoad((prev) => ({ ...prev, [action]: status }));
+  // };
+  // const handProgress = (action: string, status: boolean) => {
+  //   setStatus((prev) => ({ ...prev, [action]: status }));
+  // };
 
   // console.log(tokens, "tokens")
   const swap = async () => {
@@ -35,13 +35,14 @@ const Swap = () => {
         { from: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", fee: 1, to: "0xfde4c96c8593536e31f229ea8f37b2ada2699bb2" }
       ];
 
-      const inputs = encodeInput(swapRoutes, address, 1, 0, 6)
-      console.log(inputs, "inputs")
-      const deadline = Math.floor(Date.now() / 1000) + 300; // 5 minutes from now
+      // const swapRoutes = [
+      //   { from: "0xf1220b3Bb3839e6f4e5dF59321fbaD2981c1CE89", fee: 1, to: "0x8B56D59cd9b1Ce5dd1Fb2A4e3cA7FBE3043Be42F" }
+      // ];
 
+      const inputs = encodeInput(swapRoutes, address, 1, 0, 6)
 
       const tx0Approve = await approve(
-        "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+        swapRoutes[0].from,
         await signer,
         aerodromeContracts[chainId].universalRouter,
         1,
