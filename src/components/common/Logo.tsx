@@ -3,13 +3,13 @@ import React from 'react';
 
 interface LogoProps {
   chainId: number;
-  token: string;
+  token?: string;
   margin: number;
   height: number;
 }
 
 const Logo: React.FC<LogoProps> = ({ chainId, token, margin= -10, height= 30 }) => {
-  const logoUrl = useTokenLogoUrl(chainId, token);
+  const logoUrl = useTokenLogoUrl(chainId, token ?? "");
 
   return (
     <>

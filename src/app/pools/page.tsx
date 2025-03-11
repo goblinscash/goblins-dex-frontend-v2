@@ -6,6 +6,7 @@ import TableLayout from "@/components/tableLayout";
 import Logo from "@/components/common/Logo";
 import { useChainId } from "wagmi";
 import { useRouter, useSearchParams } from "next/navigation";
+import { tokens } from "@myswap/token-list";
 
 type Column = {
   head: string;
@@ -36,6 +37,7 @@ const Pools = () => {
   const [token1, setToken1] = useState<Token | null>(null);
   const [data, setData] = useState<Data[]>([]);
   const [tokenBeingSelected, setTokenBeingSelected] = useState<"token0" | "token1" | null>(null);
+  const [filteredTokenList, setFilteredTokenList] = useState([]);
 
   const handleTokenSelect = (token: Token) => {
     const newQueryParams = new URLSearchParams(searchParams.toString());
@@ -61,6 +63,18 @@ const Pools = () => {
       }])
     }
   }, [token0, token1])
+
+  useEffect(() => {
+    if (chainId) {
+      setInitialToken()
+    }
+  }, [chainId])
+
+  const setInitialToken = () => {
+    const tokens_ = tokens.filter((item) => item.chainId == chainId)
+    //@ts-expect-error ignore warning
+    setFilteredTokenList(tokens_)    
+  }
 
   const handleDepositClick = () => {
     if (!token0 || !token1) {
@@ -131,6 +145,7 @@ const Pools = () => {
             onSelectToken={handleTokenSelect}
             onClose={() => setTokenBeingSelected(null)}
             chainId={chainId}
+            tokens={filteredTokenList}
           />,
           document.body
         )}

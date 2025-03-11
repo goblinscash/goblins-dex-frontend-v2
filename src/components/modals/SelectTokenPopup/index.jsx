@@ -5,11 +5,12 @@ import debounce from "lodash.debounce"; // Install via npm if not available
 import { shortenPubkey } from "@/utils/math.utils";
 import Logo from "@/components/common/Logo";
 
-const SelectTokenPopup = ({ tokenBeingSelected, onSelectToken, onClose, chainId }) => {
-  const [tokens, setTokens] = useState([]);
+const SelectTokenPopup = ({ tokenBeingSelected, onSelectToken, onClose, chainId, tokens }) => {
+  const [tokenList, setTokenList] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
 
   // Function to fetch token details with debouncing
   const fetchToken = useCallback(
@@ -22,20 +23,24 @@ const SelectTokenPopup = ({ tokenBeingSelected, onSelectToken, onClose, chainId 
       try {
         const token = await fetchTokenDetails(chainId, query);       
         if (token) {
-          setTokens([token]); // Store token in state
+          setTokenList([token]); // Store token in state
         } else {
-          setTokens([]);
+          setTokenList([]);
           setError("Token not found");
         }
       } catch (err) {
-        setTokens([]);
+        setTokenList([]);
         setError("Failed to fetch token details");
       } finally {
         setLoading(false);
       }
-    }, 500), // 500ms debounce time
+    }, 500), 
     []
   );
+
+  useEffect(() => {
+    setTokenList(tokens)
+  }, [chainId])
 
   // Handle input change
   const handleChange = (e) => {
@@ -76,8 +81,8 @@ const SelectTokenPopup = ({ tokenBeingSelected, onSelectToken, onClose, chainId 
             <p className="text-red-500 text-center">{error}</p>
           ) : (
             <ul className="list-none pl-0 mb-0 overflow-auto" style={{ maxHeight: "calc(100vh - 210px)", scrollbarWidth: "none" }}>
-              {tokens.length > 0 ? (
-                tokens.map((token, index) => (
+              {tokenList?.length > 0 ? (
+                tokenList.map((token, index) => (
                   <li
                     key={index}
                     className="p-3 rounded-lg flex items-center transition duration-[400ms] ease-in-out justify-between hover:bg-[#000]"

@@ -5,9 +5,15 @@ import { ethers } from "ethers";
 // import React, { useState } from "react";
 import styled, { keyframes } from "styled-components";
 import { useAccount, useChainId } from "wagmi";
-// const { tokens, tokenLogos } = require("@myswap/token-list")
+import { tokens } from "@myswap/token-list";
 import universalRouterAbi from "../../abi/aerodrome/universalRouter.json";
 import { aerodromeContracts } from "@/utils/config.utils";
+import { useEffect, useState } from "react";
+import { Token } from "../pools/page";
+import { useSearchParams } from "next/navigation";
+import { createPortal } from "react-dom";
+import SelectTokenPopup from "@/components/modals/SelectTokenPopup";
+import Logo from "@/components/common/Logo";
 
 const Swap = () => {
   // const [load, setLoad] = useState<{ [key: string]: boolean }>({});
@@ -17,6 +23,47 @@ const Swap = () => {
   const chainId = useChainId();
   const { address } = useAccount();
 
+  const searchParams = useSearchParams();
+  const [tokenBeingSelected, setTokenBeingSelected] = useState<"token0" | "token1" | null>(null);
+  const [token0, setToken0] = useState<Token | null>(null);
+  const [token1, setToken1] = useState<Token | null>(null);
+  const [filteredTokenList, setFilteredTokenList] = useState([]);
+
+  const handleTokenSelect = (token: Token) => {
+    const newQueryParams = new URLSearchParams(searchParams.toString());
+    if (tokenBeingSelected === "token0") {
+      setToken0(token);
+      newQueryParams.set("token0", token.address);
+    } else if (tokenBeingSelected === "token1") {
+      setToken1(token);
+      newQueryParams.set("token1", token.address);
+    }
+    setTokenBeingSelected(null);
+  };
+
+  const setInitialToken = () => {
+    const tokens_ = tokens.filter((item) => item.chainId == chainId)
+    //@ts-expect-error ignore warning
+    setFilteredTokenList(tokens_)
+    if(tokens_?.length == 0){
+      setToken0(null)
+      setToken1(null)
+      return
+    }
+    setToken0({
+      address: tokens_[0].address,
+      symbol: tokens_[0].symbol,
+      decimals: tokens_[0].decimals
+    })
+    setToken1({
+      address: tokens_[1].address,
+      symbol: tokens_[1].symbol,
+      decimals: tokens_[1].decimals
+    })
+  }
+
+
+
   // const handleLoad = (action: string, status: boolean) => {
   //   setLoad((prev) => ({ ...prev, [action]: status }));
   // };
@@ -24,7 +71,12 @@ const Swap = () => {
   //   setStatus((prev) => ({ ...prev, [action]: status }));
   // };
 
-  // console.log(tokens, "tokens")
+  useEffect(() => {
+    if (chainId) {
+      setInitialToken()
+    }
+  }, [chainId])
+
   const swap = async () => {
     try {
       if (!address) return
@@ -69,8 +121,20 @@ const Swap = () => {
     }
   }
 
+
   return (
     <>
+      {tokenBeingSelected &&
+        createPortal(
+          <SelectTokenPopup
+            tokenBeingSelected={tokenBeingSelected}
+            onSelectToken={handleTokenSelect}
+            onClose={() => setTokenBeingSelected(null)}
+            chainId={chainId}
+            tokens={filteredTokenList}
+          />,
+          document.body
+        )}
       <section className="py-5 relative">
         <div className="container">
           <div className="grid gap-3 grid-cols-12">
@@ -86,13 +150,16 @@ const Swap = () => {
                         <div className="flex items-center justify-between gap-3">
                           <span className="font-medium text-base">Swap</span>
                           <span className="opacity-60 font-light text-xs">
-                            Available 0.0 ETH
+                            Available 0.0 {token0?.symbol}
                           </span>
                         </div>
                         <div className="flex border border-gray-800 rounded mt-1">
-                          <div className="left relative flex items-center gap-2 p-3 border-r border-gray-800 w-[180px]">
-                            <span className="icn">{eth}</span>
-                            <span className="">ETH</span>
+                          <div
+                            className="cursor-pointer left relative flex items-center gap-2 p-3 border-r border-gray-800 w-[180px]"
+                            onClick={() => setTokenBeingSelected("token0")}
+                          >
+                            <span className="icn"><Logo chainId={chainId} token={token0?.address} margin={0} height={20} /></span>
+                            <span className="">{token0?.symbol}</span>
                             <span className="absolute right-2">
                               {downArrow}
                             </span>
@@ -114,13 +181,16 @@ const Swap = () => {
                         <div className="flex items-center justify-between gap-3">
                           <span className="font-medium text-base">For</span>
                           <span className="opacity-60 font-light text-xs">
-                            Available 0.0 AERO
+                            Available 0.0 {token1?.symbol}
                           </span>
                         </div>
                         <div className="flex border border-gray-800 rounded mt-1">
-                          <div className="left relative flex items-center gap-2 p-3 border-r border-gray-800 w-[180px]">
-                            <span className="icn">{eth}</span>
-                            <span className="">AERO</span>
+                          <div
+                            className="cursor-pointer left relative flex items-center gap-2 p-3 border-r border-gray-800 w-[180px]"
+                            onClick={() => setTokenBeingSelected("token1")}
+                          >
+                            <span className="icn"><Logo chainId={chainId} token={token1?.address} margin={0} height={20} /></span>
+                            <span className="">{token1?.symbol}</span>
                             <span className="absolute right-2">
                               {downArrow}
                             </span>
@@ -132,7 +202,7 @@ const Swap = () => {
                         </div>
                       </div>
                       <div className="py-2">
-                        <div className="flex items-start justify-between h-28 sm:h-24 my-4">
+                        {/* <div className="flex items-start justify-between h-28 sm:h-24 my-4">
                           <div className="grow flex items-center justify-between">
                             <img
                               className="w-7 h-7 flex-shrink-0 rounded-full bg-gray-200 dark:bg-gray-700 hover:opacity-80"
@@ -250,7 +320,7 @@ const Swap = () => {
                             loading="lazy"
                             alt="Token Image"
                           />
-                        </div>
+                        </div> */}
                       </div>
                     </form>
                   </div>
@@ -507,27 +577,6 @@ const waiting = (
     <path d="M5 2h14"></path>
     <path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"></path>
     <path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"></path>
-  </svg>
-);
-
-const eth = (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="20"
-    height="20"
-    viewBox="0 0 32 32"
-  >
-    <g fill="none" fillRule="evenodd">
-      <circle cx="16" cy="16" r="16" fill="#627EEA" />
-      <g fill="#FFF" fillRule="nonzero">
-        <path fillOpacity=".602" d="M16.498 4v8.87l7.497 3.35z" />
-        <path d="M16.498 4L9 16.22l7.498-3.35z" />
-        <path fillOpacity=".602" d="M16.498 21.968v6.027L24 17.616z" />
-        <path d="M16.498 27.995v-6.028L9 17.616z" />
-        <path fillOpacity=".2" d="M16.498 20.573l7.497-4.353-7.497-3.348z" />
-        <path fillOpacity=".602" d="M9 16.22l7.498 4.353v-7.701z" />
-      </g>
-    </g>
   </svg>
 );
 
