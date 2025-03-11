@@ -166,6 +166,17 @@ export const approve = async (token: string, signer, spendor: string, amount: nu
     }
 }
 
+export const allowance = async (chainId: number, token: string, signer: string, spendor: string, amount: number, decimals: number) => {
+    const _amount = BigInt(toUnits(amount, decimals));
+    const tokenContract = new ethers.Contract(token, erc20Abi, new ethers.JsonRpcProvider(rpcUrls[chainId]));
+    const allowance = await tokenContract.allowance(signer, spendor);
+    if (allowance > _amount) {
+        return true;
+    } else {
+        return false
+    }
+}
+
 export const getTickSpacing = async (chainId: number, pool: string) => {
     if (!isValidChainId(chainId)) {
         throw new Error(`Invalid chainId: ${chainId}`);

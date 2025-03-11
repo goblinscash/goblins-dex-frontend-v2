@@ -7,9 +7,16 @@ export const shortenPubkey = (address: string): string => {
     return `${address.slice(0, 5)}...${address.slice(-5)}`;
 };
 
-export const fromUnits = (value: bigint, decimals: number): string => {
-    return ethers.formatUnits(value, decimals);
-}
+export const fromUnits = (value: string | number | bigint, decimals: number): string | undefined => {
+    if (!decimals) return;
+    console.log(value, decimals, "PPPIII");
+
+    const bigIntValue = BigInt(value.toString());
+
+    return ethers.formatUnits(bigIntValue, decimals);
+};
+
+
 
 export const toUnits = (value: string | number, decimals: number): bigint => {
     return ethers.parseUnits(value.toString(), decimals);

@@ -13,7 +13,7 @@ const ActButton: React.FC<ActButtonProps> = ({ label, onClick, load = false }) =
       <button
         onClick={onClick}
         disabled={load}
-        className="flex w-full rounded text-black items-center justify-center bg-white px-2 py-2 font-medium disabled:opacity-50"
+        className="btn flex items-center font-medium justify-center w-full rounded btn commonBtn"
       >
         {load ? <BtnLoader /> : label}
       </button>
