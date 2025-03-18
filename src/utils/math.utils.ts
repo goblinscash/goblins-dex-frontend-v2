@@ -9,8 +9,6 @@ export const shortenPubkey = (address: string): string => {
 
 export const fromUnits = (value: string | number | bigint, decimals: number): string | undefined => {
     if (!decimals) return;
-    console.log(value, decimals, "PPPIII");
-
     const bigIntValue = BigInt(value.toString());
 
     return ethers.formatUnits(bigIntValue, decimals);

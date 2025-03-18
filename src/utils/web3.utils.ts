@@ -1,13 +1,14 @@
 import { ethers, AbiCoder } from "ethers";
-import { RpcUrls, rpcUrls, subGraphUrls, uniswapContracts, vfatContracts } from "./config.utils";
+import { aerodromeContracts, RpcUrls, rpcUrls, subGraphUrls, uniswapContracts, vfatContracts } from "./config.utils";
 
 import nfpmAbi from "../abi/nfpm.json"
 import sickleFactoryAbi from "../abi/sickleFactory.json"
 import erc20Abi from "../abi/erc20.json"
 import uniPoolAbi from "../abi/uniPool.json"
 import uniswapFactoryAbi from "../abi/uniswapFactory.json"
+import routerAbi from "../abi/aerodrome/router.json";
 
-import { toUnits } from "./math.utils";
+import { fromUnits, toUnits } from "./math.utils";
 import { getTokenDetails } from "./requests.utils";
 
 import { Price, Token } from '@uniswap/sdk-core'
@@ -21,6 +22,13 @@ type SwapRoute = {
     from: string;
     fee: number;
     to: string;
+};
+
+type Route = {
+    from: string;
+    to: string;
+    stable: boolean;
+    factory: string;
 };
 
 function isValidChainId(chainId: number): chainId is keyof typeof uniswapContracts & keyof RpcUrls {
@@ -170,7 +178,7 @@ export const allowance = async (chainId: number, token: string, signer: string, 
     const _amount = BigInt(toUnits(amount, decimals));
     const tokenContract = new ethers.Contract(token, erc20Abi, new ethers.JsonRpcProvider(rpcUrls[chainId]));
     const allowance = await tokenContract.allowance(signer, spendor);
-    if (allowance > _amount) {
+    if (allowance >= _amount) {
         return true;
     } else {
         return false
@@ -498,12 +506,11 @@ export const encodeData = (tokenIn: string, fee: number, tokenOut: string) => {
     return extraData;
 }
 
-
 export const encodeInput = (swapRoutes: SwapRoute[], signer: string, amountIn: number, amountOut: number, decimals: number) => {
     const abiCoder = new AbiCoder();
 
     const path = ethers.solidityPacked(
-        Array(swapRoutes.length).fill(['address', 'uint24']).flat().concat('address'), 
+        Array(swapRoutes.length).fill(['address', 'uint24']).flat().concat('address'),
         swapRoutes.flatMap(route => [route.from, route.fee]).concat(swapRoutes[swapRoutes.length - 1].to)
     );
 
@@ -515,6 +522,15 @@ export const encodeInput = (swapRoutes: SwapRoute[], signer: string, amountIn: n
     return [inputData];
 };
 
+export const encodedRoute = (swapRoutes: SwapRoute[]) => {
+
+    const path = ethers.solidityPacked(
+        Array(swapRoutes.length).fill(['address', 'uint24']).flat().concat('address'),
+        swapRoutes.flatMap(route => [route.from, route.fee / 100]).concat(swapRoutes[swapRoutes.length - 1].to)
+    );
+
+    return path
+}
 
 export const fetchTokenDetails = async (chainId: number, token: string) => {
     const tokenContract = new ethers.Contract(token, erc20Abi, new ethers.JsonRpcProvider(rpcUrls[chainId]));
@@ -526,4 +542,19 @@ export const fetchTokenDetails = async (chainId: number, token: string) => {
         symbol,
         decimals: Number(decimals)
     }
+}
+
+export const fetchAmountsOut = async (chainId: number, amount: number, decimal0: number, decimal1: number, routes: Route[]) => {
+    if (!isValidChainId(chainId)) {
+        throw new Error(`Invalid chainId: ${chainId}`);
+    }
+
+    const router = new ethers.Contract(
+        aerodromeContracts[chainId].router,
+        routerAbi,
+        new ethers.JsonRpcProvider(rpcUrls[chainId])
+    );
+
+    const amounts = await router.getAmountsOut(toUnits(amount, decimal0), routes)
+    return fromUnits(amounts[amounts.length - 1], decimal1) || "0"
 }

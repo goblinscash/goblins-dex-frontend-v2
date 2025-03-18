@@ -1,12 +1,13 @@
 "use client";
 import { fetchTokenDetails } from "@/utils/web3.utils";
 import React, { useState, useEffect, useCallback } from "react";
-import debounce from "lodash.debounce"; // Install via npm if not available
+import debounce from "lodash.debounce";
 import { shortenPubkey } from "@/utils/math.utils";
 import Logo from "@/components/common/Logo";
+import { stableTokens } from "@/utils/constant.utils";
 
 const SelectTokenPopup = ({ tokenBeingSelected, onSelectToken, onClose, chainId, tokens }) => {
-  const [tokenList, setTokenList] = useState([]);
+  const [tokenList, setTokenList] = useState([...stableTokens[chainId], ...tokens]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -21,7 +22,7 @@ const SelectTokenPopup = ({ tokenBeingSelected, onSelectToken, onClose, chainId,
       setError(null);
 
       try {
-        const token = await fetchTokenDetails(chainId, query);       
+        const token = await fetchTokenDetails(chainId, query);
         if (token) {
           setTokenList([token]); // Store token in state
         } else {
@@ -34,12 +35,14 @@ const SelectTokenPopup = ({ tokenBeingSelected, onSelectToken, onClose, chainId,
       } finally {
         setLoading(false);
       }
-    }, 500), 
+    }, 500),
     []
   );
 
   useEffect(() => {
-    setTokenList(tokens)
+    if (chainId) {
+      setTokenList([...stableTokens[chainId], ...tokens])
+    }
   }, [chainId])
 
   // Handle input change
@@ -90,7 +93,7 @@ const SelectTokenPopup = ({ tokenBeingSelected, onSelectToken, onClose, chainId,
                   >
                     <div className="left flex items-center gap-4">
                       <div className="icnWrp">
-                      <Logo chainId={chainId} token={token.address} margin={0} />{" "}                      
+                        <Logo chainId={chainId} token={token.address} margin={0} />{" "}
                       </div>
                       <div className="content">
                         <p className="m-0 text-white font-medium text-base">{token.symbol}</p>

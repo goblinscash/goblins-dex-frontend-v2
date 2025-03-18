@@ -60,7 +60,7 @@ export const aerodromeContracts: AerodromeContracts = {
         universalRouter: "0xb73C095FE9818B0a75715E5959716faf29d27296"
     },
     8453: {
-        router: "",
+        router: "0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43",
         factory: "",
         lpSugar: "0x2Efe0713EfA0221070A2202b14bD1a6E3E12CEbE",  //"0x799351F408a51A0Ca5fdB4CD9E93157D8703b70A" //"0x8D1eaAFe47D6b2d560d69Ff44A7e0D48980ab69b"
         universalRouter: "0x6Cb442acF35158D5eDa88fe602221b67B400Be3E"
@@ -70,7 +70,6 @@ export const aerodromeContracts: AerodromeContracts = {
         factory: "",
         lpSugar: "",
         universalRouter: ""
-
     }
 };
 
