@@ -1,6 +1,6 @@
 export const MAX_UINT_128 = "340282366920938463463374607431768211455"; // 2^128 - 1
 export const UNI_ROUTING_API_URL = "https://vo7hqx6hkl.execute-api.us-east-1.amazonaws.com/prod";
-export const ROUTE_API_URI ="http://13.200.74.228:8000/quote"
+export const ROUTE_API_URI ="https://fastapi.goblins.cash/quote"
 
 
 export const stableTokens = {

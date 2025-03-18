@@ -98,7 +98,6 @@ const Swap = () => {
   }, [chainId])
 
   useEffect(() => {
-    console.log(777,chainId, "status0_status0_", amount0, token0)
     if (chainId && amount0 && token0) {
       checkAllownceStatus(chainId)
     }
@@ -248,6 +247,7 @@ const Swap = () => {
     }
   }
 
+  console.log(amountOut, "outtttt")
   return (
     <>
       {tokenBeingSelected &&
