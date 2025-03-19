@@ -11,6 +11,9 @@ export type AerodromeContract = {
     factory: string;
     lpSugar: string;
     universalRouter: string;
+    voter: string;
+    votingEscrow: string;
+
 }
 
 type AerodromeContracts = Record<number, AerodromeContract>;
@@ -57,19 +60,25 @@ export const aerodromeContracts: AerodromeContracts = {
         router: "0x1B683c08f448eA190Dd9B53EA756aB7B00085DE1",
         factory: "0x5F47613A76C1c01BcE11b3D398de16E38c3d4DCb",
         lpSugar: "0x7C5B8fF7d833020085538F5c4dFdE3B1E03f52A3",
-        universalRouter: "0xb73C095FE9818B0a75715E5959716faf29d27296"
+        universalRouter: "0xb73C095FE9818B0a75715E5959716faf29d27296",
+        voter: "0xc84C4ebbC5671795D4DBf1d8A369897CB471B230",
+        votingEscrow: '0xe015feb0B3cDDb683d450Cf698B34E0BeF714B65',        
     },
     8453: {
         router: "0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43",
         factory: "",
         lpSugar: "0x2Efe0713EfA0221070A2202b14bD1a6E3E12CEbE",  //"0x799351F408a51A0Ca5fdB4CD9E93157D8703b70A" //"0x8D1eaAFe47D6b2d560d69Ff44A7e0D48980ab69b"
-        universalRouter: "0x6Cb442acF35158D5eDa88fe602221b67B400Be3E"
+        universalRouter: "0x6Cb442acF35158D5eDa88fe602221b67B400Be3E",
+        voter: "0x16613524e02ad97eDfeF371bC883F2F5d6C480A5",
+        votingEscrow: "0xeBf418Fe2512e7E6bd9b87a8F0f294aCDC67e6B4"
     },
     56: {
         router: "",
         factory: "",
         lpSugar: "",
-        universalRouter: ""
+        universalRouter: "",
+        voter: "",
+        votingEscrow: ''
     }
 };
 

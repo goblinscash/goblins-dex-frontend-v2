@@ -19,7 +19,7 @@ import axios from "axios";
 //@ts-expect-error ignore
 import debounce from "lodash.debounce";
 import BtnLoader from "@/components/common/BtnLoader";
-import { ROUTE_API_URI } from "@/utils/constant.utils";
+import { ROUTE_API_URI, stableTokens } from "@/utils/constant.utils";
 
 interface SwapStep {
   from: string;
@@ -65,9 +65,10 @@ const Swap = () => {
   };
 
   const setInitialToken = () => {
-    const tokens_ = tokens.filter((item) => item.chainId == chainId)
+    let tokens_ = tokens.filter((item) => item.chainId == chainId)
     //@ts-expect-error ignore warning
-    
+     tokens_ = [...tokens_, ...stableTokens[chainId]]
+    //@ts-expect-error ignore
     setFilteredTokenList(tokens_)
     if (tokens_?.length == 0) {
       setToken0(null)
@@ -164,10 +165,8 @@ const Swap = () => {
   };
 
   const checkAllownceStatus = async (chainId: number) => {
-    console.log(77, "status0_status0_")
     //@ts-expect-error ignore warn
     const status0_ = await allowance(chainId, token0?.address, address, aerodromeContracts[chainId].universalRouter, amount0, token0?.decimals)
-    console.log(status0_, "status0_status0_")
     //@ts-expect-error ignore
     handleLoad(token0?.symbol, status0_)
   }
@@ -247,7 +246,6 @@ const Swap = () => {
     }
   }
 
-  console.log(amountOut, "outtttt")
   return (
     <>
       {tokenBeingSelected &&

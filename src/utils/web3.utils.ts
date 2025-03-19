@@ -1,4 +1,4 @@
-import { ethers, AbiCoder } from "ethers";
+import { ethers, AbiCoder, ZeroAddress } from "ethers";
 import { aerodromeContracts, RpcUrls, rpcUrls, subGraphUrls, uniswapContracts, vfatContracts } from "./config.utils";
 
 import nfpmAbi from "../abi/nfpm.json"
@@ -7,6 +7,7 @@ import erc20Abi from "../abi/erc20.json"
 import uniPoolAbi from "../abi/uniPool.json"
 import uniswapFactoryAbi from "../abi/uniswapFactory.json"
 import routerAbi from "../abi/aerodrome/router.json";
+import voterAbi from "../abi/aerodrome/voter.json";
 
 import { fromUnits, toUnits } from "./math.utils";
 import { getTokenDetails } from "./requests.utils";
@@ -88,7 +89,6 @@ export const fetchNftBalance = async (chainId: number, wallet: string) => {
 
         let nftIds = await Promise.all(ids)
         nftIds = nftIds.map((item) => parseInt(item))
-        console.log(totalNft, "totalNft", nftIds)
         return nftIds
     } catch (error) {
         console.log(error)
@@ -169,7 +169,6 @@ export const approve = async (token: string, signer, spendor: string, amount: nu
         const tx1 = await tokenContract.approve(spendor, _amount);
         return tx1;
     } else {
-        console.log(allowance, "allowance", _amount, amount)
         return null
     }
 }
@@ -372,7 +371,6 @@ export const getClaimableAmount = async (
     tokenOut: string,
     fee: number
 ) => {
-    console.log(tokenIn, "tokenIntokenIn")
     if (!isValidChainId(chainId)) {
         throw new Error(`Invalid chainId: ${chainId}`);
     }
@@ -558,3 +556,26 @@ export const fetchAmountsOut = async (chainId: number, amount: number, decimal0:
     const amounts = await router.getAmountsOut(toUnits(amount, decimal0), routes)
     return fromUnits(amounts[amounts.length - 1], decimal1) || "0"
 }
+
+// aerodrome guage utils //
+
+export const fetchGuage = async (chainId: number, pool: string) => {
+    if (!isValidChainId(chainId)) {
+        throw new Error(`Invalid chainId: ${chainId}`);
+    }
+
+    const voter = new ethers.Contract(
+        aerodromeContracts[chainId].voter,
+        voterAbi,
+        new ethers.JsonRpcProvider(rpcUrls[chainId])
+    );
+
+    const guage = await voter.gauges(pool)
+    if(guage === ZeroAddress){
+        return ""
+    }
+    return guage
+}
+
+
+// aerodrome guage utils //

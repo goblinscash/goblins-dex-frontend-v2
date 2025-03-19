@@ -7,13 +7,19 @@ import { fromUnits, toUnits } from "@/utils/math.utils";
 import { allowance, approve, fetchTokenDetails } from "@/utils/web3.utils";
 import { aerodromeContracts } from "@/utils/config.utils";
 import aerodromeRouterAbi from "../../abi/aerodromeRouter.json";
-import { ethers } from "ethers";
+import bribeVotingRewardAbi from "../../abi/aerodrome/bribeVotingReward.json"
+import voterAbi from "../../abi/aerodrome/voter.json";
+import { ethers, ZeroAddress } from "ethers";
 import styled, { keyframes } from "styled-components";
 import { useSearchParams } from "next/navigation";
 import { Token } from "../pools/page";
 import Logo from "@/components/common/Logo";
 import { byIndex, FormattedPool } from "@/utils/sugar.utils";
 import Progress from "@/components/common/Progress";
+import SelectTokenPopup from "@/components/modals/SelectTokenPopup";
+import { createPortal } from "react-dom";
+import { tokens } from "@myswap/token-list";
+import { stableTokens } from "@/utils/constant.utils";
 
 const Deposit = () => {
   const [load, setLoad] = useState<{ [key: string]: boolean }>({});
@@ -29,18 +35,64 @@ const Deposit = () => {
 
   const [token0, setToken0] = useState<Token | null>(null);
   const [token1, setToken1] = useState<Token | null>(null);
+  const [token, setToken] = useState<Token | null>(null);
   const [amount0, setAmount0] = useState("");
   const [amount1, setAmount1] = useState("");
+  const [amount, setAmount] = useState("");
   const [pool, setPool] = useState<FormattedPool | null>(null);
+
+  const [tokenBeingSelected, setTokenBeingSelected] = useState<"token0" | "token1" | null>(null);
+  const [filteredTokenList, setFilteredTokenList] = useState([]);
 
   const [status, setStatus] = useState<{ [key: string]: boolean }>({
     "isTokenSelected": false,
     "isAllowanceForToken0": false,
     "isAllowanceForToken1": false,
-    "isCompleted": false
+    "isCompleted": false,
+    "createGauge": false,
+    "isRewardAdded": false,
+    "isAllowanceForToken": false
   });
 
 
+  const handleTokenSelect = (token: Token) => {
+    if (tokenBeingSelected === "token0") {
+      setAmount("")
+      setToken(token);
+    } else if (tokenBeingSelected === "token1") {
+      setToken(token);
+      setAmount("")
+    }
+    setTokenBeingSelected(null);
+  };
+
+  const handleChange = (value: string) => {
+    setAmount(value);
+  };
+
+
+  const setInitialToken = () => {
+    let tokens_ = tokens.filter((item) => item.chainId == chainId)
+    //@ts-expect-error ignore warning
+    tokens_ = [...tokens_, ...stableTokens[chainId]]
+    //@ts-expect-error ignore warning
+    setFilteredTokenList(tokens_)
+    if (tokens_?.length == 0) {
+      setToken(null)
+      return
+    }
+    setToken({
+      address: tokens_[0].address,
+      symbol: tokens_[0].symbol,
+      decimals: tokens_[0].decimals
+    })
+  }
+
+  useEffect(() => {
+    if (chainId) {
+      setInitialToken()
+    }
+  }, [chainId])
 
   useEffect(() => {
     if (chainId && token0Address && token1Address) {
@@ -109,7 +161,7 @@ const Deposit = () => {
         await signer,
         aerodromeContracts[chainId].router,
         Number(amount0),
-        18
+        token0.decimals
       );
       if (tx0Approve) {
         await tx0Approve.wait();
@@ -121,7 +173,7 @@ const Deposit = () => {
         await signer,
         aerodromeContracts[chainId].router,
         Number(amount1),
-        18
+        token1.decimals
       );
       if (tx1Approve) {
         await tx1Approve.wait();
@@ -158,24 +210,109 @@ const Deposit = () => {
     }
   };
 
+  const createGuage = async () => {
+    try {
+      if (!address) return alert("Please connect your wallet");
+      if (pool?.factory == ZeroAddress || pool?.lp == ZeroAddress) return
 
+      handleLoad("createGauge", true);
+
+      const aerodromeVoter = new ethers.Contract(
+        aerodromeContracts[chainId].voter,
+        voterAbi,
+        await signer
+      );
+
+      const tx = await aerodromeVoter.createGauge(
+        pool?.factory,
+        pool?.lp,
+        { gasLimit: 5000000 }
+      );
+
+      await tx.wait();
+      await fetchPoolByIndex(chainId, Number(id))
+      handleLoad("createGauge", false);
+    } catch (error) {
+      console.log(error);
+      handleLoad("createGauge", false);
+    }
+  };
+
+  const addReward = async () => {
+    try {
+      if (!address) return alert("Please connect your wallet");
+      if (pool?.bribe == ZeroAddress || pool?.lp == ZeroAddress) return
+
+      handleLoad("addReward", true);
+
+      const txApprove = await approve(
+        //@ts-expect-error ignore
+        token?.address,
+        await signer,
+        //@ts-expect-error ignore
+        pool.bribe,
+        Number(amount),
+        token?.decimals
+      );
+      if (txApprove) {
+        await txApprove.wait();
+      }
+      handProgress("isAllowanceForToken", true)
+      const bribeVotingReward = new ethers.Contract(
+        //@ts-expect-error ignore
+        pool.bribe,
+        bribeVotingRewardAbi,
+        await signer
+      );
+
+      const tx = await bribeVotingReward.notifyRewardAmount(
+        token?.address,
+        //@ts-expect-error ignore
+        toUnits(amount, token?.decimals),
+        { gasLimit: 5000000 }
+      );
+      
+      await tx.wait();
+      handProgress("isRewardAdded", true)
+      await fetchPoolByIndex(chainId, Number(id))
+      handleLoad("addReward", false);
+    } catch (error) {
+      console.log(error);
+      handleLoad("addReward", false);
+    }
+  };
+
+  console.log(pool, "pool)))")
   return (
-    <section className="relative py-5 ">
-      <div className="container">
-        <div className="grid gap-3 grid-cols-12">
-          <div className="col-span-12">
-            <div
-              className="mx-auto grid gap-3 md:gap-5 grid-cols-12"
-              style={{ maxWidth: 1000 }}
-            >
-              <div className="md:col-span-5 col-span-12">
-                <div className="cardCstm p-3 md:p-4 rounded-md bg-[var(--backgroundColor2)] opacity-70 relative">
-                  <div className="top">
-                    <h4 className="m-0 font-semibold text-xl">Deposit Liquidity</h4>
-                  </div>
-                  <div className="content pt-3">
-                    <SwapList className="list-none py-3 relative z-10 pl-0 mb-0">
-                      {/* <li className="py-1 flex itmes-start gap-3 ">
+    <>
+      {tokenBeingSelected &&
+        createPortal(
+          <SelectTokenPopup
+            tokenBeingSelected={tokenBeingSelected}
+            onSelectToken={handleTokenSelect}
+            onClose={() => setTokenBeingSelected(null)}
+            chainId={chainId}
+            tokens={filteredTokenList}
+          />,
+          document.body
+        )}
+
+      <section className="relative py-5 ">
+        <div className="container">
+          <div className="grid gap-3 grid-cols-12">
+            <div className="col-span-12">
+              <div
+                className="mx-auto grid gap-3 md:gap-5 grid-cols-12"
+                style={{ maxWidth: 1000 }}
+              >
+                <div className="md:col-span-5 col-span-12">
+                  <div className="cardCstm p-3 md:p-4 rounded-md bg-[var(--backgroundColor2)] opacity-70 relative">
+                    <div className="top">
+                      <h4 className="m-0 font-semibold text-xl">Deposit Liquidity</h4>
+                    </div>
+                    <div className="content pt-3">
+                      <SwapList className="list-none py-3 relative z-10 pl-0 mb-0">
+                        {/* <li className="py-1 flex itmes-start gap-3 ">
                         <span className="flex bg-[var(--backgroundColor)] h-6 w-6 text-green-500 items-center justify-center rounded-full">
                           {calculate}
                         </span>
@@ -217,143 +354,194 @@ const Deposit = () => {
                         </div>
                       </li> */}
 
-                      <Progress icon={amount0 == '' ? lock : unlock} symbol={token0?.symbol} text="Enter the amount of" />
-                      <Progress icon={status.isAllowanceForToken0 ? unlock : lock} symbol={token0?.symbol} text="Allowed the contracts to access" />
-                      <Progress icon={status.isAllowanceForToken1 ? unlock : lock} symbol={token1?.symbol} text="Allowed the contracts to access" />
-                      <Progress icon={status.isCompleted ? unlock : lock} symbol={token1?.symbol} text="Deposit Liqidity" />
-                    </SwapList>
-                    <div className="btnWrpper mt-3">
-                      <ActButton
-                        label="addLiquidity"
-                        onClick={() => addLiquidity()}
-                        load={load["addLiquidity"]}
-                      />
+                        <Progress icon={amount0 == '' ? lock : unlock} symbol={token0?.symbol} text="Enter the amount of" />
+                        <Progress icon={status.isAllowanceForToken0 ? unlock : lock} symbol={token0?.symbol} text="Allowed the contracts to access" />
+                        <Progress icon={status.isAllowanceForToken1 ? unlock : lock} symbol={token1?.symbol} text="Allowed the contracts to access" />
+                        <Progress icon={status.isCompleted ? unlock : lock} symbol={token1?.symbol} text="Deposit Liqidity" />
+                      </SwapList>
+                      <div className="btnWrpper mt-3">
+                        <ActButton
+                          label="addLiquidity"
+                          onClick={() => addLiquidity()}
+                          load={load["addLiquidity"]}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="content pt-3">
+                      <SwapList className="list-none py-3 relative z-10 pl-0 mb-0">
+
+                        <Progress icon={pool?.gauge === ZeroAddress ? lock : unlock} symbol={pool?.symbol} text={pool?.gauge === ZeroAddress ? "Create gauge for this pool" : "Gauge found for this pool"} />
+                        <div className="md:col-span-7 col-span-12">
+                          <div className="cardCstm p-3 md:p-4 rounded-md bg-[var(--backgroundColor2)] relative">
+                            <form action="">
+                              <div className="py-2">
+                                <div className="flex items-center justify-between gap-3">
+                                  <span className="font-medium text-base">Add Reward</span>
+                                  <span className="opacity-60 font-light text-xs">
+                                    Available 0.0 {token?.symbol}
+                                  </span>
+                                </div>
+                                <div className="flex border border-gray-800 rounded mt-1">
+                                  <div
+                                    className="cursor-pointer left relative flex items-center gap-2 p-3 border-r border-gray-800 w-[180px]"
+                                    onClick={() => setTokenBeingSelected("token0")}
+                                  >
+                                    <span className="icn"><Logo chainId={chainId} token={token?.address} margin={0} height={20} /></span>
+                                    <span className="">{token?.symbol}</span>
+                                    <span className="absolute right-2">
+                                      {downArrow}
+                                    </span>
+                                  </div>
+                                  <input
+                                    type="number"
+                                    className="form-control border-0 p-3 h-10 text-xs bg-transparent w-full"
+                                    value={amount}
+                                    onChange={(e) => handleChange(e.target.value)}
+                                  />
+                                </div>
+                              </div>
+                            </form>
+                          </div>
+                        </div>
+
+                        <Progress icon={status.isAllowanceForToken ? unlock : lock} symbol={token?.symbol} text="Allowed the contracts to access" />
+                        <Progress icon={status.isRewardAdded ? unlock : lock} symbol={token?.symbol} text="Deposit reward" />
+                      </SwapList>
+
+                      <div className="btnWrpper mt-3">
+                        <ActButton
+                          label={pool?.gauge === ZeroAddress ? "Create Guage" : "Add Reward"}
+                          onClick={() => pool?.gauge === ZeroAddress ? createGuage() : addReward()}
+                          load={pool?.gauge === ZeroAddress ? load["createGauge"] : load["addReward"]}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-              <div className="md:col-span-7 col-span-12">
-                <div className="py-2">
-                  <div className="cardCstm p-3 md:p-4 rounded-md bg-[var(--backgroundColor2)] relative">
-                    <form action="">
-                      <div className="py-2">
-                        <div className="flex items-center justify-between gap-3">
-                          <span className="font-medium text-base">Swap</span>
-                          <span className="opacity-60 font-light text-xs">
-                            Available 0.0 {token0?.symbol}
-                          </span>
-                        </div>
-                        <div className="flex border border-gray-800 rounded mt-1">
-                          <div className="left relative flex items-center gap-2 p-3 border-r border-gray-800 w-[180px]">
-                            <span className="icn">{token0Address ? <Logo chainId={chainId} token={token0Address} margin={0} height={20} /> : ""} </span>
-                            <span className="">{token0?.symbol}</span>
-                            <span className="absolute right-2">
-                              {downArrow}
+                <div className="md:col-span-7 col-span-12">
+                  <div className="py-2">
+                    <div className="cardCstm p-3 md:p-4 rounded-md bg-[var(--backgroundColor2)] relative">
+                      <form action="">
+                        <div className="py-2">
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="font-medium text-base">Swap</span>
+                            <span className="opacity-60 font-light text-xs">
+                              Available 0.0 {token0?.symbol}
                             </span>
                           </div>
-                          <input
-                            onChange={(e) => setAmount0(e.target.value)}
-                            value={amount0}
-                            type="number"
-                            className="form-control border-0 p-3 h-10 text-xs bg-transparent w-full"
-                          />
+                          <div className="flex border border-gray-800 rounded mt-1">
+                            <div className="left relative flex items-center gap-2 p-3 border-r border-gray-800 w-[180px]">
+                              <span className="icn">{token0Address ? <Logo chainId={chainId} token={token0Address} margin={0} height={20} /> : ""} </span>
+                              <span className="">{token0?.symbol}</span>
+                              <span className="absolute right-2">
+                                {downArrow}
+                              </span>
+                            </div>
+                            <input
+                              onChange={(e) => setAmount0(e.target.value)}
+                              value={amount0}
+                              type="number"
+                              className="form-control border-0 p-3 h-10 text-xs bg-transparent w-full"
+                            />
+                          </div>
                         </div>
-                      </div>
-                      <div className="py-2">
-                        <div className="mt-3 text-center">
-                          <button className="border-0 p-2 rounded bg-[var(--backgroundColor)]">
-                            {transfer}
-                          </button>
+                        <div className="py-2">
+                          <div className="mt-3 text-center">
+                            <button className="border-0 p-2 rounded bg-[var(--backgroundColor)]">
+                              {transfer}
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                      <div className="py-2">
-                        <div className="flex items-center justify-between gap-3">
-                          <span className="font-medium text-base">For</span>
-                          <span className="opacity-60 font-light text-xs">
-                            Available 0.0 {token0?.symbol}
-                          </span>
-                        </div>
-                        <div className="flex border border-gray-800 rounded mt-1">
-                          <div className="left relative flex items-center gap-2 p-3 border-r border-gray-800 w-[180px]">
-                            <span className="icn">{token1Address ? <Logo chainId={chainId} token={token1Address} margin={0} height={20} /> : ""} </span>
-                            <span className="">{token1?.symbol}</span>
-                            <span className="absolute right-2">
-                              {downArrow}
+                        <div className="py-2">
+                          <div className="flex items-center justify-between gap-3">
+                            <span className="font-medium text-base">For</span>
+                            <span className="opacity-60 font-light text-xs">
+                              Available 0.0 {token0?.symbol}
                             </span>
                           </div>
-                          <input
-                            onChange={(e) => setAmount1(e.target.value)}
-                            value={amount1}
-                            type="number"
-                            className="form-control border-0 p-3 h-10 text-xs bg-transparent w-full"
-                          />
+                          <div className="flex border border-gray-800 rounded mt-1">
+                            <div className="left relative flex items-center gap-2 p-3 border-r border-gray-800 w-[180px]">
+                              <span className="icn">{token1Address ? <Logo chainId={chainId} token={token1Address} margin={0} height={20} /> : ""} </span>
+                              <span className="">{token1?.symbol}</span>
+                              <span className="absolute right-2">
+                                {downArrow}
+                              </span>
+                            </div>
+                            <input
+                              onChange={(e) => setAmount1(e.target.value)}
+                              value={amount1}
+                              type="number"
+                              className="form-control border-0 p-3 h-10 text-xs bg-transparent w-full"
+                            />
+                          </div>
                         </div>
-                      </div>
-                    </form>
+                      </form>
+                    </div>
                   </div>
-                </div>
-                <div className="py-2">
-                  <div className="cardCstm p-3 md:p-4 rounded-md bg-[var(--backgroundColor2)] relative">
-                    <div className="py-2">
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="left flex items-center gap-3">
-                          <div className="flex-shrink-0">
-                            <ul className="list-none pl-0 mb-0 flex items-center">
-                              <li className="" style={{ marginLeft: -10 }}>
-                                {token0Address ? <Logo chainId={chainId} token={token0Address} margin={0} height={25} /> : ""}
-                              </li>
-                              <li className="" style={{ marginLeft: -10 }}>
-                                {token1Address ? <Logo chainId={chainId} token={token1Address} margin={0} height={25} /> : ""}
-                              </li>
-                            </ul>
+                  <div className="py-2">
+                    <div className="cardCstm p-3 md:p-4 rounded-md bg-[var(--backgroundColor2)] relative">
+                      <div className="py-2">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="left flex items-center gap-3">
+                            <div className="flex-shrink-0">
+                              <ul className="list-none pl-0 mb-0 flex items-center">
+                                <li className="" style={{ marginLeft: -10 }}>
+                                  {token0Address ? <Logo chainId={chainId} token={token0Address} margin={0} height={25} /> : ""}
+                                </li>
+                                <li className="" style={{ marginLeft: -10 }}>
+                                  {token1Address ? <Logo chainId={chainId} token={token1Address} margin={0} height={25} /> : ""}
+                                </li>
+                              </ul>
+                            </div>
+                            <div className="content">
+                              <p className="m-0 font-medium text-white">
+                                {pool?.symbol}
+                              </p>
+                              <ul className="list-none pl-0 mb-0 flex items-center gap-2">
+                                <li className="text-yellow-500 text-xs">
+                                  (x) Basic Volatile
+                                </li>
+                                <li className="text-xs flex items-center gap-2">
+                                  {Number(pool?.pool_fee) / 100}% {infoIcn}
+                                </li>
+                              </ul>
+                            </div>
                           </div>
-                          <div className="content">
-                            <p className="m-0 font-medium text-white">
-                              {pool?.symbol}
+                          <div className="right text-right">
+                            <p className="m-0 text-gray-500 text-xs">APR</p>
+                            <p className="m-0 text-white text-base font-bold">
+                              {pool?.apr}%
                             </p>
-                            <ul className="list-none pl-0 mb-0 flex items-center gap-2">
-                              <li className="text-yellow-500 text-xs">
-                                (x) Basic Volatile
-                              </li>
-                              <li className="text-xs flex items-center gap-2">
-                                {Number(pool?.pool_fee) / 100}% {infoIcn}
-                              </li>
-                            </ul>
                           </div>
                         </div>
-                        <div className="right text-right">
-                          <p className="m-0 text-gray-500 text-xs">APR</p>
-                          <p className="m-0 text-white text-base font-bold">
-                            {pool?.apr}%
-                          </p>
-                        </div>
                       </div>
-                    </div>
-                    <div className="py-2">
-                      <ul className="list-none pl-0 mb-0">
-                        <li className="py-1 flex items-center justify-between gap-2">
-                          <p className="m-0 text-gray-500 text-xs">Liquidity</p>
-                          <p className="m-0 text-gray-500 text-xs">
-                            Your Liquidity
-                          </p>
-                        </li>
-                        <li className="py-1 flex items-center justify-between gap-2">
-                          <p className="m-0 text-white text-base font-bold">
-                            {pool?.reserve0 ? fromUnits(pool?.reserve0, Number(token0?.decimals)) : "0"} {token0?.symbol}
-                          </p>
-                          <p className="m-0 text-white text-base font-bold">
-                            0.0 {token0?.symbol}
-                          </p>
-                        </li>
-                        <li className="py-1 flex items-center justify-between gap-2">
-                          <p className="m-0 text-white text-base font-bold">
-                            {pool?.reserve1 ? fromUnits(pool?.reserve1, Number(token1?.decimals)) : "0"} {token1?.symbol}
-                          </p>
-                          <p className="m-0 text-white text-base font-bold">
-                            0.0 {token1?.symbol}
-                          </p>
-                        </li>
-                      </ul>
+                      <div className="py-2">
+                        <ul className="list-none pl-0 mb-0">
+                          <li className="py-1 flex items-center justify-between gap-2">
+                            <p className="m-0 text-gray-500 text-xs">Liquidity</p>
+                            <p className="m-0 text-gray-500 text-xs">
+                              Your Liquidity
+                            </p>
+                          </li>
+                          <li className="py-1 flex items-center justify-between gap-2">
+                            <p className="m-0 text-white text-base font-bold">
+                              {pool?.reserve0 ? fromUnits(pool?.reserve0, Number(token0?.decimals)) : "0"} {token0?.symbol}
+                            </p>
+                            <p className="m-0 text-white text-base font-bold">
+                              0.0 {token0?.symbol}
+                            </p>
+                          </li>
+                          <li className="py-1 flex items-center justify-between gap-2">
+                            <p className="m-0 text-white text-base font-bold">
+                              {pool?.reserve1 ? fromUnits(pool?.reserve1, Number(token1?.decimals)) : "0"} {token1?.symbol}
+                            </p>
+                            <p className="m-0 text-white text-base font-bold">
+                              0.0 {token1?.symbol}
+                            </p>
+                          </li>
+                        </ul>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -361,8 +549,8 @@ const Deposit = () => {
             </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
 };
 

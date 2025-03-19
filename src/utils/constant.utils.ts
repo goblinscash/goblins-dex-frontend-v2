@@ -1,7 +1,25 @@
 export const MAX_UINT_128 = "340282366920938463463374607431768211455"; // 2^128 - 1
 export const UNI_ROUTING_API_URL = "https://vo7hqx6hkl.execute-api.us-east-1.amazonaws.com/prod";
-export const ROUTE_API_URI ="https://fastapi.goblins.cash/quote"
+export const ROUTE_API_URI = "https://fastapi.goblins.cash/quote"
 
+type TokenInfo = {
+    address: string;
+    symbol: string;
+    decimals: number;
+};
+
+export const gobV2: Record<number, TokenInfo> = {
+    8453: {
+        address: "0xcDBa3E4C5c505F37CfbBB7aCCF20D57e793568E3",
+        symbol: "GOBV2",
+        decimals: 18
+    },
+    84532: {
+        address: "0xe0D6d4649e27882A8C235C27634F8cC4683c4DAc",
+        symbol: "GOBV2",
+        decimals: 18
+    }
+}
 
 export const stableTokens = {
     8453: [
