@@ -92,13 +92,13 @@ const Deposit = () => {
         await signer
       );
 
-      // const tx = await votingEscrow.createLock(
-      //   toUnits(amount, gobV2[chainId]?.decimals),
-      //   parseInt(duration) * 24 * 3600,
-      //   { gasLimit: 5000000 }
-      // );
+      const tx = await votingEscrow.createLock(
+        toUnits(amount, gobV2[chainId]?.decimals),
+        parseInt(duration) * 24 * 3600,
+        { gasLimit: 5000000 }
+      );
 
-      // await tx.wait();
+      await tx.wait();
       handProgress("tokenLocked", true)
       // await fetchPoolByIndex(chainId, Number(id))
       handleLoad("createLock", false);
