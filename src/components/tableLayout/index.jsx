@@ -3,7 +3,6 @@ import React from "react";
 import styled from "styled-components";
 
 const TableLayout = ({ column, data }) => {
-  console.log(data)
   return (
     <>
       <div className="overflow-x-auto">

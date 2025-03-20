@@ -67,7 +67,7 @@ const Header = () => {
                     </Link>
                   </li>
                   <li className="px-2">
-                    <Link href="/lock" className="">
+                    <Link href="/locks" className="">
                       Lock
                     </Link>
                   </li>

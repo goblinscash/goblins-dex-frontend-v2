@@ -12,7 +12,7 @@ const Footer = () => {
           <div className="grid gap-3 grid-cols-12">
             <div className="col-span-12">
               <div className="flex items-center justify-between gap-3 flex-wrap">
-                <p className="m-0 text-gray-500">Copyright © Golblin Cash</p>
+                <p className="m-0 text-gray-500">Copyright © Golblins Cash</p>
                 <ul className="list-none pl-0 mb-0 flex items-center gap-3">
                   <li className="">
                     <Link
