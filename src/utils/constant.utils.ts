@@ -1,11 +1,23 @@
 export const MAX_UINT_128 = "340282366920938463463374607431768211455"; // 2^128 - 1
 export const UNI_ROUTING_API_URL = "https://vo7hqx6hkl.execute-api.us-east-1.amazonaws.com/prod";
 export const ROUTE_API_URI = "https://fastapi.goblins.cash/quote"
+export const SUPPORTED_CHAIN = [8453, 84532]
 
 type TokenInfo = {
     address: string;
     symbol: string;
     decimals: number;
+};
+
+type StableTokenMap = {
+    [key: number]: {
+        name: string;
+        symbol: string;
+        address: string;
+        chainId: number;
+        decimals: number;
+        logoURI: string;
+    }[];
 };
 
 export const gobV2: Record<number, TokenInfo> = {
@@ -21,7 +33,7 @@ export const gobV2: Record<number, TokenInfo> = {
     }
 }
 
-export const stableTokens = {
+export const stableToken = {
     8453: [
         {
             "name": "USD Token",
@@ -74,4 +86,10 @@ export const stableTokens = {
         //     "logoURI": "https://basescan.org/token/images/tether_128.png"
         // }
     ]
+}
+
+export const stableTokens = (chainId: number) => {
+    const SUPPORTED_CHAIN = [8453, 84532];
+    const id = SUPPORTED_CHAIN.includes(chainId) ? chainId : 8453;
+    return (stableToken as any)[id] || []
 }

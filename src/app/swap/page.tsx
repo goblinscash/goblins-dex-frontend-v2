@@ -72,8 +72,7 @@ const Swap = () => {
 
   const setInitialToken = () => {
     let tokens_ = tokens.filter((item) => item.chainId == chainId);
-    //@ts-expect-error ignore warning
-    tokens_ = [...tokens_, ...stableTokens[chainId]];
+    tokens_ = [...tokens_, ...stableTokens(chainId)];
     //@ts-expect-error ignore
     setFilteredTokenList(tokens_);
     if (tokens_?.length == 0) {
@@ -95,6 +94,18 @@ const Swap = () => {
     });
   };
 
+  const swapTokens = () => {
+    if (!token0 || !token1) return;
+
+    const newToken0 = { ...token1 };
+    const newToken1 = { ...token0 };
+
+    setToken0(newToken0);
+    setToken1(newToken1);
+    setAmountOut("")
+    handleChange(amount0, newToken0, newToken1)
+  };
+
   const handleLoad = (action: string, status: boolean) => {
     setLoad((prev) => ({ ...prev, [action]: status }));
   };
@@ -109,14 +120,14 @@ const Swap = () => {
     if (chainId && amount0 && token0) {
       checkAllownceStatus(chainId);
     }
-  }, [chainId, amount0, token0]);
+  }, [amount0, token0]);
 
   useEffect(() => {
     if (chainId && token0?.address && token1?.address && address) {
       fetchTokenBalance()
     }
 
-  }, [chainId, token0?.address, token1?.address, address]);
+  }, [token0?.address, token1?.address, address]);
 
 
   const fetchQuote = async (
@@ -149,7 +160,11 @@ const Swap = () => {
           value
         );
         if (quote?.data != null) {
-          if (quote.command_type === "V2_SWAP_EXACT_IN") {
+          if (tokenOne.address === tokenTwo.address) {
+            setAmountOut(amount0);
+            setQuoteData(quote);
+          }
+          else if (quote.command_type === "V2_SWAP_EXACT_IN") {
             const outAmount = await fetchAmountsOut(
               chainId,
               value,
@@ -178,15 +193,15 @@ const Swap = () => {
     []
   );
 
-  const handleChange = (value: string) => {
+  const handleChange = (value: string, token0_: Token, token1_: Token) => {
     setAmount0(value);
-    if (!token0 || !token1) {
+    if (!token0_ || !token1_) {
       console.error("Token0 or Token1 is missing");
       return;
     }
 
     if (parseFloat(value) > 0) {
-      fetchToken(token0, token1, parseFloat(value));
+      fetchToken(token0_, token1_, parseFloat(value));
     }
   };
 
@@ -303,6 +318,7 @@ const Swap = () => {
     }
   };
 
+
   return (
     <>
       {tokenBeingSelected &&
@@ -358,14 +374,22 @@ const Swap = () => {
                           <input
                             type="number"
                             className="form-control border-0 p-3 h-10 text-xs bg-transparent w-full"
-                            value={amount0}
-                            onChange={(e) => handleChange(e.target.value)}
+                            value={amount0 ?? ""}
+                            onChange={(e) => {
+                              if (token0 && token1) {
+                                handleChange(e.target.value, token0, token1);
+                              }
+                            }}
                           />
                         </div>
                       </div>
                       <div className="" style={{ margin: "-10px 0" }}>
                         <div className=" text-center">
-                          <button className="border-0 p-2 text-black rounded bg-[#18b347]">
+                          <button
+                            type="button"
+                            onClick={() => swapTokens()}
+                            className="border-0 p-2 text-black rounded bg-[#18b347]"
+                          >
                             {transfer}
                           </button>
                         </div>
@@ -403,7 +427,7 @@ const Swap = () => {
                         </div>
                       </div>
                       <div className="py-2">
-                        <div className="flex items-center justify-between relative">
+                        <div className="flex items-center justify-between relative h-[60px]">
                           {load["FetchRoute"] ? "fetching route" : "Route"}
 
                           {load["FetchRoute"] ? (

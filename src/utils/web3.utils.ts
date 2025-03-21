@@ -37,10 +37,15 @@ function isValidChainId(chainId: number): chainId is keyof typeof uniswapContrac
 }
 
 export const erc20Balance = async (chainId: number, token: string, decimals: number, wallet: string) => {
-    const tokenContract = new ethers.Contract(token, erc20Abi, new ethers.JsonRpcProvider(rpcUrls[chainId]));
-    const balance = await tokenContract.balanceOf(wallet);
-    const _balance = Number(fromUnits(balance, decimals))
-    return _balance.toFixed(4)
+    try {
+        const tokenContract = new ethers.Contract(token, erc20Abi, new ethers.JsonRpcProvider(rpcUrls[chainId]));
+        const balance = await tokenContract.balanceOf(wallet);
+        const _balance = Number(fromUnits(balance, decimals))
+        return _balance.toFixed(4)
+    } catch (error) {
+        console.log(error)
+        return "0"
+    }
 }
 
 export const fetchPosition = async (chainId: number, tokenId: number) => {
@@ -579,7 +584,7 @@ export const fetchGuage = async (chainId: number, pool: string) => {
     );
 
     const guage = await voter.gauges(pool)
-    if(guage === ZeroAddress){
+    if (guage === ZeroAddress) {
         return ""
     }
     return guage

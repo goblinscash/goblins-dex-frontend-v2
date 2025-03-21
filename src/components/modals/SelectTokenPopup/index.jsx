@@ -4,10 +4,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import debounce from "lodash.debounce";
 import { shortenPubkey } from "@/utils/math.utils";
 import Logo from "@/components/common/Logo";
-import { stableTokens } from "@/utils/constant.utils";
 
 const SelectTokenPopup = ({ tokenBeingSelected, onSelectToken, onClose, chainId, tokens }) => {
-  const [tokenList, setTokenList] = useState([...stableTokens[chainId], ...tokens]);
+  const [tokenList, setTokenList] = useState([...tokens]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -41,7 +40,7 @@ const SelectTokenPopup = ({ tokenBeingSelected, onSelectToken, onClose, chainId,
 
   useEffect(() => {
     if (chainId) {
-      setTokenList([...stableTokens[chainId], ...tokens])
+      setTokenList([...tokens])
     }
   }, [chainId])
 

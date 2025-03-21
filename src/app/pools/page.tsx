@@ -7,6 +7,7 @@ import Logo from "@/components/common/Logo";
 import { useChainId } from "wagmi";
 import { useRouter, useSearchParams } from "next/navigation";
 import { tokens } from "@myswap/token-list";
+import { stableTokens } from "@/utils/constant.utils";
 
 type Column = {
   head: string;
@@ -72,9 +73,11 @@ const Pools = () => {
   }, [chainId])
 
   const setInitialToken = () => {
-    const tokens_ = tokens.filter((item) => item.chainId == chainId)
+    let tokens_ = tokens.filter((item) => item.chainId == chainId);
     //@ts-expect-error ignore warning
-    setFilteredTokenList(tokens_)    
+    tokens_ = [...tokens_, ...stableTokens[chainId]];
+    //@ts-expect-error ignore
+    setFilteredTokenList(tokens_);
   }
 
   const handleDepositClick = () => {
@@ -136,7 +139,7 @@ const Pools = () => {
       },
     },
   ];
-  
+
   return (
     <>
       {tokenBeingSelected &&
