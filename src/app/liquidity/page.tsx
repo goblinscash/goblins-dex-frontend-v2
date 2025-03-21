@@ -114,14 +114,6 @@ const column: Column[] = [
       const url = item.url || "/deposit";
       return (
         <>
-          {/* <div key={key} className="flex items-center gap-3">
-            <Link
-              href={url}
-              className="flex items-center justify-center btn commonBtn rounded-lg h-[40px] px-4 font-medium "
-            >
-              Deposit
-            </Link>
-          </div> */}
           <details className="dropdown">
             <summary className="border-0 cursor-pointer p-0 flex items-center m-1">
               {moreIcn}
@@ -186,7 +178,7 @@ const Liquidity = () => {
               <form action="">
                 <div className="flex items-center gap-3">
                   <Link
-                    href={"/pools?token0=&token1="}
+                    href={"/pools?token0=&token1=&poolType="}
                     className="flex items-center justify-center btn text-xs commonBtn rounded-lg h-[40px] px-4 font-medium "
                   >
                     Deposit Liquidity

@@ -1,6 +1,7 @@
 import { ethers, AbiCoder, ZeroAddress } from "ethers";
 import { aerodromeContracts, RpcUrls, rpcUrls, subGraphUrls, uniswapContracts, vfatContracts } from "./config.utils";
 
+import poolFactoryAbi from "../abi/aerodrome/poolFactoy.json"
 import nfpmAbi from "../abi/nfpm.json"
 import sickleFactoryAbi from "../abi/sickleFactory.json"
 import erc20Abi from "../abi/erc20.json"
@@ -570,7 +571,7 @@ export const fetchAmountsOut = async (chainId: number, amount: number, decimal0:
     return fromUnits(amounts[amounts.length - 1], decimal1) || "0"
 }
 
-// aerodrome guage utils //
+// aerodrome //
 
 export const fetchGuage = async (chainId: number, pool: string) => {
     if (!isValidChainId(chainId)) {
@@ -590,5 +591,22 @@ export const fetchGuage = async (chainId: number, pool: string) => {
     return guage
 }
 
+export const fetchV2Pools = async (chainId: number, token0: string, token1: string, stable: boolean) => {
+    if (!isValidChainId(chainId)) {
+        throw new Error(`Invalid chainId: ${chainId}`);
+    }
 
-// aerodrome guage utils //
+    const poolFactory = new ethers.Contract(
+        aerodromeContracts[chainId].factory,
+        poolFactoryAbi,
+        new ethers.JsonRpcProvider(rpcUrls[chainId])
+    );
+
+    const pool = await poolFactory.getPool(token0, token1, stable)
+    if (pool === ZeroAddress) {
+        return ""
+    }
+    return pool
+}
+
+// aerodrome //

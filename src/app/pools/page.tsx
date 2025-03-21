@@ -229,13 +229,8 @@ const Pools = () => {
                         </div>
                       </div>
                     </div>
+
                     <div className="col-span-12">
-                      {/* <div className="py-3">
-                        <p className="m-0 text-white text-base">
-                          Available Pools
-                        </p>
-                        <TableLayout column={column} data={data} />
-                      </div> */}
                       {data && (
                         <div className="py-3">
                           <p className="m-0 text-white text-base">

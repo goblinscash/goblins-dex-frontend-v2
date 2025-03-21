@@ -99,7 +99,7 @@ export const all = async (chainId: number, limit: number, offset: number, type: 
             factory: pool[18],
             emissions: formatValue(pool[19]),
             emissions_token: pool[20],
-            pool_fee: Number(formatValue(pool[21])) / 100,
+            pool_fee: `${Number(formatValue(pool[21])) / 100} %`,
             unstaked_fee: formatValue(pool[22]),
             token0_fees: formatValue(pool[23]),
             token1_fees: formatValue(pool[24]),
@@ -107,7 +107,7 @@ export const all = async (chainId: number, limit: number, offset: number, type: 
             alm: pool[26],
             root: pool[27],
             // Custom fields
-            poolBalance: Number(fromUnits(pool[8], Number(pool[2]))) + Number(fromUnits(pool[11], Number(pool[2]))),
+            poolBalance: `${Number(fromUnits(pool[8], Number(pool[2]))) + Number(fromUnits(pool[11], Number(pool[2])))} $`,
             apr: 0,
             volume: 0,
             url: `/deposit?id=${index}&token0=${pool[7]}&token1=${pool[10]}`
@@ -167,11 +167,6 @@ export const byIndex = async (chainId: number, index: number) => {
             volume: 0,
         }
 
-        // // await positions(chainId, limit, offset, "0xe47C11e16783eE272117f8959dF3ceEC606C045d")
-        // const positionsRaw = await instance.positions(100, 0, "0x892Ff98a46e5bd141E2D12618f4B2Fe6284debac")
-
-        console.log(formattedPools, "formattedPools")
-
         return formattedPools;
     } catch (error) {
         console.log(error, chainId)
@@ -208,6 +203,7 @@ export const locksByAccount = async (chainId: number, account: string) => {
         const locksRaw = await instance.byAccount(account);
         // const poolsaw = await instance.all(1,0);
         // const poolsRaw = await instance.byId(12)
+
         // const poolsRaw = await instance.voter();
         // const token = await instance.token();
         // const ve = await instance.ve();
