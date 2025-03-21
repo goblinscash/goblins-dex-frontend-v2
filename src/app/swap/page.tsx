@@ -1,6 +1,11 @@
 "use client";
 import { useEthersSigner } from "@/hooks/useEthersSigner";
-import { allowance, approve, encodedRoute, fetchAmountsOut } from "@/utils/web3.utils";
+import {
+  allowance,
+  approve,
+  encodedRoute,
+  fetchAmountsOut,
+} from "@/utils/web3.utils";
 import { ethers } from "ethers";
 import styled, { keyframes } from "styled-components";
 import { useAccount, useChainId } from "wagmi";
@@ -31,8 +36,6 @@ interface QuoteData {
   command_type: string;
 }
 
-
-
 const Swap = () => {
   const [quoteData, setQuoteData] = useState<QuoteData | null>(null);
   const [amountOut, setAmountOut] = useState("");
@@ -43,7 +46,9 @@ const Swap = () => {
   const { address } = useAccount();
 
   const searchParams = useSearchParams();
-  const [tokenBeingSelected, setTokenBeingSelected] = useState<"token0" | "token1" | null>(null);
+  const [tokenBeingSelected, setTokenBeingSelected] = useState<
+    "token0" | "token1" | null
+  >(null);
   const [token0, setToken0] = useState<Token | null>(null);
   const [token1, setToken1] = useState<Token | null>(null);
   const [amount0, setAmount0] = useState<string>("");
@@ -53,64 +58,66 @@ const Swap = () => {
   const handleTokenSelect = (token: Token) => {
     const newQueryParams = new URLSearchParams(searchParams.toString());
     if (tokenBeingSelected === "token0") {
-      setAmount0("")
+      setAmount0("");
       setToken0(token);
       newQueryParams.set("token0", token.address);
     } else if (tokenBeingSelected === "token1") {
       setToken1(token);
-      setAmount0("")
+      setAmount0("");
       newQueryParams.set("token1", token.address);
     }
     setTokenBeingSelected(null);
   };
 
   const setInitialToken = () => {
-    let tokens_ = tokens.filter((item) => item.chainId == chainId)
+    let tokens_ = tokens.filter((item) => item.chainId == chainId);
     //@ts-expect-error ignore warning
-     tokens_ = [...tokens_, ...stableTokens[chainId]]
+    tokens_ = [...tokens_, ...stableTokens[chainId]];
     //@ts-expect-error ignore
-    setFilteredTokenList(tokens_)
+    setFilteredTokenList(tokens_);
     if (tokens_?.length == 0) {
-      setToken0(null)
-      setToken1(null)
-      return
+      setToken0(null);
+      setToken1(null);
+      return;
     }
     setToken0({
       address: tokens_[0].address,
       symbol: tokens_[0].symbol,
-      decimals: tokens_[0].decimals
-    })
+      decimals: tokens_[0].decimals,
+    });
     setToken1({
       address: tokens_[1].address,
       symbol: tokens_[1].symbol,
-      decimals: tokens_[1].decimals
-    })
-  }
+      decimals: tokens_[1].decimals,
+    });
+  };
 
   const handleLoad = (action: string, status: boolean) => {
     setLoad((prev) => ({ ...prev, [action]: status }));
   };
 
-
   useEffect(() => {
     if (chainId) {
-      setInitialToken()
+      setInitialToken();
     }
-  }, [chainId])
+  }, [chainId]);
 
   useEffect(() => {
     if (chainId && amount0 && token0) {
-      checkAllownceStatus(chainId)
+      checkAllownceStatus(chainId);
     }
   }, [chainId, amount0, token0]);
 
-
-  const fetchQuote = async (tokenOne: string, tokenTwo: string, amount: number) => {
+  const fetchQuote = async (
+    tokenOne: string,
+    tokenTwo: string,
+    amount: number
+  ) => {
     const params = {
       token0: tokenOne,
       token1: tokenTwo,
       chainId: chainId,
-      amount: amount
+      amount: amount,
     };
 
     try {
@@ -125,25 +132,34 @@ const Swap = () => {
     debounce(async (tokenOne: Token, tokenTwo: Token, value: number) => {
       handleLoad("FetchRoute", true);
       try {
-        const quote = await fetchQuote(tokenOne.address, tokenTwo.address, value);
+        const quote = await fetchQuote(
+          tokenOne.address,
+          tokenTwo.address,
+          value
+        );
         if (quote?.data != null) {
           if (quote.command_type === "V2_SWAP_EXACT_IN") {
-            const outAmount = await fetchAmountsOut(chainId, value, tokenOne.decimals, tokenTwo.decimals, quote?.data)
-            setAmountOut(outAmount)
+            const outAmount = await fetchAmountsOut(
+              chainId,
+              value,
+              tokenOne.decimals,
+              tokenTwo.decimals,
+              quote?.data
+            );
+            setAmountOut(outAmount);
             setQuoteData(quote);
           } else if (quote.command_type === "V3_SWAP_EXACT_IN") {
-            setAmountOut("")
+            setAmountOut("");
             setQuoteData(quote);
           }
         } else {
-          setAmountOut("")
+          setAmountOut("");
           setQuoteData(null);
         }
       } catch (err) {
         handleLoad("FetchRoute", false);
         console.error("Error in fetchRoute:", err);
         setQuoteData(null);
-
       } finally {
         handleLoad("FetchRoute", false);
       }
@@ -166,37 +182,45 @@ const Swap = () => {
 
   const checkAllownceStatus = async (chainId: number) => {
     //@ts-expect-error ignore warn
-    const status0_ = await allowance(chainId, token0?.address, address, aerodromeContracts[chainId].universalRouter, amount0, token0?.decimals)
+    const status0_ = await allowance(
+      chainId,
+      token0?.address,
+      address,
+      aerodromeContracts[chainId].universalRouter,
+      amount0,
+      token0?.decimals
+    );
     //@ts-expect-error ignore
-    handleLoad(token0?.symbol, status0_)
-  }
-
+    handleLoad(token0?.symbol, status0_);
+  };
 
   //@ts-expect-error ignore
-  const root: string[] = quoteData?.data?.length && quoteData?.data?.reduce((acc: string[], step: SwapStep) => {
-    // Add the "from" address if it's not already in the array
-    if (!acc.includes(step.from)) {
-      acc.push(step.from);
-    }
-    // Add the "to" address if it's not already in the array
-    if (!acc.includes(step.to)) {
-      acc.push(step.to);
-    }
-    return acc;
-  }, [])
+  const root: string[] =
+    quoteData?.data?.length &&
+    quoteData?.data?.reduce((acc: string[], step: SwapStep) => {
+      // Add the "from" address if it's not already in the array
+      if (!acc.includes(step.from)) {
+        acc.push(step.from);
+      }
+      // Add the "to" address if it's not already in the array
+      if (!acc.includes(step.to)) {
+        acc.push(step.to);
+      }
+      return acc;
+    }, []);
 
-  const rootLength = root?.length
+  const rootLength = root?.length;
 
   const swap = async () => {
     try {
-      if (quoteData?.command_type === undefined) return
-      if (token0?.address === undefined) return
-      if (!address) return
-      const decimal = token0?.decimals
+      if (quoteData?.command_type === undefined) return;
+      if (token0?.address === undefined) return;
+      if (!address) return;
+      const decimal = token0?.decimals;
       //@ts-expect-error ignore warn
-      const command = CommandType[quoteData?.command_type]
-      const swapRoutes = quoteData?.data
-      const planner = new RoutePlanner()
+      const command = CommandType[quoteData?.command_type];
+      const swapRoutes = quoteData?.data;
+      const planner = new RoutePlanner();
 
       planner.addCommand(command, [
         address,
@@ -205,11 +229,11 @@ const Swap = () => {
         //@ts-expect-error ignore
         command == 0 ? encodedRoute(swapRoutes) : swapRoutes,
         address,
-      ])
+      ]);
 
-      const { commands, inputs } = planner
+      const { commands, inputs } = planner;
 
-      handleLoad("Pending", true)
+      handleLoad("Pending", true);
       const tx0Approve = await approve(
         token0?.address,
         await signer,
@@ -218,12 +242,12 @@ const Swap = () => {
         decimal
       );
       if (tx0Approve) {
-        handleLoad("Pending", true)
+        handleLoad("Pending", true);
         await tx0Approve.wait();
-        await checkAllownceStatus(chainId)
-        handleLoad("Pending", false)
+        await checkAllownceStatus(chainId);
+        handleLoad("Pending", false);
       }
-      handleLoad("Pending", false)
+      handleLoad("Pending", false);
 
       const universalRouter = new ethers.Contract(
         aerodromeContracts[chainId].universalRouter,
@@ -232,19 +256,24 @@ const Swap = () => {
       );
 
       const deadline = Math.floor(Date.now() / 1000) + 600;
-      handleLoad("Pending", true)
-      const tx = await universalRouter['execute(bytes,bytes[],uint256)'](commands, inputs, deadline, {
-        value: 0,
-        gasLimit: 500000
-      })
+      handleLoad("Pending", true);
+      const tx = await universalRouter["execute(bytes,bytes[],uint256)"](
+        commands,
+        inputs,
+        deadline,
+        {
+          value: 0,
+          gasLimit: 500000,
+        }
+      );
 
       await tx.wait();
-      handleLoad("Pending", false)
+      handleLoad("Pending", false);
     } catch (error) {
-      handleLoad("Pending", false)
-      console.log(error, "error+")
+      handleLoad("Pending", false);
+      console.log(error, "error+");
     }
-  }
+  };
 
   return (
     <>
@@ -259,7 +288,10 @@ const Swap = () => {
           />,
           document.body
         )}
-      <section className="py-5 relative">
+      <section
+        className="py-5 relative flex items-center justify-center"
+        style={{ minHeight: "calc(100vh - 152px)" }}
+      >
         <div className="container">
           <div className="grid gap-3 grid-cols-12">
             <div className="col-span-12">
@@ -268,21 +300,28 @@ const Swap = () => {
                 style={{ maxWidth: 1000 }}
               >
                 <div className="md:col-span-7 col-span-12">
-                  <div className="cardCstm p-3 md:p-4 rounded-md bg-[var(--backgroundColor2)] relative">
+                  <div className="cardCstm p-3 md:p-10 rounded-2xl bg-[#0b120d] relative border border-[#2a2a2a]">
                     <form action="">
-                      <div className="py-2">
+                      <div className="bg-[#00000073] py-5 px-3 rounded-2xl border border-[#141414]">
                         <div className="flex items-center justify-between gap-3">
                           <span className="font-medium text-base">Swap</span>
                           <span className="opacity-60 font-light text-xs">
                             Available 0.0 {token0?.symbol}
                           </span>
                         </div>
-                        <div className="flex border border-gray-800 rounded mt-1">
+                        <div className="flex rounded mt-1">
                           <div
                             className="cursor-pointer left relative flex items-center gap-2 p-3 border-r border-gray-800 w-[180px]"
                             onClick={() => setTokenBeingSelected("token0")}
                           >
-                            <span className="icn"><Logo chainId={chainId} token={token0?.address} margin={0} height={20} /></span>
+                            <span className="icn">
+                              <Logo
+                                chainId={chainId}
+                                token={token0?.address}
+                                margin={0}
+                                height={20}
+                              />
+                            </span>
                             <span className="">{token0?.symbol}</span>
                             <span className="absolute right-2">
                               {downArrow}
@@ -296,26 +335,33 @@ const Swap = () => {
                           />
                         </div>
                       </div>
-                      <div className="py-2">
-                        <div className="mt-3 text-center">
-                          <button className="border-0 p-2 rounded bg-[var(--backgroundColor)]">
+                      <div className="" style={{ margin: "-10px 0" }}>
+                        <div className=" text-center">
+                          <button className="border-0 p-2 text-black rounded bg-[#18b347]">
                             {transfer}
                           </button>
                         </div>
                       </div>
-                      <div className="py-2">
+                      <div className="bg-[#00000073] py-5 px-3 rounded-2xl border border-[#141414]">
                         <div className="flex items-center justify-between gap-3">
                           <span className="font-medium text-base">For</span>
                           <span className="opacity-60 font-light text-xs">
                             Available 0.0 {token1?.symbol}
                           </span>
                         </div>
-                        <div className="flex border border-gray-800 rounded mt-1">
+                        <div className="flex rounded mt-1">
                           <div
                             className="cursor-pointer left relative flex items-center gap-2 p-3 border-r border-gray-800 w-[180px]"
                             onClick={() => setTokenBeingSelected("token1")}
                           >
-                            <span className="icn"><Logo chainId={chainId} token={token1?.address} margin={0} height={20} /></span>
+                            <span className="icn">
+                              <Logo
+                                chainId={chainId}
+                                token={token1?.address}
+                                margin={0}
+                                height={20}
+                              />
+                            </span>
                             <span className="">{token1?.symbol}</span>
                             <span className="absolute right-2">
                               {downArrow}
@@ -332,18 +378,28 @@ const Swap = () => {
                         <div className="flex items-center justify-between relative">
                           {load["FetchRoute"] ? "fetching route" : "Route"}
 
-                          {
-                            load["FetchRoute"] ?
-                              <div className="absolute left-0 right-0 mx-auto top-[50%]" style={{ maxWidth: "max-content" }}>
-                                <BtnLoader />
-                              </div> :
-                              <div className="flex items-start justify-center my-4 gap-2">
-                                {root?.length
-                                  ? root.map((item: string, index: number) => (
-                                    <div className="grow flex items-center justify-center" key={item}>
-                                      <Logo chainId={chainId} token={item} margin={0} height={20} />{" "}
-
-                                      {index + 1 != rootLength ?
+                          {load["FetchRoute"] ? (
+                            <div
+                              className="absolute left-0 right-0 mx-auto top-[50%]"
+                              style={{ maxWidth: "max-content" }}
+                            >
+                              <BtnLoader />
+                            </div>
+                          ) : (
+                            <div className="flex items-start justify-center my-4 gap-2">
+                              {root?.length
+                                ? root.map((item: string, index: number) => (
+                                    <div
+                                      className="grow flex items-center justify-center"
+                                      key={item}
+                                    >
+                                      <Logo
+                                        chainId={chainId}
+                                        token={item}
+                                        margin={0}
+                                        height={20}
+                                      />{" "}
+                                      {index + 1 != rootLength ? (
                                         <>
                                           <div className="relative grow flex justify-center items-center text-gray-600 dark:text-gray-400">
                                             <div className="relative z-20 rounded-full bg-[var(--backgroundColor)] p-px sm:p-1">
@@ -375,43 +431,46 @@ const Swap = () => {
                                         </div>
                                       </div> */}
                                           </div>
-                                        </> : ""
-                                      }
-
+                                        </>
+                                      ) : (
+                                        ""
+                                      )}
                                     </div>
                                   ))
-                                  : "No route found"}
-                              </div>
-                          }
-
+                                : "No route found"}
+                            </div>
+                          )}
                         </div>
-
                       </div>
                     </form>
                   </div>
                 </div>
                 <div className="md:col-span-5 col-span-12">
-                  <div className="cardCstm p-3 md:p-4 rounded-md bg-[var(--backgroundColor2)] opacity-70 relative">
-                    <div className="top">
+                  <div className="cardCstm h-full flex flex-col justify-between p-3 md:p-10 rounded-xl bg-[var(--backgroundColor2)] opacity-70 relative">
+                    <div className="top w-full">
                       <h4 className="m-0 font-semibold text-xl">Swap</h4>
-                    </div>
-                    <div className="content pt-3">
-                      <SwapList className="list-none py-3 relative z-10 pl-0 mb-0">
-                        {amountOut && <li className="py-1 flex itmes-start gap-3 ">
-                          <span className="flex bg-[var(--backgroundColor)] h-6 w-6 text-green-500 items-center justify-center rounded-full">
-                            {calculate}
-                          </span>
-                          <div className="content text-xs text-gray-400">
-                            <p className="m-0">
-                              Exchange rate found...{" "}
-                              <button className="border-0 p-0">Refresh</button>
-                            </p>
-                            <p className="m-0 flex items-center mt-1 gap-1 font-medium">
-                              1 {token0?.symbol} {exchange} {amountOut} {token1?.symbol}
-                            </p>
-                          </div>
-                        </li>}
-                        {/* <li className="py-1 flex itmes-start gap-3 ">
+                      <div className="content pt-3">
+                        <SwapList className="list-none py-3 relative z-10 pl-0 mb-0">
+                          {amountOut && (
+                            <li className="py-1 flex itmes-start gap-3 ">
+                              <span className="flex bg-[var(--backgroundColor)] h-6 w-6 text-green-500 items-center justify-center rounded-full">
+                                {calculate}
+                              </span>
+                              <div className="content text-xs text-gray-400">
+                                <p className="m-0">
+                                  Exchange rate found...{" "}
+                                  <button className="border-0 p-0">
+                                    Refresh
+                                  </button>
+                                </p>
+                                <p className="m-0 flex items-center mt-1 gap-1 font-medium">
+                                  1 {token0?.symbol} {exchange} {amountOut}{" "}
+                                  {token1?.symbol}
+                                </p>
+                              </div>
+                            </li>
+                          )}
+                          {/* <li className="py-1 flex itmes-start gap-3 ">
                           <span className="flex bg-[var(--backgroundColor)] h-6 w-6 text-green-500 items-center justify-center rounded-full">
                             {plus}
                           </span>
@@ -440,39 +499,42 @@ const Swap = () => {
                             <p className="m-0">0.61814% price impact is safe</p>
                           </div>
                         </li> */}
-                        <li className="py-1 flex itmes-start gap-3 ">
-                          <span className="flex bg-[var(--backgroundColor)] h-6 w-6 text-green-500 items-center justify-center rounded-full">
-                            {load[token0?.symbol || ''] ? unlock : lock}
-                          </span>
-                          <div className="content text-xs text-gray-400">
-                            <p className="m-0">
-                              {load[token0?.symbol || ''] ? "Allowed" : "Allow"} the contracts to access {token0?.symbol}
-                            </p>
-                          </div>
-                        </li>
-                        {
-                          load["Pending"] && <li className="py-1 flex itmes-start gap-3 ">
-                            <span className="flex bg-[var(--backgroundColor)] h-6 w-6 text-yellow-500 items-center justify-center rounded-full">
-                              {waiting}
+                          <li className="py-1 flex itmes-start gap-3 ">
+                            <span className="flex bg-[var(--backgroundColor)] h-6 w-6 text-green-500 items-center justify-center rounded-full">
+                              {load[token0?.symbol || ""] ? unlock : lock}
                             </span>
                             <div className="content text-xs text-gray-400">
-                              <p className="m-0 animate">
-                                Waiting for pending actions...
+                              <p className="m-0">
+                                {load[token0?.symbol || ""]
+                                  ? "Allowed"
+                                  : "Allow"}{" "}
+                                the contracts to access {token0?.symbol}
                               </p>
                             </div>
                           </li>
-                        }
-
-                      </SwapList>
-                      <div className="btnWrpper mt-3">
-                        <button
-                          disabled={load["Pending"]}
-                          onClick={swap}
-                          className="btn flex items-center font-medium justify-center w-full rounded btn commonBtn"
-                        >
-                          Swap {token0?.symbol} for {token1?.symbol}
-                        </button>
+                          {load["Pending"] && (
+                            <li className="py-1 flex itmes-start gap-3 ">
+                              <span className="flex bg-[var(--backgroundColor)] h-6 w-6 text-yellow-500 items-center justify-center rounded-full">
+                                {waiting}
+                              </span>
+                              <div className="content text-xs text-gray-400">
+                                <p className="m-0 animate">
+                                  Waiting for pending actions...
+                                </p>
+                              </div>
+                            </li>
+                          )}
+                        </SwapList>
                       </div>
+                    </div>
+                    <div className="btnWrpper mt-3">
+                      <button
+                        disabled={load["Pending"]}
+                        onClick={swap}
+                        className="btn flex items-center font-medium justify-center w-full rounded btn commonBtn"
+                      >
+                        Swap {token0?.symbol} for {token1?.symbol}
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -486,7 +548,6 @@ const Swap = () => {
 };
 
 export default Swap;
-
 
 const fadeInOut = keyframes`
   0% {
@@ -519,7 +580,6 @@ const SwapList = styled.ul`
     animation: ${fadeInOut} 2s infinite;
   }
 `;
-
 
 const calculate = (
   <svg
@@ -626,10 +686,10 @@ const lock = (
     strokeLinejoin="round"
     className="lucide lucide-lock !text-amber-600 animate-pulse"
   >
-    <rect width="18" height="11" x="3" y="11" rx="2" ry="2">
-    </rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
   </svg>
-)
+);
 const unlock = (
   <svg
     xmlns="http://www.w3.org/2000/svg"

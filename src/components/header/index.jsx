@@ -75,13 +75,20 @@ const Header = () => {
                     <Link href="/farm" className="">
                       Farm
                     </Link>
-                  </li>                  
+                  </li>
                   <li className="px-1">
                     <button
                       className="btn flex items-center justify-center commonBtn rounded text-xs font-medium "
                       onClick={connect}
                     >
-                      {address ? shortenPubkey(address) : "Connect"}
+                      {address ? (
+                        <>
+                          <span className="icn mr-2">{walletIcn}</span>{" "}
+                          {shortenPubkey(address)}
+                        </>
+                      ) : (
+                        "Connect"
+                      )}
                     </button>
                   </li>
                 </ul>
@@ -456,6 +463,27 @@ const backIcn = (
       strokeMiterlimit="10"
       strokeLinecap="round"
       strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const walletIcn = (
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M5 6.25C4.27065 6.25 3.57118 6.53973 3.05546 7.05546C2.53973 7.57118 2.25 8.27065 2.25 9V18C2.25 18.7293 2.53973 19.4288 3.05546 19.9445C3.57118 20.4603 4.27065 20.75 5 20.75H19C19.7293 20.75 20.4288 20.4603 20.9445 19.9445C21.4603 19.4288 21.75 18.7293 21.75 18V9C21.75 8.27065 21.4603 7.57118 20.9445 7.05546C20.4288 6.53973 19.7293 6.25 19 6.25H5ZM16.5 12.25C16.1685 12.25 15.8505 12.3817 15.6161 12.6161C15.3817 12.8505 15.25 13.1685 15.25 13.5C15.25 13.8315 15.3817 14.1495 15.6161 14.3839C15.8505 14.6183 16.1685 14.75 16.5 14.75C16.8315 14.75 17.1495 14.6183 17.3839 14.3839C17.6183 14.1495 17.75 13.8315 17.75 13.5C17.75 13.1685 17.6183 12.8505 17.3839 12.6161C17.1495 12.3817 16.8315 12.25 16.5 12.25Z"
+      fill="currentColor"
+    />
+    <path
+      d="M16.485 3.069C16.7811 2.9901 17.0913 2.98028 17.3918 3.04031C17.6923 3.10034 17.9749 3.2286 18.218 3.41521C18.461 3.60181 18.6579 3.84176 18.7935 4.11654C18.9291 4.39133 18.9998 4.69359 19 5H9L16.485 3.069Z"
+      fill="currentColor"
     />
   </svg>
 );
