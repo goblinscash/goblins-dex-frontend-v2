@@ -77,8 +77,7 @@ const Deposit = () => {
 
   const setInitialToken = () => {
     let tokens_ = tokens.filter((item) => item.chainId == chainId);
-    //@ts-expect-error ignore warning
-    tokens_ = [...tokens_, ...stableTokens[chainId]];
+    tokens_ = [...tokens_, ...stableTokens(chainId)];
     //@ts-expect-error ignore warning
     setFilteredTokenList(tokens_);
     if (tokens_?.length == 0) {
