@@ -387,10 +387,10 @@ const Deposit = () => {
           <div className="grid gap-3 grid-cols-12">
             <div className="col-span-12">
               <div
-                className="mx-auto grid gap-3 md:gap-5 grid-cols-12"
+                className="mx-auto grid gap-3 md:gap-5 grid-cols-12 items-start"
                 style={{ maxWidth: 1000 }}
               >
-                <div className="md:col-span-5 col-span-12">
+                <div className="md:col-span-5 col-span-12 sticky top-0">
                   <div className="cardCstm p-3 md:p-4 rounded-md bg-[var(--backgroundColor2)] opacity-70 relative">
                     <div className="top">
                       <h4 className="m-0 font-semibold text-xl">
@@ -562,18 +562,18 @@ const Deposit = () => {
                     </div>
                   </div>
                 </div>
-                <div className="md:col-span-7 col-span-12">
+                <div className="md:col-span-7 col-span-12 sticky top-0">
                   <div className="py-2">
-                    <div className="cardCstm p-3 md:p-4 rounded-md bg-[var(--backgroundColor2)] relative">
+                    <div className="cardCstm p-3 md:p-10 rounded-2xl bg-[#0b120d] relative border border-[#2a2a2a]">
                       <form action="">
-                        <div className="py-2">
+                        <div className="bg-[#00000073] py-5 px-3 rounded-2xl border border-[#141414]">
                           <div className="flex items-center justify-between gap-3">
                             <span className="font-medium text-base">Swap</span>
                             <span className="opacity-60 font-light text-xs">
                               Available {token0?.balance} {token0?.symbol}
                             </span>
                           </div>
-                          <div className="flex border border-gray-800 rounded mt-1">
+                          <div className="flex rounded mt-1">
                             <div className="left relative flex items-center gap-2 p-3 border-r border-gray-800 w-[180px]">
                               <span className="icn">
                                 {token0Address ? (
@@ -600,21 +600,21 @@ const Deposit = () => {
                             />
                           </div>
                         </div>
-                        <div className="py-2">
-                          <div className="mt-3 text-center">
+                        <div className="" style={{ margin: "-10px 0" }}>
+                          <div className="text-center">
                             <button className="border-0 p-2 rounded bg-[var(--backgroundColor)]">
                               {transfer}
                             </button>
                           </div>
                         </div>
-                        <div className="py-2">
+                        <div className="bg-[#00000073] py-5 px-3 rounded-2xl border border-[#141414]">
                           <div className="flex items-center justify-between gap-3">
                             <span className="font-medium text-base">For</span>
                             <span className="opacity-60 font-light text-xs">
                               Available {token1?.balance} {token1?.symbol}
                             </span>
                           </div>
-                          <div className="flex border border-gray-800 rounded mt-1">
+                          <div className="flex rounded mt-1">
                             <div className="left relative flex items-center gap-2 p-3 border-r border-gray-800 w-[180px]">
                               <span className="icn">
                                 {token1Address ? (
