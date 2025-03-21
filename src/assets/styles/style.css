@@ -12,8 +12,9 @@
   margin: 0 auto;
   padding: 0 15px;
 }
-.btn {
+:root .btn {
   padding: 0 20px;
+  box-shadow: unset !important;
 }
 .themeClr {
   color: #00ff4e;
@@ -30,14 +31,14 @@ input.form-control:focus {
   top: 50%;
   transform: translateY(-50%);
 }
-.commonBtn {
+:root .commonBtn {
   background-color: #00ff4e;
   border-color: #00ff4e;
   transition: 0.4s;
   color: #001b1c;
   height: 45px;
 }
-.commonBtn:hover {
+:root .commonBtn:hover {
   background-color: #001b1c;
   border-color: #001b1c;
   color: #00ff4e;

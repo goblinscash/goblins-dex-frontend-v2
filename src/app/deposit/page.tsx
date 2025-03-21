@@ -4,10 +4,15 @@ import { useEthersSigner } from "@/hooks/useEthersSigner";
 import { useAccount, useChainId } from "wagmi";
 import ActButton from "@/components/common/ActButton";
 import { fromUnits, toUnits } from "@/utils/math.utils";
-import { allowance, approve, erc20Balance, fetchTokenDetails } from "@/utils/web3.utils";
+import {
+  allowance,
+  approve,
+  erc20Balance,
+  fetchTokenDetails,
+} from "@/utils/web3.utils";
 import { aerodromeContracts } from "@/utils/config.utils";
 import aerodromeRouterAbi from "../../abi/aerodromeRouter.json";
-import bribeVotingRewardAbi from "../../abi/aerodrome/bribeVotingReward.json"
+import bribeVotingRewardAbi from "../../abi/aerodrome/bribeVotingReward.json";
 import voterAbi from "../../abi/aerodrome/voter.json";
 import { ethers, ZeroAddress } from "ethers";
 import styled, { keyframes } from "styled-components";
@@ -32,7 +37,6 @@ const Deposit = () => {
   const token1Address = searchParams.get("token1");
   const id = searchParams.get("id");
 
-
   const [token0, setToken0] = useState<Token | null>(null);
   const [token1, setToken1] = useState<Token | null>(null);
   const [token, setToken] = useState<Token | null>(null);
@@ -41,27 +45,28 @@ const Deposit = () => {
   const [amount, setAmount] = useState("");
   const [pool, setPool] = useState<FormattedPool | null>(null);
 
-  const [tokenBeingSelected, setTokenBeingSelected] = useState<"token0" | "token1" | null>(null);
+  const [tokenBeingSelected, setTokenBeingSelected] = useState<
+    "token0" | "token1" | null
+  >(null);
   const [filteredTokenList, setFilteredTokenList] = useState([]);
 
   const [status, setStatus] = useState<{ [key: string]: boolean }>({
-    "isTokenSelected": false,
-    "isAllowanceForToken0": false,
-    "isAllowanceForToken1": false,
-    "isCompleted": false,
-    "createGauge": false,
-    "isRewardAdded": false,
-    "isAllowanceForToken": false
+    isTokenSelected: false,
+    isAllowanceForToken0: false,
+    isAllowanceForToken1: false,
+    isCompleted: false,
+    createGauge: false,
+    isRewardAdded: false,
+    isAllowanceForToken: false,
   });
-
 
   const handleTokenSelect = (token: Token) => {
     if (tokenBeingSelected === "token0") {
-      setAmount("")
+      setAmount("");
       setToken(token);
     } else if (tokenBeingSelected === "token1") {
       setToken(token);
-      setAmount("")
+      setAmount("");
     }
     setTokenBeingSelected(null);
   };
@@ -70,70 +75,77 @@ const Deposit = () => {
     setAmount(value);
   };
 
-
   const setInitialToken = () => {
-    let tokens_ = tokens.filter((item) => item.chainId == chainId)
+    let tokens_ = tokens.filter((item) => item.chainId == chainId);
     //@ts-expect-error ignore warning
-    tokens_ = [...tokens_, ...stableTokens[chainId]]
+    tokens_ = [...tokens_, ...stableTokens[chainId]];
     //@ts-expect-error ignore warning
-    setFilteredTokenList(tokens_)
+    setFilteredTokenList(tokens_);
     if (tokens_?.length == 0) {
-      setToken(null)
-      return
+      setToken(null);
+      return;
     }
     setToken({
       address: tokens_[0].address,
       symbol: tokens_[0].symbol,
       decimals: tokens_[0].decimals,
-      balance: 0
-    })
-  }
+      balance: 0,
+    });
+  };
 
   useEffect(() => {
     if (chainId) {
-      setInitialToken()
+      setInitialToken();
     }
-  }, [chainId])
+  }, [chainId]);
 
   useEffect(() => {
     if (chainId && token0Address && token1Address) {
-      fetchToken(chainId, token0Address, token1Address)
+      fetchToken(chainId, token0Address, token1Address);
     }
   }, [searchParams, chainId]);
 
   useEffect(() => {
     if (chainId && id) {
-      fetchPoolByIndex(chainId, Number(id))
+      fetchPoolByIndex(chainId, Number(id));
     }
   }, [searchParams, chainId, id]);
 
   useEffect(() => {
     if (chainId && amount0 && amount1 && token0 && token1) {
-      checkAllownceStatus(chainId)
+      checkAllownceStatus(chainId);
     }
   }, [chainId, amount0, amount1, token0]);
 
   useEffect(() => {
-    if (chainId && token0?.address && token1?.address && address && token0.balance == 0 && token1.balance == 0) {
-      fetchTokenBalance()
+    if (
+      chainId &&
+      token0?.address &&
+      token1?.address &&
+      address &&
+      token0.balance == 0 &&
+      token1.balance == 0
+    ) {
+      fetchTokenBalance();
     }
-
   }, [chainId, token0?.address, token1?.address, address]);
 
   useEffect(() => {
-    if (chainId &&  token?.address && address) {
-      fetchRewardTokenBalance()
+    if (chainId && token?.address && address) {
+      fetchRewardTokenBalance();
     }
-
   }, [chainId, token?.address, address]);
 
-
-  const fetchToken = async (chainId: number, token0: string, token1: string) => {
+  const fetchToken = async (
+    chainId: number,
+    token0: string,
+    token1: string
+  ) => {
     const token_ = await fetchTokenDetails(chainId, token0);
-    setToken0(token_)
+    setToken0(token_);
     const _token = await fetchTokenDetails(chainId, token1);
-    setToken1(_token)
-  }
+    setToken1(_token);
+  };
 
   const handProgress = (action: string, status: boolean) => {
     setStatus((prev) => ({ ...prev, [action]: status }));
@@ -144,15 +156,25 @@ const Deposit = () => {
   };
 
   const fetchPoolByIndex = async (chainId: number, index: number) => {
-    const pool_ = await byIndex(chainId, index)
+    const pool_ = await byIndex(chainId, index);
     //@ts-expect-error ignore warn
-    setPool(pool_)
-  }
+    setPool(pool_);
+  };
 
   const fetchTokenBalance = async () => {
-    if(!token0?.address || !token1?.address || !address) return
-    const balance0 = await erc20Balance(chainId, token0?.address, token0?.decimals, address)
-    const balance1 = await erc20Balance(chainId, token1?.address, token1?.decimals, address)
+    if (!token0?.address || !token1?.address || !address) return;
+    const balance0 = await erc20Balance(
+      chainId,
+      token0?.address,
+      token0?.decimals,
+      address
+    );
+    const balance1 = await erc20Balance(
+      chainId,
+      token1?.address,
+      token1?.decimals,
+      address
+    );
 
     if (token0 && token0.address) {
       setToken0({
@@ -160,39 +182,58 @@ const Deposit = () => {
         balance: Number(balance0),
       });
     }
-  
+
     if (token1 && token1.address) {
       setToken1({
         ...token1,
         balance: Number(balance1),
       });
     }
-  }
+  };
 
   const fetchRewardTokenBalance = async () => {
-    if(!token?.address|| !address) return
-    const balance = await erc20Balance(chainId, token?.address, token?.decimals, address)
+    if (!token?.address || !address) return;
+    const balance = await erc20Balance(
+      chainId,
+      token?.address,
+      token?.decimals,
+      address
+    );
     if (token && token.address) {
       setToken({
         ...token,
         balance: Number(balance),
       });
     }
-  }
+  };
 
   const checkAllownceStatus = async (chainId: number) => {
     //@ts-expect-error ignore warn
-    const status0_ = await allowance(chainId, token0?.address, address, aerodromeContracts[chainId].router, amount0, token0?.decimals)
-    handProgress("isAllowanceForToken0", status0_)
+    const status0_ = await allowance(
+      chainId,
+      token0?.address,
+      address,
+      aerodromeContracts[chainId].router,
+      amount0,
+      token0?.decimals
+    );
+    handProgress("isAllowanceForToken0", status0_);
     //@ts-expect-error ignore warn
-    const status1_ = await allowance(chainId, token0?.address, address, aerodromeContracts[chainId].router, amount0, token0?.decimals)
-    handProgress("isAllowanceForToken1", status1_)
-  }
+    const status1_ = await allowance(
+      chainId,
+      token0?.address,
+      address,
+      aerodromeContracts[chainId].router,
+      amount0,
+      token0?.decimals
+    );
+    handProgress("isAllowanceForToken1", status1_);
+  };
 
   const addLiquidity = async () => {
     try {
       if (!address) return alert("Please connect your wallet");
-      if (!amount0 || !amount1 || !token0 || !token1) return
+      if (!amount0 || !amount1 || !token0 || !token1) return;
 
       handleLoad("addLiquidity", true);
       const stable = false;
@@ -212,7 +253,7 @@ const Deposit = () => {
       );
       if (tx0Approve) {
         await tx0Approve.wait();
-        handProgress("isAllowanceForToken0", true)
+        handProgress("isAllowanceForToken0", true);
       }
 
       const tx1Approve = await approve(
@@ -224,7 +265,7 @@ const Deposit = () => {
       );
       if (tx1Approve) {
         await tx1Approve.wait();
-        handProgress("isAllowanceForToken1", true)
+        handProgress("isAllowanceForToken1", true);
       }
 
       const aerodromeRouter = new ethers.Contract(
@@ -247,8 +288,8 @@ const Deposit = () => {
       );
 
       await tx.wait();
-      await fetchPoolByIndex(chainId, Number(id))
-      handProgress("isCompleted", true)
+      await fetchPoolByIndex(chainId, Number(id));
+      handProgress("isCompleted", true);
 
       handleLoad("addLiquidity", false);
     } catch (error) {
@@ -260,7 +301,7 @@ const Deposit = () => {
   const createGuage = async () => {
     try {
       if (!address) return alert("Please connect your wallet");
-      if (pool?.factory == ZeroAddress || pool?.lp == ZeroAddress) return
+      if (pool?.factory == ZeroAddress || pool?.lp == ZeroAddress) return;
 
       handleLoad("createGauge", true);
 
@@ -270,14 +311,12 @@ const Deposit = () => {
         await signer
       );
 
-      const tx = await aerodromeVoter.createGauge(
-        pool?.factory,
-        pool?.lp,
-        { gasLimit: 5000000 }
-      );
+      const tx = await aerodromeVoter.createGauge(pool?.factory, pool?.lp, {
+        gasLimit: 5000000,
+      });
 
       await tx.wait();
-      await fetchPoolByIndex(chainId, Number(id))
+      await fetchPoolByIndex(chainId, Number(id));
       handleLoad("createGauge", false);
     } catch (error) {
       console.log(error);
@@ -288,7 +327,7 @@ const Deposit = () => {
   const addReward = async () => {
     try {
       if (!address) return alert("Please connect your wallet");
-      if (pool?.bribe == ZeroAddress || pool?.lp == ZeroAddress) return
+      if (pool?.bribe == ZeroAddress || pool?.lp == ZeroAddress) return;
 
       handleLoad("addReward", true);
 
@@ -304,7 +343,7 @@ const Deposit = () => {
       if (txApprove) {
         await txApprove.wait();
       }
-      handProgress("isAllowanceForToken", true)
+      handProgress("isAllowanceForToken", true);
       const bribeVotingReward = new ethers.Contract(
         //@ts-expect-error ignore
         pool.bribe,
@@ -320,8 +359,8 @@ const Deposit = () => {
       );
 
       await tx.wait();
-      handProgress("isRewardAdded", true)
-      await fetchPoolByIndex(chainId, Number(id))
+      handProgress("isRewardAdded", true);
+      await fetchPoolByIndex(chainId, Number(id));
       handleLoad("addReward", false);
     } catch (error) {
       console.log(error);
@@ -329,7 +368,7 @@ const Deposit = () => {
     }
   };
 
-  console.log(pool, "pool")
+  console.log(pool, "pool");
   return (
     <>
       {tokenBeingSelected &&
@@ -355,7 +394,9 @@ const Deposit = () => {
                 <div className="md:col-span-5 col-span-12">
                   <div className="cardCstm p-3 md:p-4 rounded-md bg-[var(--backgroundColor2)] opacity-70 relative">
                     <div className="top">
-                      <h4 className="m-0 font-semibold text-xl">Deposit Liquidity</h4>
+                      <h4 className="m-0 font-semibold text-xl">
+                        Deposit Liquidity
+                      </h4>
                     </div>
                     <div className="content pt-3">
                       <SwapList className="list-none py-3 relative z-10 pl-0 mb-0">
@@ -401,10 +442,26 @@ const Deposit = () => {
                         </div>
                       </li> */}
 
-                        <Progress icon={amount0 == '' ? lock : unlock} symbol={token0?.symbol} text="Enter the amount of" />
-                        <Progress icon={status.isAllowanceForToken0 ? unlock : lock} symbol={token0?.symbol} text="Allowed the contracts to access" />
-                        <Progress icon={status.isAllowanceForToken1 ? unlock : lock} symbol={token1?.symbol} text="Allowed the contracts to access" />
-                        <Progress icon={status.isCompleted ? unlock : lock} symbol={token1?.symbol} text="Deposit Liqidity" />
+                        <Progress
+                          icon={amount0 == "" ? lock : unlock}
+                          symbol={token0?.symbol}
+                          text="Enter the amount of"
+                        />
+                        <Progress
+                          icon={status.isAllowanceForToken0 ? unlock : lock}
+                          symbol={token0?.symbol}
+                          text="Allowed the contracts to access"
+                        />
+                        <Progress
+                          icon={status.isAllowanceForToken1 ? unlock : lock}
+                          symbol={token1?.symbol}
+                          text="Allowed the contracts to access"
+                        />
+                        <Progress
+                          icon={status.isCompleted ? unlock : lock}
+                          symbol={token1?.symbol}
+                          text="Deposit Liqidity"
+                        />
                       </SwapList>
                       <div className="btnWrpper mt-3">
                         <ActButton
@@ -417,14 +474,23 @@ const Deposit = () => {
 
                     <div className="content pt-3">
                       <SwapList className="list-none py-3 relative z-10 pl-0 mb-0">
-
-                        <Progress icon={pool?.gauge === ZeroAddress ? lock : unlock} symbol={pool?.symbol} text={pool?.gauge === ZeroAddress ? "Create gauge for this pool" : "Gauge found for this pool"} />
+                        <Progress
+                          icon={pool?.gauge === ZeroAddress ? lock : unlock}
+                          symbol={pool?.symbol}
+                          text={
+                            pool?.gauge === ZeroAddress
+                              ? "Create gauge for this pool"
+                              : "Gauge found for this pool"
+                          }
+                        />
                         <div className="md:col-span-7 col-span-12">
                           <div className="cardCstm p-3 md:p-4 rounded-md bg-[var(--backgroundColor2)] relative">
                             <form action="">
                               <div className="py-2">
                                 <div className="flex items-center justify-between gap-3">
-                                  <span className="font-medium text-base">Add Reward</span>
+                                  <span className="font-medium text-base">
+                                    Add Reward
+                                  </span>
                                   <span className="opacity-60 font-light text-xs">
                                     Available {token?.balance} {token?.symbol}
                                   </span>
@@ -432,9 +498,18 @@ const Deposit = () => {
                                 <div className="flex border border-gray-800 rounded mt-1">
                                   <div
                                     className="cursor-pointer left relative flex items-center gap-2 p-3 border-r border-gray-800 w-[180px]"
-                                    onClick={() => setTokenBeingSelected("token0")}
+                                    onClick={() =>
+                                      setTokenBeingSelected("token0")
+                                    }
                                   >
-                                    <span className="icn"><Logo chainId={chainId} token={token?.address} margin={0} height={20} /></span>
+                                    <span className="icn">
+                                      <Logo
+                                        chainId={chainId}
+                                        token={token?.address}
+                                        margin={0}
+                                        height={20}
+                                      />
+                                    </span>
                                     <span className="">{token?.symbol}</span>
                                     <span className="absolute right-2">
                                       {downArrow}
@@ -444,7 +519,9 @@ const Deposit = () => {
                                     type="number"
                                     className="form-control border-0 p-3 h-10 text-xs bg-transparent w-full"
                                     value={amount}
-                                    onChange={(e) => handleChange(e.target.value)}
+                                    onChange={(e) =>
+                                      handleChange(e.target.value)
+                                    }
                                   />
                                 </div>
                               </div>
@@ -452,15 +529,35 @@ const Deposit = () => {
                           </div>
                         </div>
 
-                        <Progress icon={status.isAllowanceForToken ? unlock : lock} symbol={token?.symbol} text="Allowed the contracts to access" />
-                        <Progress icon={status.isRewardAdded ? unlock : lock} symbol={token?.symbol} text="Deposit reward" />
+                        <Progress
+                          icon={status.isAllowanceForToken ? unlock : lock}
+                          symbol={token?.symbol}
+                          text="Allowed the contracts to access"
+                        />
+                        <Progress
+                          icon={status.isRewardAdded ? unlock : lock}
+                          symbol={token?.symbol}
+                          text="Deposit reward"
+                        />
                       </SwapList>
 
                       <div className="btnWrpper mt-3">
                         <ActButton
-                          label={pool?.gauge === ZeroAddress ? "Create Guage" : "Add Reward"}
-                          onClick={() => pool?.gauge === ZeroAddress ? createGuage() : addReward()}
-                          load={pool?.gauge === ZeroAddress ? load["createGauge"] : load["addReward"]}
+                          label={
+                            pool?.gauge === ZeroAddress
+                              ? "Create Guage"
+                              : "Add Reward"
+                          }
+                          onClick={() =>
+                            pool?.gauge === ZeroAddress
+                              ? createGuage()
+                              : addReward()
+                          }
+                          load={
+                            pool?.gauge === ZeroAddress
+                              ? load["createGauge"]
+                              : load["addReward"]
+                          }
                         />
                       </div>
                     </div>
@@ -479,7 +576,18 @@ const Deposit = () => {
                           </div>
                           <div className="flex border border-gray-800 rounded mt-1">
                             <div className="left relative flex items-center gap-2 p-3 border-r border-gray-800 w-[180px]">
-                              <span className="icn">{token0Address ? <Logo chainId={chainId} token={token0Address} margin={0} height={20} /> : ""} </span>
+                              <span className="icn">
+                                {token0Address ? (
+                                  <Logo
+                                    chainId={chainId}
+                                    token={token0Address}
+                                    margin={0}
+                                    height={20}
+                                  />
+                                ) : (
+                                  ""
+                                )}{" "}
+                              </span>
                               <span className="">{token0?.symbol}</span>
                               <span className="absolute right-2">
                                 {downArrow}
@@ -504,12 +612,23 @@ const Deposit = () => {
                           <div className="flex items-center justify-between gap-3">
                             <span className="font-medium text-base">For</span>
                             <span className="opacity-60 font-light text-xs">
-                              Available {token1?.balance} {token0?.symbol}
+                              Available {token1?.balance} {token1?.symbol}
                             </span>
                           </div>
                           <div className="flex border border-gray-800 rounded mt-1">
                             <div className="left relative flex items-center gap-2 p-3 border-r border-gray-800 w-[180px]">
-                              <span className="icn">{token1Address ? <Logo chainId={chainId} token={token1Address} margin={0} height={20} /> : ""} </span>
+                              <span className="icn">
+                                {token1Address ? (
+                                  <Logo
+                                    chainId={chainId}
+                                    token={token1Address}
+                                    margin={0}
+                                    height={20}
+                                  />
+                                ) : (
+                                  ""
+                                )}{" "}
+                              </span>
                               <span className="">{token1?.symbol}</span>
                               <span className="absolute right-2">
                                 {downArrow}
@@ -534,10 +653,28 @@ const Deposit = () => {
                             <div className="flex-shrink-0">
                               <ul className="list-none pl-0 mb-0 flex items-center">
                                 <li className="" style={{ marginLeft: -10 }}>
-                                  {token0Address ? <Logo chainId={chainId} token={token0Address} margin={0} height={25} /> : ""}
+                                  {token0Address ? (
+                                    <Logo
+                                      chainId={chainId}
+                                      token={token0Address}
+                                      margin={0}
+                                      height={25}
+                                    />
+                                  ) : (
+                                    ""
+                                  )}
                                 </li>
                                 <li className="" style={{ marginLeft: -10 }}>
-                                  {token1Address ? <Logo chainId={chainId} token={token1Address} margin={0} height={25} /> : ""}
+                                  {token1Address ? (
+                                    <Logo
+                                      chainId={chainId}
+                                      token={token1Address}
+                                      margin={0}
+                                      height={25}
+                                    />
+                                  ) : (
+                                    ""
+                                  )}
                                 </li>
                               </ul>
                             </div>
@@ -566,14 +703,22 @@ const Deposit = () => {
                       <div className="py-2">
                         <ul className="list-none pl-0 mb-0">
                           <li className="py-1 flex items-center justify-between gap-2">
-                            <p className="m-0 text-gray-500 text-xs">Liquidity</p>
+                            <p className="m-0 text-gray-500 text-xs">
+                              Liquidity
+                            </p>
                             <p className="m-0 text-gray-500 text-xs">
                               Your Liquidity
                             </p>
                           </li>
                           <li className="py-1 flex items-center justify-between gap-2">
                             <p className="m-0 text-white text-base font-bold">
-                              {pool?.reserve0 ? fromUnits(pool?.reserve0, Number(token0?.decimals)) : "0"} {token0?.symbol}
+                              {pool?.reserve0
+                                ? fromUnits(
+                                    pool?.reserve0,
+                                    Number(token0?.decimals)
+                                  )
+                                : "0"}{" "}
+                              {token0?.symbol}
                             </p>
                             <p className="m-0 text-white text-base font-bold">
                               0.0 {token0?.symbol}
@@ -581,7 +726,13 @@ const Deposit = () => {
                           </li>
                           <li className="py-1 flex items-center justify-between gap-2">
                             <p className="m-0 text-white text-base font-bold">
-                              {pool?.reserve1 ? fromUnits(pool?.reserve1, Number(token1?.decimals)) : "0"} {token1?.symbol}
+                              {pool?.reserve1
+                                ? fromUnits(
+                                    pool?.reserve1,
+                                    Number(token1?.decimals)
+                                  )
+                                : "0"}{" "}
+                              {token1?.symbol}
                             </p>
                             <p className="m-0 text-white text-base font-bold">
                               0.0 {token1?.symbol}
@@ -600,7 +751,6 @@ const Deposit = () => {
     </>
   );
 };
-
 
 export default Deposit;
 
@@ -649,10 +799,10 @@ const lock = (
     strokeLinejoin="round"
     className="lucide lucide-lock !text-amber-600 animate-pulse"
   >
-    <rect width="18" height="11" x="3" y="11" rx="2" ry="2">
-    </rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
   </svg>
-)
+);
 
 const unlock = (
   <svg
@@ -723,4 +873,3 @@ const infoIcn = (
     <path d="M12 8h.01"></path>
   </svg>
 );
-

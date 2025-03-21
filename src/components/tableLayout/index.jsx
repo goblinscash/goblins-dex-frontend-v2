@@ -162,6 +162,7 @@ const TableLayout = ({ column, data }) => {
 const Table = styled.table`
   border-collapse: separate;
   border-spacing: 0 8px;
+  font-size: 14px;
   th {
     background: var(--backgroundColor2);
     color: #666666;
