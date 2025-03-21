@@ -116,10 +116,10 @@ const column: Column[] = [
             </Link>
           </div> */}
           <details className="dropdown">
-            <summary className="border-0 p-0 flex items-center m-1">
+            <summary className="border-0 cursor-pointer p-0 flex items-center m-1">
               {moreIcn}
             </summary>
-            <ul className="menu dropdown-content bg-base-100 rounded-box z-1 w-52 p-2 right-0 shadow-sm text-dark">
+            <ul className="menu dropdown-content bg-base-100 bg-white rounded-box z-1 w-52 p-2 right-0 shadow-sm text-dark">
               <li className="border-b border-dashed border-[#000] py-1">
                 <Link
                   href={url}
