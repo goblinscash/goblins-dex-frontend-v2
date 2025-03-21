@@ -33,7 +33,7 @@ export const gobV2: Record<number, TokenInfo> = {
     }
 }
 
-export const stableToken = {
+export const stableToken: StableTokenMap = {
     8453: [
         {
             "name": "USD Token",
@@ -91,5 +91,5 @@ export const stableToken = {
 export const stableTokens = (chainId: number) => {
     const SUPPORTED_CHAIN = [8453, 84532];
     const id = SUPPORTED_CHAIN.includes(chainId) ? chainId : 8453;
-    return (stableToken as any)[id] || []
+    return (stableToken)[id] || []
 }

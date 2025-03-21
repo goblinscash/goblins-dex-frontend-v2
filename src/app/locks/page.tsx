@@ -50,6 +50,7 @@ const column: Column[] = [
   },
   {
     accessor: "apr", component: (item: VeNFT) => {
+      console.log(item.voting_amount)
       return (
         <>
           <p className="m-0 text-gray-500 text-xs">Rebase APR </p>

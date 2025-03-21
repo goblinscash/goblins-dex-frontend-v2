@@ -103,7 +103,7 @@ const column: Column[] = [
   {
     head: "",
     accessor: "action",
-    component: (item: Data, key: number) => {
+    component: (item: Data) => {
       const url = item.url || "/deposit";
       return (
         <>
