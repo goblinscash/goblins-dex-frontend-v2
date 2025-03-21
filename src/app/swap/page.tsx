@@ -4,6 +4,7 @@ import {
   allowance,
   approve,
   encodedRoute,
+  erc20Balance,
   fetchAmountsOut,
 } from "@/utils/web3.utils";
 import { ethers } from "ethers";
@@ -84,11 +85,13 @@ const Swap = () => {
       address: tokens_[0].address,
       symbol: tokens_[0].symbol,
       decimals: tokens_[0].decimals,
+      balance: 0
     });
     setToken1({
       address: tokens_[1].address,
       symbol: tokens_[1].symbol,
       decimals: tokens_[1].decimals,
+      balance: 0
     });
   };
 
@@ -107,6 +110,14 @@ const Swap = () => {
       checkAllownceStatus(chainId);
     }
   }, [chainId, amount0, token0]);
+
+  useEffect(() => {
+    if (chainId && token0?.address && token1?.address && address) {
+      fetchTokenBalance()
+    }
+
+  }, [chainId, token0?.address, token1?.address, address]);
+
 
   const fetchQuote = async (
     tokenOne: string,
@@ -169,7 +180,6 @@ const Swap = () => {
 
   const handleChange = (value: string) => {
     setAmount0(value);
-
     if (!token0 || !token1) {
       console.error("Token0 or Token1 is missing");
       return;
@@ -181,33 +191,51 @@ const Swap = () => {
   };
 
   const checkAllownceStatus = async (chainId: number) => {
-    //@ts-expect-error ignore warn
+    if (!token0?.address || !address || !amount0) return
     const status0_ = await allowance(
       chainId,
       token0?.address,
       address,
       aerodromeContracts[chainId].universalRouter,
-      amount0,
+      Number(amount0),
       token0?.decimals
     );
-    //@ts-expect-error ignore
     handleLoad(token0?.symbol, status0_);
   };
 
+  const fetchTokenBalance = async () => {
+    if (!token0?.address || !token1?.address || !address) return
+    const balance0 = await erc20Balance(chainId, token0?.address, token0?.decimals, address)
+    const balance1 = await erc20Balance(chainId, token1?.address, token1?.decimals, address)
+
+    if (token0 && token0.address) {
+      setToken0({
+        ...token0,
+        balance: Number(balance0),
+      });
+    }
+
+    if (token1 && token1.address) {
+      setToken1({
+        ...token1,
+        balance: Number(balance1),
+      });
+    }
+  }
+
+
   //@ts-expect-error ignore
-  const root: string[] =
-    quoteData?.data?.length &&
-    quoteData?.data?.reduce((acc: string[], step: SwapStep) => {
-      // Add the "from" address if it's not already in the array
-      if (!acc.includes(step.from)) {
-        acc.push(step.from);
-      }
-      // Add the "to" address if it's not already in the array
-      if (!acc.includes(step.to)) {
-        acc.push(step.to);
-      }
-      return acc;
-    }, []);
+  const root: string[] = quoteData?.data?.length && quoteData?.data?.reduce((acc: string[], step: SwapStep) => {
+    // Add the "from" address if it's not already in the array
+    if (!acc.includes(step.from)) {
+      acc.push(step.from);
+    }
+    // Add the "to" address if it's not already in the array
+    if (!acc.includes(step.to)) {
+      acc.push(step.to);
+    }
+    return acc;
+  }, []);
 
   const rootLength = root?.length;
 
@@ -306,7 +334,7 @@ const Swap = () => {
                         <div className="flex items-center justify-between gap-3">
                           <span className="font-medium text-base">Swap</span>
                           <span className="opacity-60 font-light text-xs">
-                            Available 0.0 {token0?.symbol}
+                            Available {token0?.balance} {token0?.symbol}
                           </span>
                         </div>
                         <div className="flex rounded mt-1">
@@ -346,7 +374,7 @@ const Swap = () => {
                         <div className="flex items-center justify-between gap-3">
                           <span className="font-medium text-base">For</span>
                           <span className="opacity-60 font-light text-xs">
-                            Available 0.0 {token1?.symbol}
+                            Available {token1?.balance} {token1?.symbol}
                           </span>
                         </div>
                         <div className="flex rounded mt-1">
@@ -389,40 +417,40 @@ const Swap = () => {
                             <div className="flex items-start justify-center my-4 gap-2">
                               {root?.length
                                 ? root.map((item: string, index: number) => (
-                                    <div
-                                      className="grow flex items-center justify-center"
-                                      key={item}
-                                    >
-                                      <Logo
-                                        chainId={chainId}
-                                        token={item}
-                                        margin={0}
-                                        height={20}
-                                      />{" "}
-                                      {index + 1 != rootLength ? (
-                                        <>
-                                          <div className="relative grow flex justify-center items-center text-gray-600 dark:text-gray-400">
-                                            <div className="relative z-20 rounded-full bg-[var(--backgroundColor)] p-px sm:p-1">
-                                              <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                width={10}
-                                                height={10}
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth={2}
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                className="lucide lucide-chevrons-right"
-                                              >
-                                                <path d="m6 17 5-5-5-5" />
-                                                <path d="m13 17 5-5-5-5" />
-                                              </svg>
-                                            </div>
+                                  <div
+                                    className="grow flex items-center justify-center"
+                                    key={item}
+                                  >
+                                    <Logo
+                                      chainId={chainId}
+                                      token={item}
+                                      margin={0}
+                                      height={20}
+                                    />{" "}
+                                    {index + 1 != rootLength ? (
+                                      <>
+                                        <div className="relative grow flex justify-center items-center text-gray-600 dark:text-gray-400">
+                                          <div className="relative z-20 rounded-full bg-[var(--backgroundColor)] p-px sm:p-1">
+                                            <svg
+                                              xmlns="http://www.w3.org/2000/svg"
+                                              width={10}
+                                              height={10}
+                                              viewBox="0 0 24 24"
+                                              fill="none"
+                                              stroke="currentColor"
+                                              strokeWidth={2}
+                                              strokeLinecap="round"
+                                              strokeLinejoin="round"
+                                              className="lucide lucide-chevrons-right"
+                                            >
+                                              <path d="m6 17 5-5-5-5" />
+                                              <path d="m13 17 5-5-5-5" />
+                                            </svg>
+                                          </div>
 
-                                            <div className="absolute z-10 top-1.5 sm:top-2 border-t border-dashed border-gray-700 dark:border-gray-900 w-10/12" />
-                                            {/* <div className="absolute z-10 top-6 border-r-2 border-gray-700 h-3" /> */}
-                                            {/* <div className="absolute top-10">
+                                          <div className="absolute z-10 top-1.5 sm:top-2 border-t border-dashed border-gray-700 dark:border-gray-900 w-10/12" />
+                                          {/* <div className="absolute z-10 top-6 border-r-2 border-gray-700 h-3" /> */}
+                                          {/* <div className="absolute top-10">
                                         <div className="w-20 sm:w-28 text-[10px] md:text-xs bg-[var(--backgroundColor)] dark:bg-gray-850 px-3 py-2.5 rounded-md">
                                           <div className=" delay-75 text-center">
                                             {" "}
@@ -430,13 +458,13 @@ const Swap = () => {
                                           </div>
                                         </div>
                                       </div> */}
-                                          </div>
-                                        </>
-                                      ) : (
-                                        ""
-                                      )}
-                                    </div>
-                                  ))
+                                        </div>
+                                      </>
+                                    ) : (
+                                      ""
+                                    )}
+                                  </div>
+                                ))
                                 : "No route found"}
                             </div>
                           )}
