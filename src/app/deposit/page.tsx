@@ -207,24 +207,23 @@ const Deposit = () => {
   };
 
   const checkAllownceStatus = async (chainId: number) => {
-    //@ts-expect-error ignore warn
+    if (!token0?.address || !address || !amount0 || !token1?.address) return
     const status0_ = await allowance(
       chainId,
       token0?.address,
       address,
       aerodromeContracts[chainId].router,
-      amount0,
+      Number(amount0),
       token0?.decimals
     );
     handProgress("isAllowanceForToken0", status0_);
-    //@ts-expect-error ignore warn
     const status1_ = await allowance(
       chainId,
-      token0?.address,
+      token1?.address,
       address,
       aerodromeContracts[chainId].router,
-      amount0,
-      token0?.decimals
+      Number(amount1),
+      token1?.decimals
     );
     handProgress("isAllowanceForToken1", status1_);
   };
