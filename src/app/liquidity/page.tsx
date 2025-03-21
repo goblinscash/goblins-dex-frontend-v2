@@ -5,8 +5,7 @@ import TableLayout from "@/components/tableLayout";
 import { useChainId } from "wagmi";
 import { all } from "@/utils/sugar.utils";
 import Link from "next/link";
-import Image from "next/image";
-import logo from "@/assets/Images/logo.png";
+import Logo from "@/components/common/Logo";
 
 const Nav = styled.div`
   button {
@@ -42,6 +41,9 @@ type Column = {
 };
 
 type Data = {
+  chainId: number;
+  token0: string;
+  token1: string;
   symbol: string;
   volume: string;
   apr: string;
@@ -53,7 +55,15 @@ type Data = {
 const tabs: Tab[] = [
   {
     title: "Active",
-    content: <>adafsdfasd</>,
+    content: <></>,
+  },
+  {
+    title: "Volatile",
+    content: <></>,
+  },
+  {
+    title: "Stable",
+    content: <></>,
   },
 ];
 
@@ -65,26 +75,23 @@ const column: Column[] = [
       return (
         <div key={key} className="flex items-center gap-3">
           <ul className="list-none pl-3 mb-0 flex-shrink-0 flex items-center">
-            {[1, 2].map((item, key) => (
-              <li key={key} className="" style={{ marginLeft: -10 }}>
-                <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
-                  <Image
-                    src={logo}
-                    alt=""
-                    height={10000}
-                    width={10000}
-                    className="max-w-full h-[30px] w-[30px] object-contain"
-                  />
-                </div>
-              </li>
-            ))}
+            <li className="" style={{ marginLeft: -10 }}>
+              <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
+                <Logo chainId={item.chainId} token={item.token0} margin={0} height={20} />{" "}
+              </div>
+            </li>
+            <li className="" style={{ marginLeft: -10 }}>
+              <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
+                <Logo chainId={item.chainId} token={item.token1} margin={0} height={20} />{" "}
+              </div>
+            </li>
           </ul>
           <div className="content">
             <p className="m-0 text-muted">{item?.symbol}</p>
           </div>
         </div>
-      );
-    },
+      )
+    }
   },
   { head: "Apr", accessor: "apr" },
   {
@@ -144,23 +151,31 @@ const column: Column[] = [
   },
 ];
 
+const tabFilter = {
+  0: 1,
+  1: -1,
+  2: 0
+} as const;
+
 const Liquidity = () => {
-  const [activeTab, setActiveTab] = useState<number>(1);
+  const [activeTab, setActiveTab] = useState<number>(0);
   const [pools, setPools] = useState([]);
+  const [type, setType] = useState(1);
 
   const showTab = (tab: number) => {
     setActiveTab(tab);
+    setType(tabFilter[tab as keyof typeof tabFilter]);
   };
 
   const chainId = useChainId();
 
   useEffect(() => {
     if (chainId) {
-      all(chainId, 5, 0).then((result) => setPools(result));
+      all(chainId, 8, 0, type).then((result) => setPools(result));
     }
-  }, [chainId]);
+  }, [chainId, type]);
 
-  console.log(pools, "pool++");
+  console.log(pools, "poolsOOO")
   return (
     <section className="Liquidity py-5 relative">
       <div className="container ">
@@ -192,9 +207,8 @@ const Liquidity = () => {
                     <button
                       key={key}
                       onClick={() => showTab(key)}
-                      className={`${
-                        activeTab === key && "active"
-                      } tab-button font-medium relative py-2 flex-shrink-0  text-xs text-gray-400`}
+                      className={`${activeTab === key && "active"
+                        } tab-button font-medium relative py-2 flex-shrink-0  text-xs text-gray-400`}
                     >
                       {item.title}
                     </button>

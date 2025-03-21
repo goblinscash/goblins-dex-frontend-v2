@@ -19,7 +19,7 @@ const Logo: React.FC<LogoProps> = ({ chainId, token, margin= -10, height= 30 }) 
           alt={`${token} logo`}
           title={token}
           style={{ height: height, marginLeft: margin }}
-          className='max-w-full w-auto rounded-full'
+          className='max-w-full h-auto w-auto rounded-full'
         />
       ) : addIcn}
     </>

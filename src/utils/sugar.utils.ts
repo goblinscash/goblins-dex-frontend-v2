@@ -64,7 +64,7 @@ export type VeNFT = {
 
 
 
-export const all = async (chainId: number, limit: number, offset: number) => {
+export const all = async (chainId: number, limit: number, offset: number, type: number) => {
     try {
         const instance = new ethers.Contract(
             aerodromeContracts[chainId].lpSugar as string,
@@ -76,6 +76,7 @@ export const all = async (chainId: number, limit: number, offset: number) => {
 
         //@ts-expect-error ignore warning
         const formattedPools = poolsRaw.map((pool, index) => ({
+            chainId: chainId,
             id: index,
             lp: pool[0],
             symbol: pool[1],
@@ -98,7 +99,7 @@ export const all = async (chainId: number, limit: number, offset: number) => {
             factory: pool[18],
             emissions: formatValue(pool[19]),
             emissions_token: pool[20],
-            pool_fee: formatValue(pool[21]),
+            pool_fee: Number(formatValue(pool[21])) / 100,
             unstaked_fee: formatValue(pool[22]),
             token0_fees: formatValue(pool[23]),
             token1_fees: formatValue(pool[24]),
@@ -111,8 +112,10 @@ export const all = async (chainId: number, limit: number, offset: number) => {
             volume: 0,
             url: `/deposit?id=${index}&token0=${pool[7]}&token1=${pool[10]}`
         }));
+        //@ts-expect-error ignore warning
+        const pool = type === 1 ? formattedPools : formattedPools.filter((pool) => Number(pool.type) == type)
 
-        return formattedPools;
+        return pool;
     } catch (error) {
         console.log(error, chainId)
         return []

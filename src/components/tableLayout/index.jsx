@@ -54,7 +54,7 @@ const TableLayout = ({ column, data }) => {
           </tbody>
         </Table>
       </div>
-      <div className="text-right mt-1">
+      {/* <div className="text-right mt-1">
         <ul className="inline-flex rounded-full justify-end bg-[var(--backgroundColor2)]">
           <li>
             <button
@@ -154,7 +154,7 @@ const TableLayout = ({ column, data }) => {
             </button>
           </li>
         </ul>
-      </div>
+      </div> */}
     </>
   );
 };
