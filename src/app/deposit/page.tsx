@@ -207,7 +207,7 @@ const Deposit = () => {
   };
 
   const checkAllownceStatus = async (chainId: number) => {
-    if (!token0?.address || !address || !amount0 || !token1?.address) return
+    if (!token0?.address || !address || !amount0 || !token1?.address) return;
     const status0_ = await allowance(
       chainId,
       token0?.address,
@@ -389,7 +389,7 @@ const Deposit = () => {
                 className="mx-auto grid gap-3 md:gap-5 grid-cols-12 items-start"
                 style={{ maxWidth: 1000 }}
               >
-                <div className="md:col-span-5 col-span-12 sticky top-0">
+                <div className="md:col-span-5 col-span-12 md:sticky top-0">
                   <div className="cardCstm p-3 md:p-4 rounded-md bg-[var(--backgroundColor2)] opacity-70 relative">
                     <div className="top">
                       <h4 className="m-0 font-semibold text-xl">
@@ -561,7 +561,7 @@ const Deposit = () => {
                     </div>
                   </div>
                 </div>
-                <div className="md:col-span-7 col-span-12 sticky top-0">
+                <div className="md:col-span-7 col-span-12 md:sticky top-0">
                   <div className="py-2">
                     <div className="cardCstm p-3 md:p-10 rounded-2xl bg-[#0b120d] relative border border-[#2a2a2a]">
                       <form action="">
@@ -587,9 +587,6 @@ const Deposit = () => {
                                 )}{" "}
                               </span>
                               <span className="">{token0?.symbol}</span>
-                              <span className="absolute right-2">
-                                {downArrow}
-                              </span>
                             </div>
                             <input
                               onChange={(e) => setAmount0(e.target.value)}
@@ -601,7 +598,7 @@ const Deposit = () => {
                         </div>
                         <div className="" style={{ margin: "-10px 0" }}>
                           <div className="text-center">
-                            <button className="border-0 p-2 rounded bg-[var(--backgroundColor)]">
+                            <button className="border-0 p-2 text-black rounded bg-[#18b347]">
                               {transfer}
                             </button>
                           </div>
@@ -628,9 +625,6 @@ const Deposit = () => {
                                 )}{" "}
                               </span>
                               <span className="">{token1?.symbol}</span>
-                              <span className="absolute right-2">
-                                {downArrow}
-                              </span>
                             </div>
                             <input
                               onChange={(e) => setAmount1(e.target.value)}

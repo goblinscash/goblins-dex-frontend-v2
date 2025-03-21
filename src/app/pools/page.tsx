@@ -38,7 +38,9 @@ const Pools = () => {
   const [token0, setToken0] = useState<Token | null>(null);
   const [token1, setToken1] = useState<Token | null>(null);
   const [data, setData] = useState<Data[]>([]);
-  const [tokenBeingSelected, setTokenBeingSelected] = useState<"token0" | "token1" | null>(null);
+  const [tokenBeingSelected, setTokenBeingSelected] = useState<
+    "token0" | "token1" | null
+  >(null);
   const [filteredTokenList, setFilteredTokenList] = useState([]);
 
   const handleTokenSelect = (token: Token) => {
@@ -56,29 +58,30 @@ const Pools = () => {
 
   useEffect(() => {
     if (token0 && token1) {
-      setData([{
-        LiquidityName: `${token0.symbol}/${token1.symbol}`,
-        Volume: "",
-        APR: "%",
-        Fees: "",
-        PoolBalance: "",
-      }])
+      setData([
+        {
+          LiquidityName: `${token0.symbol}/${token1.symbol}`,
+          Volume: "",
+          APR: "%",
+          Fees: "",
+          PoolBalance: "",
+        },
+      ]);
     }
-  }, [token0, token1])
+  }, [token0, token1]);
 
   useEffect(() => {
     if (chainId) {
-      setInitialToken()
+      setInitialToken();
     }
-  }, [chainId])
+  }, [chainId]);
 
   const setInitialToken = () => {
     let tokens_ = tokens.filter((item) => item.chainId == chainId);
-    //@ts-expect-error ignore warning
-    tokens_ = [...tokens_, ...stableTokens[chainId]];
+    tokens_ = [...tokens_, ...stableTokens(chainId)];
     //@ts-expect-error ignore
     setFilteredTokenList(tokens_);
-  }
+  };
 
   const handleDepositClick = () => {
     if (!token0 || !token1) {
@@ -171,7 +174,18 @@ const Pools = () => {
                         onClick={() => setTokenBeingSelected("token0")}
                       >
                         <span className="absolute right-2 icn">{downIcn}</span>
-                        <div className="flex-shrink-0">{token0 ? <Logo chainId={chainId} token={token0?.address} margin={0} height={20} /> : addIcn}</div>
+                        <div className="flex-shrink-0">
+                          {token0 ? (
+                            <Logo
+                              chainId={chainId}
+                              token={token0?.address}
+                              margin={0}
+                              height={20}
+                            />
+                          ) : (
+                            addIcn
+                          )}
+                        </div>
                         <div className="content">
                           <p className="m-0 text-white/50 text-xs font-medium">
                             {token0 ? token0.symbol : "Select first token"}
@@ -185,7 +199,18 @@ const Pools = () => {
                         onClick={() => setTokenBeingSelected("token1")}
                       >
                         <span className="absolute right-2 icn">{downIcn}</span>
-                        <div className="flex-shrink-0">{token1 ? <Logo chainId={chainId} token={token1?.address} margin={0} height={20} /> : addIcn}</div>
+                        <div className="flex-shrink-0">
+                          {token1 ? (
+                            <Logo
+                              chainId={chainId}
+                              token={token1?.address}
+                              margin={0}
+                              height={20}
+                            />
+                          ) : (
+                            addIcn
+                          )}
+                        </div>
                         <div className="content">
                           <p className="m-0 text-white/50 text-xs font-medium">
                             {token1 ? token1.symbol : "Select second token"}
@@ -211,12 +236,14 @@ const Pools = () => {
                         </p>
                         <TableLayout column={column} data={data} />
                       </div> */}
-                      {data && <div className="py-3">
-                        <p className="m-0 text-white text-base">
-                          Low Liquidity Pools
-                        </p>
-                        <TableLayout column={column} data={data} />
-                      </div>}
+                      {data && (
+                        <div className="py-3">
+                          <p className="m-0 text-white text-base">
+                            Low Liquidity Pools
+                          </p>
+                          <TableLayout column={column} data={data} />
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
