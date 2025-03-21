@@ -4,7 +4,7 @@ import { useEthersSigner } from "@/hooks/useEthersSigner";
 import { useAccount, useChainId } from "wagmi";
 import ActButton from "@/components/common/ActButton";
 import { fromUnits, toUnits } from "@/utils/math.utils";
-import { allowance, approve, fetchTokenDetails } from "@/utils/web3.utils";
+import { allowance, approve, erc20Balance, fetchTokenDetails } from "@/utils/web3.utils";
 import { aerodromeContracts } from "@/utils/config.utils";
 import aerodromeRouterAbi from "../../abi/aerodromeRouter.json";
 import bribeVotingRewardAbi from "../../abi/aerodrome/bribeVotingReward.json"
@@ -84,7 +84,8 @@ const Deposit = () => {
     setToken({
       address: tokens_[0].address,
       symbol: tokens_[0].symbol,
-      decimals: tokens_[0].decimals
+      decimals: tokens_[0].decimals,
+      balance: 0
     })
   }
 
@@ -112,6 +113,21 @@ const Deposit = () => {
     }
   }, [chainId, amount0, amount1, token0]);
 
+  useEffect(() => {
+    if (chainId && token0?.address && token1?.address && address && token0.balance == 0 && token1.balance == 0) {
+      fetchTokenBalance()
+    }
+
+  }, [chainId, token0?.address, token1?.address, address]);
+
+  useEffect(() => {
+    if (chainId &&  token?.address && address) {
+      fetchRewardTokenBalance()
+    }
+
+  }, [chainId, token?.address, address]);
+
+
   const fetchToken = async (chainId: number, token0: string, token1: string) => {
     const token_ = await fetchTokenDetails(chainId, token0);
     setToken0(token_)
@@ -131,6 +147,37 @@ const Deposit = () => {
     const pool_ = await byIndex(chainId, index)
     //@ts-expect-error ignore warn
     setPool(pool_)
+  }
+
+  const fetchTokenBalance = async () => {
+    if(!token0?.address || !token1?.address || !address) return
+    const balance0 = await erc20Balance(chainId, token0?.address, token0?.decimals, address)
+    const balance1 = await erc20Balance(chainId, token1?.address, token1?.decimals, address)
+
+    if (token0 && token0.address) {
+      setToken0({
+        ...token0,
+        balance: Number(balance0),
+      });
+    }
+  
+    if (token1 && token1.address) {
+      setToken1({
+        ...token1,
+        balance: Number(balance1),
+      });
+    }
+  }
+
+  const fetchRewardTokenBalance = async () => {
+    if(!token?.address|| !address) return
+    const balance = await erc20Balance(chainId, token?.address, token?.decimals, address)
+    if (token && token.address) {
+      setToken({
+        ...token,
+        balance: Number(balance),
+      });
+    }
   }
 
   const checkAllownceStatus = async (chainId: number) => {
@@ -271,7 +318,7 @@ const Deposit = () => {
         toUnits(amount, token?.decimals),
         { gasLimit: 5000000 }
       );
-      
+
       await tx.wait();
       handProgress("isRewardAdded", true)
       await fetchPoolByIndex(chainId, Number(id))
@@ -282,7 +329,7 @@ const Deposit = () => {
     }
   };
 
-  console.log(pool, "pool)))")
+  console.log(pool, "pool")
   return (
     <>
       {tokenBeingSelected &&
@@ -379,7 +426,7 @@ const Deposit = () => {
                                 <div className="flex items-center justify-between gap-3">
                                   <span className="font-medium text-base">Add Reward</span>
                                   <span className="opacity-60 font-light text-xs">
-                                    Available 0.0 {token?.symbol}
+                                    Available {token?.balance} {token?.symbol}
                                   </span>
                                 </div>
                                 <div className="flex border border-gray-800 rounded mt-1">
@@ -427,7 +474,7 @@ const Deposit = () => {
                           <div className="flex items-center justify-between gap-3">
                             <span className="font-medium text-base">Swap</span>
                             <span className="opacity-60 font-light text-xs">
-                              Available 0.0 {token0?.symbol}
+                              Available {token0?.balance} {token0?.symbol}
                             </span>
                           </div>
                           <div className="flex border border-gray-800 rounded mt-1">
@@ -457,7 +504,7 @@ const Deposit = () => {
                           <div className="flex items-center justify-between gap-3">
                             <span className="font-medium text-base">For</span>
                             <span className="opacity-60 font-light text-xs">
-                              Available 0.0 {token0?.symbol}
+                              Available {token1?.balance} {token0?.symbol}
                             </span>
                           </div>
                           <div className="flex border border-gray-800 rounded mt-1">

@@ -5,8 +5,6 @@ import lpSugarAbi from "../abi/sugar/lpSugar.json"
 import veSugarAbi from "../abi/sugar/veSugar.json"
 
 import { formatValue, fromUnits } from "./math.utils";
-// import erc20Abi from "../abi/erc20.json"
-// import { toUnits } from "./math.utils";
 
 export type FormattedPool = {
     lp: string;

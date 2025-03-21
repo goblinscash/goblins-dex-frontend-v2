@@ -36,6 +36,13 @@ function isValidChainId(chainId: number): chainId is keyof typeof uniswapContrac
     return chainId in uniswapContracts && chainId in rpcUrls;
 }
 
+export const erc20Balance = async (chainId: number, token: string, decimals: number, wallet: string) => {
+    const tokenContract = new ethers.Contract(token, erc20Abi, new ethers.JsonRpcProvider(rpcUrls[chainId]));
+    const balance = await tokenContract.balanceOf(wallet);
+    const _balance = Number(fromUnits(balance, decimals))
+    return _balance.toFixed(4)
+}
+
 export const fetchPosition = async (chainId: number, tokenId: number) => {
     try {
         if (!isValidChainId(chainId)) {
@@ -538,7 +545,8 @@ export const fetchTokenDetails = async (chainId: number, token: string) => {
     return {
         address: token,
         symbol,
-        decimals: Number(decimals)
+        decimals: Number(decimals),
+        balance: 0
     }
 }
 

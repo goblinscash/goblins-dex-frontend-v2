@@ -53,7 +53,9 @@ const column: Column[] = [
       return (
         <>
           <p className="m-0 text-gray-500 text-xs">Rebase APR </p>
-          <p className="m-0 text-base text-white">4%
+          <p className="m-0 text-base text-white">
+            7.36432%
+            {/* {calculateRebaseAPR(item.rebase_amount, item.voting_amount, item.decimals)}% */}
           </p>
         </>
       );
@@ -62,7 +64,7 @@ const column: Column[] = [
   {
     accessor: "Locked Amount",
     component: (item: VeNFT) => {
-      const amount = parseFloat(item.amount) / 10** parseInt(item.decimals)
+      const amount = parseFloat(item.amount) / 10 ** parseInt(item.decimals)
       return (
         <>
           <p className="m-0 text-gray-500 text-xs">Locked Amount </p>
@@ -75,7 +77,7 @@ const column: Column[] = [
   {
     accessor: "Voting Power",
     component: (item: VeNFT) => {
-      const votingPower = parseFloat(item.voting_amount) / 10** parseInt(item.decimals)
+      const votingPower = parseFloat(item.voting_amount) / 10 ** parseInt(item.decimals)
       return (
         <>
           <p className="m-0 text-gray-500 text-xs">Voting Power</p>
@@ -88,7 +90,7 @@ const column: Column[] = [
   {
     accessor: "Unlock Date",
     component: (item: VeNFT) => {
-      const formattedDate = formatTimestamp(Number(item.expires_at));
+      const formattedDate = item.expires_at === "0" ? "-" : formatTimestamp(Number(item.expires_at));
       return (
         <>
           <p className="m-0 text-gray-500 text-xs">Unlock Date</p>
