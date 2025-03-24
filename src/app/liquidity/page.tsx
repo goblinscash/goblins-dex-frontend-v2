@@ -77,12 +77,22 @@ const column: Column[] = [
           <ul className="list-none pl-3 mb-0 flex-shrink-0 flex items-center">
             <li className="" style={{ marginLeft: -10 }}>
               <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
-                <Logo chainId={item.chainId} token={item.token0} margin={0} height={20} />{" "}
+                <Logo
+                  chainId={item.chainId}
+                  token={item.token0}
+                  margin={0}
+                  height={20}
+                />{" "}
               </div>
             </li>
             <li className="" style={{ marginLeft: -10 }}>
               <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
-                <Logo chainId={item.chainId} token={item.token1} margin={0} height={20} />{" "}
+                <Logo
+                  chainId={item.chainId}
+                  token={item.token1}
+                  margin={0}
+                  height={20}
+                />{" "}
               </div>
             </li>
           </ul>
@@ -90,8 +100,8 @@ const column: Column[] = [
             <p className="m-0 text-muted">{item?.symbol}</p>
           </div>
         </div>
-      )
-    }
+      );
+    },
   },
   { head: "Apr", accessor: "apr" },
   {
@@ -146,7 +156,7 @@ const column: Column[] = [
 const tabFilter = {
   0: 1,
   1: -1,
-  2: 0
+  2: 0,
 } as const;
 
 const Liquidity = () => {
@@ -167,7 +177,7 @@ const Liquidity = () => {
     }
   }, [chainId, type]);
 
-  console.log(pools, "poolsOOO")
+  console.log(pools, "poolsOOO");
   return (
     <section className="Liquidity py-5 relative">
       <div className="container ">
@@ -199,8 +209,9 @@ const Liquidity = () => {
                     <button
                       key={key}
                       onClick={() => showTab(key)}
-                      className={`${activeTab === key && "active"
-                        } tab-button font-medium relative py-2 flex-shrink-0  text-xs text-gray-400`}
+                      className={`${
+                        activeTab === key && "active"
+                      } tab-button font-medium relative py-2 flex-shrink-0  text-xs text-gray-400`}
                     >
                       {item.title}
                     </button>
