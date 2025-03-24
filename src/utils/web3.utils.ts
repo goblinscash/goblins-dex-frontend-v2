@@ -2,6 +2,7 @@ import { ethers, AbiCoder, ZeroAddress } from "ethers";
 import { aerodromeContracts, RpcUrls, rpcUrls, subGraphUrls, uniswapContracts, vfatContracts } from "./config.utils";
 
 import poolFactoryAbi from "../abi/aerodrome/poolFactoy.json"
+import poolAbi from "../abi/aerodrome/pool.json"
 import nfpmAbi from "../abi/nfpm.json"
 import sickleFactoryAbi from "../abi/sickleFactory.json"
 import erc20Abi from "../abi/erc20.json"
@@ -602,11 +603,39 @@ export const fetchV2Pools = async (chainId: number, token0: string, token1: stri
         new ethers.JsonRpcProvider(rpcUrls[chainId])
     );
 
-    const pool = await poolFactory.getPool(token0, token1, stable)
+    const pool = await poolFactory['getPool(address,address,bool)'](token0, token1, stable);
+    
     if (pool === ZeroAddress) {
-        return ""
+        return [{
+            symbol: "Stable",
+            status: false,
+            action: "New Deposit",
+            url: "/deposit"
+        }]
     }
-    return pool
+
+    const poolInstance = new ethers.Contract(
+        pool,
+        poolAbi,
+        new ethers.JsonRpcProvider(rpcUrls[chainId])
+    );
+
+    const symbol = await poolInstance.name()    
+
+    return [{
+        chainId,
+        pool,
+        symbol,
+        token0,
+        token1,
+        tvl: 0,
+        apr: 0,
+        stable,
+        poolBalance: 0,
+        action: "Deposit",
+        status: true,
+        url: "/deposit"
+    }]
 }
 
 // aerodrome //

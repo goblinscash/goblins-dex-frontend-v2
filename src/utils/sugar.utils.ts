@@ -204,14 +204,15 @@ export const locksByAccount = async (chainId: number, account: string) => {
         // const poolsaw = await instance.all(1,0);
         // const poolsRaw = await instance.byId(12)
 
-        // const poolsRaw = await instance.voter();
-        // const token = await instance.token();
-        // const ve = await instance.ve();
-        // const dist = await instance.dist();
-        // const gov = await instance.gov();
+        const token = await instance.token();
+        const ve = await instance.ve();
+        const dist = await instance.dist();
+        const gov = await instance.gov();
+        const voter = await instance.voter();
 
 
-        //@ts-expect-error ignore warning
+        console.log(token, voter, "poolsRaw", ve, dist, gov)
+        // @ts-expect-error ignore warning
         const formattedLocks = locksRaw.map((lock) => ({
             id: formatValue(lock[0]),
             account: lock[1],
@@ -238,7 +239,6 @@ export const locksByAccount = async (chainId: number, account: string) => {
             managed_id: formatValue(lock[lock.length - 1]),
         }));
 
-        // console.log(token, "poolsRaw", ve, dist, gov, poolsRa)
 
         return formattedLocks
     } catch (error) {

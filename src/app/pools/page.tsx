@@ -2,27 +2,14 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import SelectTokenPopup from "@/components/modals/SelectTokenPopup";
-import TableLayout from "@/components/tableLayout";
 import Logo from "@/components/common/Logo";
 import { useChainId } from "wagmi";
 import { useRouter, useSearchParams } from "next/navigation";
 import { tokens } from "@myswap/token-list";
 import { stableTokens } from "@/utils/constant.utils";
-
-type Column = {
-  head: string;
-  accessor: string;
-  component?: (item: Data, key: number) => React.ReactNode; // Optional component property
-  isComponent?: boolean; // For columns with specific components (like a switch)
-};
-
-type Data = {
-  LiquidityName: string;
-  Volume: string;
-  APR: string;
-  Fees: string;
-  PoolBalance: string;
-};
+import ListLayout from "@/components/lockRow";
+import { fetchV2Pools } from "@/utils/web3.utils";
+import Link from "next/link";
 
 export interface Token {
   address: string;
@@ -31,13 +18,100 @@ export interface Token {
   balance: number;
 }
 
+type Column = {
+  accessor: string;
+  component?: (item: Data, key: number) => React.ReactNode; // Optional component property
+  isComponent?: boolean; // For columns with specific components (like a switch)
+};
+
+type Data = {
+  pool: string;
+  token0: string;
+  token1: string;
+  symbol: string;
+  chainId: number;
+  stable: boolean
+  volume: string;
+  apr: string;
+  poolBalance: string;
+  action: string;
+  status: boolean;
+  url: string;
+};
+
+const column: Column[] = [
+  {
+    accessor: "Lock",
+    component: (item: Data, key: number) => {
+      return (
+        <div key={key} className="flex items-center gap-3">
+          <ul className="list-none pl-3 mb-0 flex-shrink-0 flex items-center">
+            <li className="" style={{ marginLeft: -10 }}>
+              <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
+                <Logo chainId={item.chainId} token={item.token0} margin={0} height={20} />{" "}
+              </div>
+            </li>
+            <li className="" style={{ marginLeft: -10 }}>
+              <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
+                <Logo chainId={item.chainId} token={item.token1} margin={0} height={20} />{" "}
+              </div>
+            </li>
+          </ul>
+          <div className="content">
+            <p className="m-0 text-muted">{item?.symbol}</p>
+          </div>
+        </div>
+      )
+    }
+  },
+  {
+    accessor: "TVL", component: (item: Data) => {
+      return (
+        <>
+          <p className="m-0 text-gray-500 text-xs">TVL </p>
+          <p className="m-0 text-base text-white">
+            0 $
+          </p>
+        </>
+      );
+    },
+  },
+  {
+    accessor: "Apr",
+    component: (item: Data) => {
+      return (
+        <>
+          <p className="m-0 text-gray-500 text-xs">APR </p>
+          <p className="m-0 text-base text-white">
+            0 %
+          </p>
+        </>
+      );
+    },
+  },
+  {
+    accessor: "Action",
+    component: (item: Data) => {
+      return (
+        <>
+          <Link href={item.url} className="flex items-center justify-center rounded-xl font-semibold transition duration-[400ms] border border-[#454545] h-[38px] px-4 text-white hover:bg-[#00ff4e] hover:text-[#000]">
+
+            {item.action}
+          </Link>
+        </>
+      );
+    },
+  }
+];
+
 const Pools = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const chainId = useChainId();
   const [token0, setToken0] = useState<Token | null>(null);
   const [token1, setToken1] = useState<Token | null>(null);
-  const [data, setData] = useState<Data[]>([]);
+  const [stablePool, setStablePool] = useState<Data[]>([]);
+  const [volatilePool, setVolatilePool] = useState<Data[]>([]);
   const [tokenBeingSelected, setTokenBeingSelected] = useState<
     "token0" | "token1" | null
   >(null);
@@ -57,18 +131,10 @@ const Pools = () => {
   };
 
   useEffect(() => {
-    if (token0 && token1) {
-      setData([
-        {
-          LiquidityName: `${token0.symbol}/${token1.symbol}`,
-          Volume: "",
-          APR: "%",
-          Fees: "",
-          PoolBalance: "",
-        },
-      ]);
+    if (chainId && token0 && token1) {
+      fetchPools()
     }
-  }, [token0, token1]);
+  }, [chainId, token0, token1]);
 
   useEffect(() => {
     if (chainId) {
@@ -97,51 +163,18 @@ const Pools = () => {
     router.push(`/deposit?${queryParams.toString()}`);
   };
 
-  const column: Column[] = [
-    {
-      head: "Liquidity Pool",
-      accessor: "Liquidity",
-      component: (item: Data, key: number) => {
-        return (
-          <div key={key} className="flex items-center gap-3">
-            <div className="content">
-              <p className="m-0 text-muted">{item?.LiquidityName}</p>
-            </div>
-          </div>
-        );
-      },
-    },
-    { head: "APR", accessor: "APR" },
-    {
-      head: "Volume",
-      accessor: "Volume",
-      isComponent: true,
-    },
-    {
-      head: "Fees",
-      accessor: "Fees",
-    },
-    {
-      head: "Pool Balance",
-      accessor: "PoolBalance",
-    },
-    {
-      head: "",
-      accessor: "action",
-      component: () => {
-        return (
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => handleDepositClick()}
-              className="flex items-center justify-center btn commonBtn rounded-lg h-[40px] px-4 font-medium"
-            >
-              New Deposit
-            </button>
-          </div>
-        );
-      },
-    },
-  ];
+  const fetchPools = async () => {
+    if (!token0 || !token1) return;
+    const stable = await fetchV2Pools(chainId, token0.address, token1.address, true);
+    //@ts-expect-error ignore
+    setStablePool(stable);
+    const volatile = await fetchV2Pools(chainId, token0.address, token1.address, false);
+    //@ts-expect-error ignore
+    setVolatilePool(volatile);
+  }
+
+  console.log(stablePool, "poolgffffs", volatilePool)
+
 
   return (
     <>
@@ -218,27 +251,42 @@ const Pools = () => {
                         </div>
                       </div>
                     </div>
+                    {token0?.address && token1?.address ? "" :
+                      <div className="col-span-12">
+                        <div className="flex items-center relative iconWithText cursor-pointer rounded-lg bg-[#000e0e] gap-3 px-4 py-5">
+                          <span className="">{infoIcn}</span>
+                          <div className="content">
+                            <p className="m-0 text-white/50 text-xs font-medium">
+                              Start by selecting the tokens. The liquidity pools
+                              available for deposit will show up next.
+                            </p>
+                          </div>
+                        </div>
+                      </div>}
+
+
                     <div className="col-span-12">
-                      <div className="flex items-center relative iconWithText cursor-pointer rounded-lg bg-[#000e0e] gap-3 px-4 py-5">
-                        <span className="">{infoIcn}</span>
-                        <div className="content">
-                          <p className="m-0 text-white/50 text-xs font-medium">
-                            Start by selecting the tokens. The liquidity pools
-                            available for deposit will show up next.
-                          </p>
+                      <div className="py-2">
+                        <h4 className="m-0 font-medium text-l">Available pools</h4>
+                      </div>
+                      <div className="w-full">
+                        <div className="tabContent pt-3">
+                          {stablePool.length > 0 && stablePool[0]?.status == true && <ListLayout column={column} data={stablePool} />}
+                          {volatilePool.length > 0 && volatilePool[0]?.status == true && <ListLayout column={column} data={volatilePool} />}
                         </div>
                       </div>
                     </div>
 
                     <div className="col-span-12">
-                      {data && (
-                        <div className="py-3">
-                          <p className="m-0 text-white text-base">
-                            Low Liquidity Pools
-                          </p>
-                          <TableLayout column={column} data={data} />
+                      <div className="py-2">
+                        <h4 className="m-0 font-medium text-l">Low liquidity pools</h4>
+                      </div>
+                      <div className="w-full">
+                        <div className="tabContent pt-3">
+                          {stablePool.length > 0 && stablePool[0]?.status == false && <ListLayout column={column} data={stablePool} />}
+                          {volatilePool.length > 0 && volatilePool[0]?.status == false && <ListLayout column={column} data={volatilePool} />}
                         </div>
-                      )}
+                      </div>
                     </div>
                   </div>
                 </div>
