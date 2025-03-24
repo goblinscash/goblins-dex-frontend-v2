@@ -72,6 +72,11 @@ const Header = () => {
                     </Link>
                   </li>
                   <li className="px-2">
+                    <Link href="/vote" className="">
+                      Vote
+                    </Link>
+                  </li>
+                  <li className="px-2">
                     <Link href="/farm" className="">
                       Farm
                     </Link>
