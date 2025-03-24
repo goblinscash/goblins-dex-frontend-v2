@@ -36,7 +36,6 @@ type Data = {
   poolBalance: string;
   action: string;
   status: boolean;
-  url: string;
 };
 
 const column: Column[] = [
@@ -92,9 +91,10 @@ const column: Column[] = [
   {
     accessor: "Action",
     component: (item: Data) => {
+      const url = `/deposit?token0=${item.token0}&token1=${item.token1}&stable=${item.stable}`;
       return (
         <>
-          <Link href={item.url} className="flex items-center justify-center rounded-xl font-semibold transition duration-[400ms] border border-[#454545] h-[38px] px-4 text-white hover:bg-[#00ff4e] hover:text-[#000]">
+          <Link href={url} className="flex items-center justify-center rounded-xl font-semibold transition duration-[400ms] border border-[#454545] h-[38px] px-4 text-white hover:bg-[#00ff4e] hover:text-[#000]">
 
             {item.action}
           </Link>
@@ -165,12 +165,12 @@ const Pools = () => {
 
   const fetchPools = async () => {
     if (!token0 || !token1) return;
-    const stable = await fetchV2Pools(chainId, token0.address, token1.address, true);
-    //@ts-expect-error ignore
-    setStablePool(stable);
     const volatile = await fetchV2Pools(chainId, token0.address, token1.address, false);
     //@ts-expect-error ignore
     setVolatilePool(volatile);
+    const stable = await fetchV2Pools(chainId, token0.address, token1.address, true);
+    //@ts-expect-error ignore
+    setStablePool(stable);
   }
 
   console.log(stablePool, "poolgffffs", volatilePool)

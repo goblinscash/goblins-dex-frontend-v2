@@ -607,10 +607,14 @@ export const fetchV2Pools = async (chainId: number, token0: string, token1: stri
     
     if (pool === ZeroAddress) {
         return [{
+            stable,
+            chainId,
+            pool: ZeroAddress,
+            token0,
+            token1,
             symbol: "Stable",
             status: false,
             action: "New Deposit",
-            url: "/deposit"
         }]
     }
 
@@ -634,7 +638,6 @@ export const fetchV2Pools = async (chainId: number, token0: string, token1: stri
         poolBalance: 0,
         action: "Deposit",
         status: true,
-        url: "/deposit"
     }]
 }
 

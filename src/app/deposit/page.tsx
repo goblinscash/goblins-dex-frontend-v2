@@ -36,6 +36,7 @@ const Deposit = () => {
   const token0Address = searchParams.get("token0");
   const token1Address = searchParams.get("token1");
   const id = searchParams.get("id");
+  const stable = searchParams.get("stable");
 
   const [token0, setToken0] = useState<Token | null>(null);
   const [token1, setToken1] = useState<Token | null>(null);
@@ -234,7 +235,6 @@ const Deposit = () => {
       if (!amount0 || !amount1 || !token0 || !token1) return;
 
       handleLoad("addLiquidity", true);
-      const stable = false;
       const amount0Desired = toUnits(amount0, token0?.decimals);
       const amount1Desired = toUnits(amount1, token1?.decimals);
       const amount0Min = 0;

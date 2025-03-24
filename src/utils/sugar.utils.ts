@@ -99,7 +99,7 @@ export const all = async (chainId: number, limit: number, offset: number, type: 
             factory: pool[18],
             emissions: formatValue(pool[19]),
             emissions_token: pool[20],
-            pool_fee: `${Number(formatValue(pool[21])) / 100} %`,
+            pool_fee: `${Number(formatValue(pool[21]))} %`,
             unstaked_fee: formatValue(pool[22]),
             token0_fees: formatValue(pool[23]),
             token1_fees: formatValue(pool[24]),
@@ -110,7 +110,7 @@ export const all = async (chainId: number, limit: number, offset: number, type: 
             poolBalance: `${Number(fromUnits(pool[8], Number(pool[2]))) + Number(fromUnits(pool[11], Number(pool[2])))} $`,
             apr: 0,
             volume: 0,
-            url: `/deposit?id=${index}&token0=${pool[7]}&token1=${pool[10]}`
+            url: `/deposit?id=${index}&token0=${pool[7]}&token1=${pool[10]}&stable=${Number(pool.type) == -1 ? false: true}`
         }));
         //@ts-expect-error ignore warning
         const pool = type === 1 ? formattedPools : formattedPools.filter((pool) => Number(pool.type) == type)
