@@ -229,6 +229,17 @@ const Deposit = () => {
     handProgress("isAllowanceForToken1", status1_);
   };
 
+  const swapTokens = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (!token0 || !token1) return;
+
+    const newToken0 = { ...token1 };
+    const newToken1 = { ...token0 };
+
+    setToken0(newToken0);
+    setToken1(newToken1);
+  };
+
   const addLiquidity = async () => {
     try {
       if (!address) return alert("Please connect your wallet");
@@ -398,48 +409,6 @@ const Deposit = () => {
                     </div>
                     <div className="content pt-3">
                       <SwapList className="list-none py-3 relative z-10 pl-0 mb-0">
-                        {/* <li className="py-1 flex itmes-start gap-3 ">
-                        <span className="flex bg-[var(--backgroundColor)] h-6 w-6 text-green-500 items-center justify-center rounded-full">
-                          {calculate}
-                        </span>
-                        <div className="content text-xs text-gray-400">
-                          <p className="m-0">
-                            Exchange rate found...{" "}
-                            <button className="border-0 p-0">Refresh</button>
-                          </p>
-                          <p className="m-0 flex items-center mt-1 gap-1 font-medium">
-                            1 ETH {exchange} 2,528.32 AERO
-                          </p>
-                        </div>
-                      </li>
-                      <li className="py-1 flex itmes-start gap-3 ">
-                        <span className="flex bg-[var(--backgroundColor)] h-6 w-6 text-green-500 items-center justify-center rounded-full">
-                          {plus}
-                        </span>
-                        <div className="content text-xs text-gray-400">
-                          <p className="m-0">
-                            1.0% slippage applied...
-                            <button className="border-0 p-0">Adjust</button>
-                          </p>
-                        </div>
-                      </li>
-                      <li className="py-1 flex itmes-start gap-3 ">
-                        <span className="flex bg-[var(--backgroundColor)] h-6 w-6 text-green-500 items-center justify-center rounded-full">
-                          {icn}
-                        </span>
-                        <div className="content text-xs text-gray-400">
-                          <p className="m-0">Minimum received 2,503.03 AERO</p>
-                        </div>
-                      </li>
-                      <li className="py-1 flex itmes-start gap-3 ">
-                        <span className="flex bg-[var(--backgroundColor)] h-6 w-6 text-green-500 items-center justify-center rounded-full">
-                          {check}
-                        </span>
-                        <div className="content text-xs text-gray-400">
-                          <p className="m-0">0.61814% price impact is safe</p>
-                        </div>
-                      </li> */}
-
                         <Progress
                           icon={amount0 == "" ? lock : unlock}
                           symbol={token0?.symbol}
@@ -598,7 +567,10 @@ const Deposit = () => {
                         </div>
                         <div className="" style={{ margin: "-10px 0" }}>
                           <div className="text-center">
-                            <button className="border-0 p-2 text-black rounded bg-[#18b347]">
+                            <button
+                              onClick={(e) => swapTokens(e)}
+                              className="border-0 p-2 text-black rounded bg-[#18b347]"
+                            >
                               {transfer}
                             </button>
                           </div>
@@ -706,9 +678,9 @@ const Deposit = () => {
                             <p className="m-0 text-white text-base font-bold">
                               {pool?.reserve0
                                 ? fromUnits(
-                                    pool?.reserve0,
-                                    Number(token0?.decimals)
-                                  )
+                                  pool?.reserve0,
+                                  Number(token0?.decimals)
+                                )
                                 : "0"}{" "}
                               {token0?.symbol}
                             </p>
@@ -720,9 +692,9 @@ const Deposit = () => {
                             <p className="m-0 text-white text-base font-bold">
                               {pool?.reserve1
                                 ? fromUnits(
-                                    pool?.reserve1,
-                                    Number(token1?.decimals)
-                                  )
+                                  pool?.reserve1,
+                                  Number(token1?.decimals)
+                                )
                                 : "0"}{" "}
                               {token1?.symbol}
                             </p>

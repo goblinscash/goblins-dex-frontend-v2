@@ -159,9 +159,6 @@ const Pools = () => {
     setStablePool(stable);
   }
 
-  console.log(stablePool, "poolgffffs", volatilePool)
-
-
   return (
     <>
       {tokenBeingSelected &&

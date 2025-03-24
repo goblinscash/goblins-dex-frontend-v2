@@ -606,13 +606,16 @@ export const fetchV2Pools = async (chainId: number, token0: string, token1: stri
     const pool = await poolFactory['getPool(address,address,bool)'](token0, token1, stable);
     
     if (pool === ZeroAddress) {
+        const _token0 = await fetchTokenDetails(chainId, token0)
+        const _token1 = await fetchTokenDetails(chainId, token1)
+        const _symbol = stable ? "s" : "v"
         return [{
             stable,
             chainId,
             pool: ZeroAddress,
             token0,
             token1,
-            symbol: "Stable",
+            symbol: _symbol + "AMM - " + `${_token0.symbol}/${_token1.symbol}`,
             status: false,
             action: "New Deposit",
         }]
@@ -637,7 +640,7 @@ export const fetchV2Pools = async (chainId: number, token0: string, token1: stri
         stable,
         poolBalance: 0,
         action: "Deposit",
-        status: true,
+        status: true
     }]
 }
 

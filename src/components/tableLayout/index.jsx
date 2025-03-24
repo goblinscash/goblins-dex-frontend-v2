@@ -33,7 +33,7 @@ const TableLayout = ({ column, data }) => {
                         return (
                           <td
                             key={colIndex}
-                            className="border-0 p-3 capitalize fw-sbold"
+                            className="border-0 p-3 fw-sbold"
                           >
                             {item.component(rowData, rowIndex, data)}
                           </td>
@@ -43,7 +43,7 @@ const TableLayout = ({ column, data }) => {
                       return (
                         <td
                           key={colIndex}
-                          className="border-0 capitalize p-3 fw-sbold"
+                          className="border-0 p-3 fw-sbold"
                         >
                           {rowData[item?.accessor]}
                         </td>
