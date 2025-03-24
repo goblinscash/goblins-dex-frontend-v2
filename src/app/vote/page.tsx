@@ -54,7 +54,7 @@ const Vote = () => {
     {
       head: "Pools",
       accessor: "Pools",
-      component: (item: Data, key: number) => {
+      component: () => {
         return (
           <div>
             <div className="flex items-center gap-3 border-b pb-3 border-[#2a2a2a] mb-3">
@@ -100,7 +100,7 @@ const Vote = () => {
     {
       head: "Fees",
       accessor: "fees",
-      component: (item: Data, key: number) => {
+      component: () => {
         return (
           <div className="rounded p-3 bg-[#091616] text-xs h-full pb-5 text-right">
             No available fees
@@ -111,7 +111,7 @@ const Vote = () => {
     {
       head: "Incentives",
       accessor: "incentives",
-      component: (item: Data, key: number) => {
+      component: () => {
         return (
           <div className="rounded p-3 bg-[#091616] text-xs h-full pb-5 text-right">
             <p className="m-0 pb-3 border-b border-[#2a2a2a]">
@@ -125,7 +125,7 @@ const Vote = () => {
     {
       head: "Total Reward",
       accessor: "Total_Reward",
-      component: (item: Data, key: number) => {
+      component: () => {
         return (
           <div className="rounded p-3 bg-[#091616] text-xs h-full pb-5 text-right">
             <p className="m-0 pb-3 border-b border-[#2a2a2a]">
@@ -139,7 +139,7 @@ const Vote = () => {
     {
       head: "vAPR",
       accessor: "vAPR",
-      component: (item: Data, key: number) => {
+      component: () => {
         return (
           <div className="rounded p-3 bg-[#091616] text-xs h-full pb-5 text-right">
             <p className="m-0 pb-3 border-b border-[#2a2a2a]">7.35852%</p>

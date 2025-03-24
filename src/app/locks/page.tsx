@@ -49,7 +49,7 @@ const column: Column[] = [
     },
   },
   {
-    accessor: "apr", component: (item: VeNFT) => {
+    accessor: "apr", component: () => {
       return (
         <>
           <p className="m-0 text-gray-500 text-xs">Rebase APR </p>

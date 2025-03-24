@@ -64,7 +64,7 @@ const column: Column[] = [
     }
   },
   {
-    accessor: "TVL", component: (item: Data) => {
+    accessor: "TVL", component: () => {
       return (
         <>
           <p className="m-0 text-gray-500 text-xs">TVL </p>
@@ -77,7 +77,7 @@ const column: Column[] = [
   },
   {
     accessor: "Apr",
-    component: (item: Data) => {
+    component: () => {
       return (
         <>
           <p className="m-0 text-gray-500 text-xs">APR </p>
@@ -147,20 +147,6 @@ const Pools = () => {
     tokens_ = [...tokens_, ...stableTokens(chainId)];
     //@ts-expect-error ignore
     setFilteredTokenList(tokens_);
-  };
-
-  const handleDepositClick = () => {
-    if (!token0 || !token1) {
-      return;
-    }
-
-    // Construct URL with token parameters
-    const queryParams = new URLSearchParams({
-      token0: token0.address,
-      token1: token1.address,
-    });
-
-    router.push(`/deposit?${queryParams.toString()}`);
   };
 
   const fetchPools = async () => {
