@@ -31,20 +31,14 @@ const TableLayout = ({ column, data }) => {
                     column.map((item, colIndex) => {
                       if (item.component) {
                         return (
-                          <td
-                            key={colIndex}
-                            className="border-0 p-3 fw-sbold"
-                          >
+                          <td key={colIndex} className="border-0 p-3 fw-sbold">
                             {item.component(rowData, rowIndex, data)}
                           </td>
                         );
                       }
 
                       return (
-                        <td
-                          key={colIndex}
-                          className="border-0 p-3 fw-sbold"
-                        >
+                        <td key={colIndex} className="border-0 p-3 fw-sbold">
                           {rowData[item?.accessor]}
                         </td>
                       );
@@ -180,6 +174,7 @@ const Table = styled.table`
   td {
     background: #000e0e;
     color: #fff;
+    vertical-align: top;
   }
 `;
 

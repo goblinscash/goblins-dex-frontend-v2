@@ -141,14 +141,72 @@ const Vote = () => {
       accessor: "vAPR",
       component: () => {
         return (
-          <div className="rounded p-3 bg-[#091616] text-xs h-full pb-5 text-right">
-            <p className="m-0 pb-3 border-b border-[#2a2a2a]">7.35852%</p>
-            <p className="m-0 text-[#7e7e7e] pt-3">
-              ~ 0.0% Votes <br />
-              0.99938 veAERO
-            </p>
-            <p className="m-0 text-[#7e7e7e] pt-3">Vote</p>
-          </div>
+          <>
+            <div className="rounded p-3 bg-[#091616] text-xs h-full pb-5 text-right">
+              <p className="m-0 pb-3 border-b border-[#2a2a2a]">7.35852%</p>
+              <p className="m-0 text-[#7e7e7e] pt-3">
+                ~ 0.0% Votes <br />
+                0.99938 veAERO
+              </p>
+              <p className="m-0 text-[#7e7e7e] pt-3">Vote</p>
+            </div>
+            <div className="dropdown w-full">
+              <div
+                tabIndex={0}
+                role="button"
+                className="btn text-xs w-full text-right text-white flex justify-end border-0 p-0 bg-transparent"
+              >
+                Vote
+              </div>
+              <ul
+                tabIndex={0}
+                className="dropdown-content menu bg-base-100 text-dark right-0 rounded-box z-1 w-52 p-2 shadow-sm"
+              >
+                <li>
+                  <button className="flex items-center gap-2">
+                    <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
+                      <Image
+                        src={logo}
+                        alt=""
+                        className="max-w-full h-[20px] w-auto"
+                        height={100000}
+                        width={100000}
+                      />
+                    </div>
+                    <div className="content">
+                      <h6 className="m-0 text-black text-xs font-medium flex items-center gap-1">
+                        Lock #232434 <span className="icn">{lockIcn}</span>
+                      </h6>
+                      <p className="m-0 text-[#2a2a2a] text-[10px]">
+                        asdfa sdfa sfasdfa
+                      </p>
+                    </div>
+                  </button>
+                </li>
+                <li>
+                  <button className="flex items-center gap-2">
+                    <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
+                      <Image
+                        src={logo}
+                        alt=""
+                        className="max-w-full h-[20px] w-auto"
+                        height={100000}
+                        width={100000}
+                      />
+                    </div>
+                    <div className="content">
+                      <h6 className="m-0 text-black text-xs font-medium flex items-center gap-1">
+                        Lock #232434 <span className="icn">{lockIcn}</span>
+                      </h6>
+                      <p className="m-0 text-[#2a2a2a] text-[10px]">
+                        asdfa sdfa sfasdfa
+                      </p>
+                    </div>
+                  </button>
+                </li>
+              </ul>
+            </div>
+          </>
         );
       },
     },
@@ -173,7 +231,7 @@ const Vote = () => {
 
   return (
     <>
-      <section className="py-8 relative">
+      <section className="pt-8 pb-[100px] relative ">
         <div className="container">
           <div className="grid gap-3 grid-cols-12">
             <div className="col-span-12">
@@ -263,6 +321,63 @@ const Vote = () => {
             </div>
           </div>
         </div>
+        <div className="fixed p-5 bottom-0 z-[9999] left-0 w-full bg-[#131313] flex items-center justify-between gap-3">
+          <div className="grid gap-3 grid-cols-12 w-full">
+            <div className="sm:col-span-6 col-span-12">
+              <div className="cardCstm p-3 rounded-xl bg-[#0b120d] relative border border-[#2a2a2a] flex items-center justify-between  gap-3">
+                <div className="flex items-center gap-2">
+                  <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
+                    <Image
+                      src={logo}
+                      alt=""
+                      className="max-w-full h-[20px] w-auto"
+                      height={100000}
+                      width={100000}
+                    />
+                  </div>
+                  <div className="content">
+                    <h6 className="m-0 text-white text-xs font-medium flex items-center gap-1">
+                      Lock #232434 <span className="icn">{lockIcn}</span>
+                    </h6>
+                    <p className="m-0 text-[10px]">Locked for 4 years</p>
+                  </div>
+                </div>
+                <div className="right text-right">
+                  <p className="m-0 text-base">97.55%</p>
+                  <p className="m-0 text-green-500 text-xs">8 Pools Selected</p>
+                </div>
+              </div>
+            </div>{" "}
+            <div className="sm:col-span-6 col-span-12">
+              <div className="cardCstm p-3 rounded-xl bg-[#0b120d] relative border border-[#2a2a2a] flex items-center justify-between  gap-3">
+                <div className="flex items-center gap-2">
+                  <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
+                    <Image
+                      src={logo}
+                      alt=""
+                      className="max-w-full h-[20px] w-auto"
+                      height={100000}
+                      width={100000}
+                    />
+                  </div>
+                  <div className="content">
+                    <h6 className="m-0 text-white text-xs font-medium flex items-center gap-1">
+                      Lock #232434 <span className="icn">{lockIcn}</span>
+                    </h6>
+                    <p className="m-0 text-[10px]">Locked for 4 years</p>
+                  </div>
+                </div>
+                <div className="right text-right">
+                  <p className="m-0 text-base">97.55%</p>
+                  <p className="m-0 text-green-500 text-xs">8 Pools Selected</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button className="flex items-center justify-center commonBtn px-3 rounded text-xs font-medium h-full">
+            Vote
+          </button>
+        </div>
       </section>
     </>
   );
@@ -307,5 +422,22 @@ const clockIcn = (
     <path d="M12 14v-4"></path>
     <path d="M4 13a8 8 0 0 1 8-7 8 8 0 1 1-5.3 14L4 17.6"></path>
     <path d="M9 17H4v5"></path>
+  </svg>
+);
+
+const lockIcn = (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="12"
+    height="12"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  >
+    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
   </svg>
 );
