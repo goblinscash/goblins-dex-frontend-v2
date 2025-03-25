@@ -6,10 +6,11 @@ import ActButton from "@/components/common/ActButton";
 import { toUnits } from "@/utils/math.utils";
 import { allowance, approve } from "@/utils/web3.utils";
 import { aerodromeContracts } from "@/utils/config.utils";
-import votingEscrowAbi from "../../abi/aerodrome/votingEscrow.json"
+import votingEscrowAbi from "../../abi/aerodrome/votingEscrow.json";
 import { ethers } from "ethers";
 import styled, { keyframes } from "styled-components";
 import Logo from "@/components/common/Logo";
+import RangeSlider from "./RangeSlider";
 // import { FormattedPool } from "@/utils/sugar.utils";
 import { gobV2 } from "@/utils/constant.utils";
 import Progress from "@/components/common/Progress";
@@ -28,11 +29,10 @@ const Deposit = () => {
 
   // const [pool, setPool] = useState<FormattedPool | null>(null);
 
-
   const [status, setStatus] = useState<{ [key: string]: boolean }>({
-    "isAllowanceForToken": false,
-    "createLock": false,
-    "tokenLocked": false
+    isAllowanceForToken: false,
+    createLock: false,
+    tokenLocked: false,
   });
 
   // useEffect(() => {
@@ -43,7 +43,7 @@ const Deposit = () => {
 
   useEffect(() => {
     if (chainId && amount) {
-      checkAllownceStatus(chainId)
+      checkAllownceStatus(chainId);
     }
   }, [chainId, amount]);
 
@@ -63,14 +63,21 @@ const Deposit = () => {
 
   const checkAllownceStatus = async (chainId: number) => {
     //@ts-expect-error ignore warn
-    const status0_ = await allowance(chainId, gobV2[chainId]?.address, address, aerodromeContracts[chainId].votingEscrow, amount, gobV2[chainId]?.decimals)
-    handProgress("isAllowanceForToken", status0_)
-  }
+    const status0_ = await allowance(
+      chainId,
+      gobV2[chainId]?.address,
+      address,
+      aerodromeContracts[chainId].votingEscrow,
+      amount,
+      gobV2[chainId]?.decimals
+    );
+    handProgress("isAllowanceForToken", status0_);
+  };
 
   const createLock = async () => {
     try {
       if (!address) return alert("Please connect your wallet");
-      if (!amount) return
+      if (!amount) return;
 
       handleLoad("createLock", true);
 
@@ -84,7 +91,7 @@ const Deposit = () => {
       if (txApprove) {
         await txApprove.wait();
       }
-      handProgress("isAllowanceForToken", true)
+      handProgress("isAllowanceForToken", true);
 
       const votingEscrow = new ethers.Contract(
         aerodromeContracts[chainId].votingEscrow,
@@ -99,7 +106,7 @@ const Deposit = () => {
       );
 
       await tx.wait();
-      handProgress("tokenLocked", true)
+      handProgress("tokenLocked", true);
       // await fetchPoolByIndex(chainId, Number(id))
       handleLoad("createLock", false);
     } catch (error) {
@@ -120,53 +127,73 @@ const Deposit = () => {
                 style={{ maxWidth: 1000 }}
               >
                 <div className="md:col-span-5 col-span-12">
-                  <div className="cardCstm p-3 md:p-4 rounded-md bg-[var(--backgroundColor2)] opacity-70 relative">
-                    <div className="top">
+                  <div className="cardCstm p-3 md:p-4 rounded-md bg-[var(--backgroundColor2)] opacity-70 relative h-full flex justify-between flex-col">
+                    <div className="top w-full">
                       <h4 className="m-0 font-semibold text-xl">New Lock</h4>
+                      <div className="content pt-3">
+                        <SwapList className="list-none py-3 relative z-10 pl-0 mb-0">
+                          {amount ? (
+                            <>
+                              <Progress
+                                icon={
+                                  status.isAllowanceForToken ? unlock : lock
+                                }
+                                symbol={gobV2[chainId || 8453]?.symbol}
+                                text="Allow the contracts to access"
+                              />
+                              <Progress
+                                icon={status.tokenLocked ? unlock : lock}
+                                symbol={gobV2[chainId || 8453]?.symbol}
+                                text="Lock Created for"
+                              />
+                            </>
+                          ) : (
+                            <>
+                              <li className="py-1 flex itmes-start gap-3 ">
+                                <span className="flex bg-[var(--backgroundColor)] h-6 w-6 text-green-500 items-center justify-center rounded-full">
+                                  1
+                                </span>
+                                <div className="content text-xs text-gray-400">
+                                  <p className="m-0">
+                                    Select the amount of AERO you want to lock.
+                                  </p>
+                                </div>
+                              </li>
+                              <li className="py-1 flex itmes-start gap-3 ">
+                                <span className="flex bg-[var(--backgroundColor)] h-6 w-6 text-green-500 items-center justify-center rounded-full">
+                                  2
+                                </span>
+                                <div className="content text-xs text-gray-400">
+                                  <p className="m-0">
+                                    Select the number of days.
+                                  </p>
+                                </div>
+                              </li>
+                              <li className="py-1 flex itmes-start gap-3 ">
+                                <span className="flex bg-[var(--backgroundColor)] h-6 w-6 text-green-500 items-center justify-center rounded-full">
+                                  3
+                                </span>
+                                <div className="content text-xs text-gray-400">
+                                  <p className="m-0">Confirm the locking!</p>
+                                </div>
+                              </li>
+                              <li className="py-1 flex itmes-start gap-3 ">
+                                <span className="flex bg-[var(--backgroundColor)] h-6 w-6 text-green-500 items-center justify-center rounded-full">
+                                  4
+                                </span>
+                                <div className="content text-xs text-gray-400">
+                                  <p className="m-0">
+                                    Your lock will be available in the
+                                    dashboard.
+                                  </p>
+                                </div>
+                              </li>
+                            </>
+                          )}
+                        </SwapList>
+                      </div>
                     </div>
-                    <div className="content pt-3">
-                      <SwapList className="list-none py-3 relative z-10 pl-0 mb-0">
-                        {amount ?
-                          <>
-                            <Progress icon={status.isAllowanceForToken ? unlock : lock} symbol={gobV2[chainId || 8453]?.symbol} text="Allow the contracts to access" />
-                            <Progress icon={status.tokenLocked ? unlock : lock} symbol={gobV2[chainId || 8453]?.symbol} text="Lock Created for" />
-                          </> :
-                          <>
-                            <li className="py-1 flex itmes-start gap-3 ">
-                              <span className="flex bg-[var(--backgroundColor)] h-6 w-6 text-green-500 items-center justify-center rounded-full">
-                                1
-                              </span>
-                              <div className="content text-xs text-gray-400">
-                                <p className="m-0">Select the amount of AERO you want to lock.</p>
-                              </div>
-                            </li>
-                            <li className="py-1 flex itmes-start gap-3 ">
-                              <span className="flex bg-[var(--backgroundColor)] h-6 w-6 text-green-500 items-center justify-center rounded-full">
-                                2
-                              </span>
-                              <div className="content text-xs text-gray-400">
-                                <p className="m-0">Select the number of days.</p>
-                              </div>
-                            </li>
-                            <li className="py-1 flex itmes-start gap-3 ">
-                              <span className="flex bg-[var(--backgroundColor)] h-6 w-6 text-green-500 items-center justify-center rounded-full">
-                                3
-                              </span>
-                              <div className="content text-xs text-gray-400">
-                                <p className="m-0">Confirm the locking!</p>
-                              </div>
-                            </li>
-                            <li className="py-1 flex itmes-start gap-3 ">
-                              <span className="flex bg-[var(--backgroundColor)] h-6 w-6 text-green-500 items-center justify-center rounded-full">
-                                4
-                              </span>
-                              <div className="content text-xs text-gray-400">
-                                <p className="m-0">Your lock will be available in the dashboard.</p>
-                              </div>
-                            </li>
-                          </>}
-
-                      </SwapList>
+                    <div className="bottom w-full">
                       <div className="btnWrpper mt-3">
                         <ActButton
                           label="Create Lock"
@@ -183,19 +210,31 @@ const Deposit = () => {
                       <form action="">
                         <div className="py-2">
                           <div className="flex items-center justify-between gap-3">
-                            <span className="font-medium text-base">Amount to lock</span>
+                            <span className="font-medium text-base">
+                              Amount to lock
+                            </span>
                             <span className="opacity-60 font-light text-xs">
                               Available 0.0 {gobV2[chainId || 8453]?.symbol}
                             </span>
                           </div>
                           <div className="py-2">
-
                             <div className="flex border border-gray-800 rounded mt-1">
                               <div className="left relative flex items-center gap-2 p-3 border-r border-gray-800 w-[180px]">
                                 <span className="icn">
-                                  {gobV2[chainId || 8453]?.address ? <Logo chainId={chainId} token={gobV2[chainId || 8453]?.address} margin={0} height={20} /> : ""}
+                                  {gobV2[chainId || 8453]?.address ? (
+                                    <Logo
+                                      chainId={chainId}
+                                      token={gobV2[chainId || 8453]?.address}
+                                      margin={0}
+                                      height={20}
+                                    />
+                                  ) : (
+                                    ""
+                                  )}
                                 </span>
-                                <span className="">{gobV2[chainId || 8453]?.symbol}</span>
+                                <span className="">
+                                  {gobV2[chainId || 8453]?.symbol}
+                                </span>
                               </div>
                               <input
                                 onChange={(e) => setAmount(e.target.value)}
@@ -207,11 +246,16 @@ const Deposit = () => {
                           </div>
                           <div className="py-2">
                             <div className="flex items-center justify-between gap-3">
-                              <span className="font-medium text-base">Lock duration</span>
+                              <span className="font-medium text-base">
+                                Lock duration
+                              </span>
                               <span className="opacity-60 font-light text-xs">
                                 Lock duration in days
                               </span>
                             </div>
+                          </div>
+                          <div className="py-2">
+                            <RangeSlider />
                           </div>
                           <div className="flex border border-gray-800 rounded mt-1">
                             <input
@@ -224,8 +268,11 @@ const Deposit = () => {
                           <div className="py-2">
                             <div className="flex p-4 rounded-xl itmes-center gap-2 bg-[#1c1d2a] text-[#a55e10]">
                               <span className="icn">{inforicn}</span>
-                              <p className="m-0">Locking will give you an NFT
-                                , referred to as a veNFT. You can increase the Lock amount or extend the Lock time at any point after.</p>
+                              <p className="m-0">
+                                Locking will give you an NFT , referred to as a
+                                veNFT. You can increase the Lock amount or
+                                extend the Lock time at any point after.
+                              </p>
                             </div>
                           </div>
                         </div>
@@ -241,7 +288,6 @@ const Deposit = () => {
     </>
   );
 };
-
 
 export default Deposit;
 
@@ -290,10 +336,10 @@ const lock = (
     strokeLinejoin="round"
     className="lucide lucide-lock !text-amber-600 animate-pulse"
   >
-    <rect width="18" height="11" x="3" y="11" rx="2" ry="2">
-    </rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
   </svg>
-)
+);
 
 const unlock = (
   <svg
@@ -365,7 +411,6 @@ const unlock = (
 //   </svg>
 // );
 
-
 const inforicn = (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -378,6 +423,8 @@ const inforicn = (
     strokeLinecap="round"
     strokeLinejoin="round"
   >
-    <circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4"></path><path d="M12 8h.01"></path>
+    <circle cx="12" cy="12" r="10"></circle>
+    <path d="M12 16v-4"></path>
+    <path d="M12 8h.01"></path>
   </svg>
-)
+);
