@@ -8,7 +8,8 @@ import { headers } from 'next/headers'
 import { cookieToInitialState } from 'wagmi'
 import { config } from '@/config'
 import Web3ModalProvider from '@/context'
-
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // const geistSans = Geist({
 //   variable: "--font-geist-sans",
@@ -43,6 +44,7 @@ export default async function RootLayout({
             {children}
             <Footer />
           </Web3ModalProvider>
+          <ToastContainer />
         </ThemeProvider>
       </body>
     </html>

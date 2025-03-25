@@ -204,7 +204,8 @@ export const locksByAccount = async (chainId: number, account: string) => {
         );
 
         const locksRaw = await instance.byAccount(account);
-        // @ts-expect-error ignore warning
+
+        //@ts-expect-error ignore
         const formattedLocks = locksRaw.map((lock) => ({
             id: formatValue(lock[0]),
             account: lock[1],

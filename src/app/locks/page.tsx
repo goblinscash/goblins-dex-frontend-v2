@@ -6,7 +6,13 @@ import ListLayout from "@/components/lockRow";
 import Link from "next/link";
 import Image from "next/image";
 import logo from "@/assets/Images/logo.png"
-import { formatTimestamp } from "@/utils/math.utils";
+import { calculateRebaseAPR, formatTimestamp } from "@/utils/math.utils";
+import { useEthersSigner } from "@/hooks/useEthersSigner";
+import { ethers } from "ethers";
+import { aerodromeContracts } from "@/utils/config.utils";
+import votingEscrowAbi from "../../abi/aerodrome/votingEscrow.json"
+import BtnLoader from "@/components/common/BtnLoader";
+
 
 type Column = {
   accessor: string;
@@ -20,6 +26,40 @@ const column: Column[] = [
   {
     accessor: "Lock",
     component: (item: VeNFT) => {
+      const signer = useEthersSigner();
+      const chainId = useChainId();
+      const { address } = useAccount();
+
+      const [load, setLoad] = useState<{ [key: string]: boolean }>({});
+
+      const handleLoad = (action: string, status: boolean) => {
+        setLoad((prev) => ({ ...prev, [action]: status }));
+      };
+      const withdraw = async (tokenId: number) => {
+        try {
+          if (!address) return alert("Please connect your wallet");
+          if (!tokenId) return
+          handleLoad("WithdrawLock", true);
+
+          const votingEscrow = new ethers.Contract(
+            aerodromeContracts[chainId].votingEscrow,
+            votingEscrowAbi,
+            await signer
+          );
+
+          const tx = await votingEscrow.withdraw(
+            tokenId,
+            { gasLimit: 5000000 }
+          );
+
+          await tx.wait();
+          handleLoad("WithdrawLock", false);
+        } catch (error) {
+          console.log(error)
+          handleLoad("WithdrawLock", false);
+        }
+      }
+
       return (
         <>
           <div className="flex items-center gap-2">
@@ -42,6 +82,13 @@ const column: Column[] = [
                   <Link href={""} className="font-medium text-xs text-blue-500">Transfer</Link>
                 </li>
               </ul>
+              <button
+                className="font-medium text-xs text-blue-500"
+                onClick={() => withdraw(parseInt(item.id))}
+                disabled={load["WithdrawLock"]}
+              >
+                {load["WithdrawLock"] ? <>PROCESSING...</> : "Withdraw"}
+              </button>
             </div>
           </div>
         </>
@@ -49,13 +96,12 @@ const column: Column[] = [
     },
   },
   {
-    accessor: "apr", component: () => {
+    accessor: "apr", component: (item: VeNFT) => {
       return (
         <>
           <p className="m-0 text-gray-500 text-xs">Rebase APR </p>
           <p className="m-0 text-base text-white">
-            7.36432%
-            {/* {calculateRebaseAPR(item.rebase_amount, item.voting_amount, item.decimals)}% */}
+            {calculateRebaseAPR(item.rebase_amount, item.amount, item.decimals)}%
           </p>
         </>
       );
@@ -102,7 +148,7 @@ const column: Column[] = [
   }
 ];
 
-const Deposit = () => {
+const Locks = () => {
   const chainId = useChainId();
   const { address } = useAccount();
 
@@ -160,7 +206,7 @@ const Deposit = () => {
   );
 };
 
-export default Deposit;
+export default Locks;
 
 
 

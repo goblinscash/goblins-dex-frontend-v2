@@ -55,13 +55,33 @@ export const formatTimestamp = (timestamp: number) => {
     return diff > 0 ? `Unlocks in ${result}` : `Unlocked ${result} ago`;
 };
 
-export const calculateRebaseAPR = (rebaseAmount: string, votingPower: string, decimals: string) => {
+// export const calculateRebaseAPR = (
+//     rebaseAmount: string,
+//     lockedAmount: string,
+//     decimals: string
+//   ) => {
+//     const rebase = parseFloat(rebaseAmount) / 10 ** parseInt(decimals);
+//     const locked = parseFloat(lockedAmount) / 10 ** parseInt(decimals);
+  
+//     if (locked === 0) return 0;
+  
+//     const yearlyRebase = rebase * 52;
+//     const apr = (yearlyRebase / locked) * 100;
+//     return apr.toFixed(5);
+//   };
+
+export const calculateRebaseAPR = (
+    rebaseAmount: string,
+    lockedAmount: string,
+    decimals: string
+  ) => {
     const rebase = parseFloat(rebaseAmount) / 10 ** parseInt(decimals);
-    const power = parseFloat(votingPower) / 10 ** parseInt(decimals);
+    const locked = parseFloat(lockedAmount) / 10 ** parseInt(decimals);
   
-    if (power === 0) return 0;
+    if (locked === 0) return 0;
   
-    const yearlyRebase = rebase * 52;
-    const apr = (yearlyRebase / power) * 100;
-    return apr.toFixed(2);
+    const yearlyApr = ((rebase) / 78811) * 7 * 24* 60* 60
+  
+    return 7 //yearlyApr.toFixed(5);
   };
+  
