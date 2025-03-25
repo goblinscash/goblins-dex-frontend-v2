@@ -11,14 +11,13 @@ import { ethers } from "ethers";
 import styled, { keyframes } from "styled-components";
 import Logo from "@/components/common/Logo";
 import RangeSlider from "./RangeSlider";
-// import { FormattedPool } from "@/utils/sugar.utils";
 import { gobV2 } from "@/utils/constant.utils";
 import Progress from "@/components/common/Progress";
 import Notify from "@/components/common/Notify";
 import Transfer from "@/components/lockInteraction/Transfer";
 import { useSearchParams } from "next/navigation";
 import { lockById, VeNFT } from "@/utils/sugar.utils";
-// import { toast } from "react-toastify";
+import { toast } from "react-toastify";
 
 const Deposit = () => {
   const searchParams = useSearchParams();
@@ -129,7 +128,7 @@ const Deposit = () => {
   //     if (!address) return toast.warn("Please connect your wallet");
   //     if (!amount) return;
 
-  //     handleLoad("createLock", true);  
+  //     handleLoad("increase", true);  
 
   //     const txApprove = await approve(
   //       gobV2[chainId]?.address,
