@@ -63,7 +63,7 @@ export type VeNFT = {
 };
 
 
-
+//LP Sugar//
 export const all = async (chainId: number, limit: number, offset: number, type: number) => {
     try {
         const instance = new ethers.Contract(
@@ -191,7 +191,10 @@ export const positions = async (chainId: number, limit: number, offset: number, 
         return []
     }
 };
+//LP Sugar//
 
+
+//VE Sugar//
 export const locksByAccount = async (chainId: number, account: string) => {
     try {
         const instance = new ethers.Contract(
@@ -201,17 +204,6 @@ export const locksByAccount = async (chainId: number, account: string) => {
         );
 
         const locksRaw = await instance.byAccount(account);
-        // const poolsaw = await instance.all(1,0);
-        // const poolsRaw = await instance.byId(12)
-
-        const token = await instance.token();
-        const ve = await instance.ve();
-        const dist = await instance.dist();
-        const gov = await instance.gov();
-        const voter = await instance.voter();
-
-
-        console.log(token, voter, "poolsRaw", ve, dist, gov)
         // @ts-expect-error ignore warning
         const formattedLocks = locksRaw.map((lock) => ({
             id: formatValue(lock[0]),
@@ -240,13 +232,13 @@ export const locksByAccount = async (chainId: number, account: string) => {
         }));
 
 
-        return formattedLocks
+        return formattedLocks 
     } catch (error) {
         console.log(error, chainId)
         return []
     }
 };
-
+//VE Sugar//
 
 export const aprSugar = () => { return 0 }
 export const volume = () => { return 0 }
