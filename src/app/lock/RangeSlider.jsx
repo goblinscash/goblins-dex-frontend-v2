@@ -1,38 +1,49 @@
-import React, { useState } from "react";
+import React from "react";
 import styled from "styled-components";
 
-const RangeSlider = () => {
-  const labels = ["7 Days", "1 Year", "2 Years", "3 Years", "4 Years"];
-  const values = [7, 365, 730, 1095, 1460]; // Days corresponding to labels
-  const [value, setValue] = useState(7);
+const RangeSlider = ({ value, onChange }) => {
+  const labels = [
+    "1 Day", "7 Days", "14 Days", "21 Days", "30 Days",
+    "1 Month", "2 Months", "3 Months", "4 Months", "5 Months", "6 Months", "7 Months", "8 Months", "9 Months", "10 Months", "11 Months", "12 Months",
+    "1 Year", "2 Years", "3 Years", "4 Years"
+  ];
+
+  const values = [
+    1, 7, 14, 21, 30,
+    30 * 1, 30 * 2, 30 * 3, 30 * 4, 30 * 5, 30 * 6, 30 * 7, 30 * 8, 30 * 9, 30 * 10, 30 * 11, 30 * 12,
+    365 * 1, 365 * 2, 365 * 3, 365 * 4
+  ];
+
+  const displayLabels = ["7 Days", "1 Year", "2 Years", "3 Years", "4 Years"];
+  const displayValues = [7, 365 * 1, 365 * 2, 365 * 3, 365 * 4];
 
   const handleChange = (event) => {
     const sliderValue = Number(event.target.value);
-    setValue(sliderValue);
+    onChange(values[sliderValue]);
   };
 
   return (
     <div className="flex flex-col items-center p-4 w-full rounded-xl px-4 pb-4 bg-[#0b120d] border-[#2a2a2a] pt-6 border">
-      <div className="mt-3 pb-8 text-xs text-start ">
-        Locking for{" "}
-        <span className="themeClr">
-          {value <= 30 ? `${value} Days` : `${(value / 365).toFixed(1)} Years`}{" "}
-        </span>
-        for 0.0 veAERO voting power
+      <div className="mt-3 pb-8 text-xs text-start">
+        Locking for <span className="themeClr">{labels[values.indexOf(value)]}</span> for 0.0 veAERO voting power
       </div>
       <Slider
         type="range"
         min="0"
         max={values.length - 1}
-        step="0.1"
-        value={values.indexOf(value) !== -1 ? values.indexOf(value) : value}
+        step="1"
+        value={values.indexOf(value)}
         onChange={handleChange}
         className="w-full appearance-none bg-gray-300 h-2 rounded-lg"
       />
-      <div className="flex justify-between w-full text-gray-700 mt-1">
-        {labels.map((label, index) => (
-          <span key={index} className="text-[10px]">
-            {label}
+      <div className="flex justify-between w-full text-gray-400 mt-1">
+        {displayLabels.map((item, index) => (
+          <span
+            key={index}
+            className="text-[10px] "
+     
+          >
+            {item}
           </span>
         ))}
       </div>

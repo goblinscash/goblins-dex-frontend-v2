@@ -239,6 +239,50 @@ export const locksByAccount = async (chainId: number, account: string) => {
         return []
     }
 };
+
+export const lockById = async (chainId: number, tokenId: number) => {
+    try {
+        const instance = new ethers.Contract(
+            aerodromeContracts[chainId].veSugar as string,
+            veSugarAbi,
+            new ethers.JsonRpcProvider(rpcUrls[chainId])
+        );
+
+        const lock = await instance.byId(tokenId);
+
+        const formattedLocks = {
+            id: formatValue(lock[0]),
+            account: lock[1],
+            decimals: formatValue(lock[2]),
+            amount: formatValue(lock[3]),
+            voting_amount: formatValue(lock[4]),
+            governance_amount: formatValue(lock[5]),
+            rebase_amount: formatValue(lock[6]),
+            expires_at: formatValue(lock[7]),
+            voted_at: formatValue(lock[8]),
+            //@ts-expect-error ignore
+            votes: lock.slice(9, -4).reduce((acc, curr, index, arr) => {
+                if (index % 2 === 0) {
+                    acc.push({
+                        lp: curr,
+                        weight: formatValue(arr[index + 1]),
+                    });
+                }
+                return acc;
+            }, []),
+            token: lock[lock.length - 4],
+            permanent: lock[lock.length - 3] === "true",
+            delegate_id: formatValue(lock[lock.length - 2]),
+            managed_id: formatValue(lock[lock.length - 1]),
+        };
+
+
+        return formattedLocks 
+    } catch (error) {
+        console.log(error, chainId)
+        return []
+    }
+};
 //VE Sugar//
 
 export const aprSugar = () => { return 0 }

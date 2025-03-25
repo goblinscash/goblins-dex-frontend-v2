@@ -135,6 +135,12 @@ export const rpcUrls: RpcUrls = {
     56: ""
 } as const
 
+export const explorerUrls: RpcUrls = {
+    84532: "https://sepolia.basescan.org/tx/",
+    8453: "https://basescan.org/tx/",
+    56: ""
+} as const
+
 
 export type SubgraphUrls = {
     [key: number]: string;

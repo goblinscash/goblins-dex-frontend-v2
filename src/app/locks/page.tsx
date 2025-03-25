@@ -4,14 +4,8 @@ import { useAccount, useChainId } from "wagmi";
 import { locksByAccount, VeNFT } from "@/utils/sugar.utils";
 import ListLayout from "@/components/lockRow";
 import Link from "next/link";
-import Image from "next/image";
-import logo from "@/assets/Images/logo.png"
 import { calculateRebaseAPR, formatTimestamp } from "@/utils/math.utils";
-import { useEthersSigner } from "@/hooks/useEthersSigner";
-import { ethers } from "ethers";
-import { aerodromeContracts } from "@/utils/config.utils";
-import votingEscrowAbi from "../../abi/aerodrome/votingEscrow.json"
-import BtnLoader from "@/components/common/BtnLoader";
+import LockInteraction from "@/components/lockInteraction/LockInteraction";
 
 
 type Column = {
@@ -25,75 +19,7 @@ type Column = {
 const column: Column[] = [
   {
     accessor: "Lock",
-    component: (item: VeNFT) => {
-      const signer = useEthersSigner();
-      const chainId = useChainId();
-      const { address } = useAccount();
-
-      const [load, setLoad] = useState<{ [key: string]: boolean }>({});
-
-      const handleLoad = (action: string, status: boolean) => {
-        setLoad((prev) => ({ ...prev, [action]: status }));
-      };
-      const withdraw = async (tokenId: number) => {
-        try {
-          if (!address) return alert("Please connect your wallet");
-          if (!tokenId) return
-          handleLoad("WithdrawLock", true);
-
-          const votingEscrow = new ethers.Contract(
-            aerodromeContracts[chainId].votingEscrow,
-            votingEscrowAbi,
-            await signer
-          );
-
-          const tx = await votingEscrow.withdraw(
-            tokenId,
-            { gasLimit: 5000000 }
-          );
-
-          await tx.wait();
-          handleLoad("WithdrawLock", false);
-        } catch (error) {
-          console.log(error)
-          handleLoad("WithdrawLock", false);
-        }
-      }
-
-      return (
-        <>
-          <div className="flex items-center gap-2">
-            <div className="bg-black rounded-xl p-2 flex items-center justify-center">
-              <Image src={logo} alt="" height={10000} width={10000} className="max-w-full h-[30px] mx-auto w-auto object-contain" />
-            </div>
-            <div className="content">
-              <h6 className="m-0 font-medium text-base">Lock #{item.id}</h6>
-              <ul className="list-none pl-0 mb-0 flex items-center justify-start gap-2 mt-2">
-                <li className="">
-                  <Link href={""} className="font-medium text-xs text-blue-500">Increase</Link>
-                </li>
-                <li className="">
-                  <Link href={""} className="font-medium text-xs text-blue-500">Extend</Link>
-                </li>
-                <li className="">
-                  <Link href={""} className="font-medium text-xs text-blue-500">Merge</Link>
-                </li>
-                <li className="">
-                  <Link href={""} className="font-medium text-xs text-blue-500">Transfer</Link>
-                </li>
-              </ul>
-              <button
-                className="font-medium text-xs text-blue-500"
-                onClick={() => withdraw(parseInt(item.id))}
-                disabled={load["WithdrawLock"]}
-              >
-                {load["WithdrawLock"] ? <>PROCESSING...</> : "Withdraw"}
-              </button>
-            </div>
-          </div>
-        </>
-      );
-    },
+    component: (item: VeNFT) => <LockInteraction item={item} />
   },
   {
     accessor: "apr", component: (item: VeNFT) => {
@@ -151,9 +77,7 @@ const column: Column[] = [
 const Locks = () => {
   const chainId = useChainId();
   const { address } = useAccount();
-
   const [locks, setLocks] = useState<VeNFT | null>(null);
-
   useEffect(() => {
     if (chainId && address) {
       fetchLocksByAccount()
@@ -165,9 +89,6 @@ const Locks = () => {
     const locks_ = await locksByAccount(chainId, address)
     setLocks(locks_)
   }
-
-
-  console.log(locks, "locks")
 
   return (
     <section className="Liquidity py-5 relative">

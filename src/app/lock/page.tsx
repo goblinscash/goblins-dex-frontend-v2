@@ -14,20 +14,25 @@ import RangeSlider from "./RangeSlider";
 // import { FormattedPool } from "@/utils/sugar.utils";
 import { gobV2 } from "@/utils/constant.utils";
 import Progress from "@/components/common/Progress";
+import Notify from "@/components/common/Notify";
+import Transfer from "@/components/lockInteraction/Transfer";
+import { useSearchParams } from "next/navigation";
+import { lockById, VeNFT } from "@/utils/sugar.utils";
+// import { toast } from "react-toastify";
 
 const Deposit = () => {
+  const searchParams = useSearchParams();
+  const transfer_ = searchParams.get("transfer");
+  const id_ = searchParams.get("id");
+
   const [load, setLoad] = useState<{ [key: string]: boolean }>({});
   const signer = useEthersSigner();
   const chainId = useChainId();
   const { address } = useAccount();
 
-  // const searchParams = useSearchParams();
-  // const id = searchParams.get("id");
-
   const [amount, setAmount] = useState("");
-  const [duration, setDuration] = useState("");
-
-  // const [pool, setPool] = useState<FormattedPool | null>(null);
+  const [duration, setDuration] = useState(1);
+  const [lock, setLock] = useState<VeNFT | null>(null);
 
   const [status, setStatus] = useState<{ [key: string]: boolean }>({
     isAllowanceForToken: false,
@@ -35,11 +40,19 @@ const Deposit = () => {
     tokenLocked: false,
   });
 
-  // useEffect(() => {
-  //   if (chainId && id) {
-  //     fetchPoolByIndex(chainId, Number(id))
-  //   }
-  // }, [searchParams, chainId, id]);
+  useEffect(() => {
+    if (chainId && id_) {
+      fetchLocksById()
+    }
+  }, [chainId, id_]);
+
+  const fetchLocksById = async () => {
+    if (!id_) return
+    const locks_ = await lockById(chainId, Number(id_))
+    //@ts-expect-error ignore
+    setLock(locks_)
+  }
+
 
   useEffect(() => {
     if (chainId && amount) {
@@ -55,20 +68,16 @@ const Deposit = () => {
     setLoad((prev) => ({ ...prev, [action]: status }));
   };
 
-  // const fetchPoolByIndex = async (chainId: number, index: number) => {
-  //   const pool_ = await byIndex(chainId, index)
-  //   //@ts-expect-error ignore warn
-  //   setPool(pool_)
-  // }
 
   const checkAllownceStatus = async (chainId: number) => {
-    //@ts-expect-error ignore warn
+    if (!address) return;
+
     const status0_ = await allowance(
       chainId,
       gobV2[chainId]?.address,
       address,
       aerodromeContracts[chainId].votingEscrow,
-      amount,
+      Number(amount),
       gobV2[chainId]?.decimals
     );
     handProgress("isAllowanceForToken", status0_);
@@ -101,13 +110,13 @@ const Deposit = () => {
 
       const tx = await votingEscrow.createLock(
         toUnits(amount, gobV2[chainId]?.decimals),
-        parseInt(duration) * 24 * 3600,
+        duration * 24 * 3600,
         { gasLimit: 5000000 }
       );
 
       await tx.wait();
+      Notify({ chainId, txhash: tx.hash });
       handProgress("tokenLocked", true);
-      // await fetchPoolByIndex(chainId, Number(id))
       handleLoad("createLock", false);
     } catch (error) {
       console.log(error);
@@ -115,10 +124,50 @@ const Deposit = () => {
     }
   };
 
-  // console.log(pool, "pool)))", typeof (duration))
+  // const increase = async () => {
+  //   try {
+  //     if (!address) return toast.warn("Please connect your wallet");
+  //     if (!amount) return;
+
+  //     handleLoad("createLock", true);  
+
+  //     const txApprove = await approve(
+  //       gobV2[chainId]?.address,
+  //       await signer,
+  //       aerodromeContracts[chainId].votingEscrow,
+  //       Number(amount),
+  //       gobV2[chainId]?.decimals
+  //     );
+  //     if (txApprove) {
+  //       await txApprove.wait();
+  //     }
+  //     handProgress("isAllowanceForToken", true);
+
+  //     const votingEscrow = new ethers.Contract(
+  //       aerodromeContracts[chainId].votingEscrow,
+  //       votingEscrowAbi,
+  //       await signer
+  //     );
+
+  //     const tx = await votingEscrow.createLock(
+  //       toUnits(amount, gobV2[chainId]?.decimals),
+  //       duration * 24 * 3600,
+  //       { gasLimit: 5000000 }
+  //     );
+
+  //     await tx.wait();
+  //     Notify({ chainId, txhash: tx.hash });
+  //     handProgress("tokenLocked", true);
+  //     handleLoad("createLock", false);
+  //   } catch (error) {
+  //     console.log(error);
+  //     handleLoad("createLock", false);
+  //   }
+  // };
+
   return (
     <>
-      <section className="relative py-5 ">
+      {!transfer_ && <section className="relative py-5 ">
         <div className="container">
           <div className="grid gap-3 grid-cols-12">
             <div className="col-span-12">
@@ -165,7 +214,7 @@ const Deposit = () => {
                                 </span>
                                 <div className="content text-xs text-gray-400">
                                   <p className="m-0">
-                                    Select the number of days.
+                                    Select the number of weeks. The minimum lock time is one week, and the maximum lock time is 4 years.
                                   </p>
                                 </div>
                               </li>
@@ -255,15 +304,7 @@ const Deposit = () => {
                             </div>
                           </div>
                           <div className="py-2">
-                            <RangeSlider />
-                          </div>
-                          <div className="flex border border-gray-800 rounded mt-1">
-                            <input
-                              onChange={(e) => setDuration(e.target.value)}
-                              value={duration}
-                              type="number"
-                              className="form-control border-0 p-3 h-10 text-xs bg-transparent w-full"
-                            />
+                            <RangeSlider value={duration} onChange={setDuration} />
                           </div>
                           <div className="py-2">
                             <div className="flex p-4 rounded-xl itmes-center gap-2 bg-[#1c1d2a] text-[#a55e10]">
@@ -284,7 +325,9 @@ const Deposit = () => {
             </div>
           </div>
         </div>
-      </section>
+      </section>}
+
+      {transfer_ && <Transfer tokenId={Number(id_)} lock={lock} />}
     </>
   );
 };
@@ -322,24 +365,6 @@ const SwapList = styled.ul`
     animation: ${fadeInOut} 2s infinite;
   }
 `;
-
-const lock = (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="12"
-    height="12"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="lucide lucide-lock !text-amber-600 animate-pulse"
-  >
-    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
-    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-  </svg>
-);
 
 const unlock = (
   <svg

@@ -75,12 +75,12 @@ export const calculateRebaseAPR = (
     lockedAmount: string,
     decimals: string
   ) => {
-    const rebase = parseFloat(rebaseAmount) / 10 ** parseInt(decimals);
+    // const rebase = parseFloat(rebaseAmount) / 10 ** parseInt(decimals);
     const locked = parseFloat(lockedAmount) / 10 ** parseInt(decimals);
   
     if (locked === 0) return 0;
   
-    const yearlyApr = ((rebase) / 78811) * 7 * 24* 60* 60
+    // const yearlyApr = ((rebase) / 78811) * 7 * 24* 60* 60
   
     return 7 //yearlyApr.toFixed(5);
   };
