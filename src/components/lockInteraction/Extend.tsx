@@ -1,4 +1,4 @@
-import { formatTimestamp, fromUnits, toUnits } from '@/utils/math.utils';
+import { formatTimestamp, fromUnits } from '@/utils/math.utils';
 import { lockById, VeNFT } from '@/utils/sugar.utils';
 import React, { useEffect, useState } from 'react'
 import styled, { keyframes } from 'styled-components';

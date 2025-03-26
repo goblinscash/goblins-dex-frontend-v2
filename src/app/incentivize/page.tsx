@@ -118,7 +118,7 @@ const Incentivize = () => {
     "token0" | "token1" | null
   >(null);
   const [filteredTokenList, setFilteredTokenList] = useState([]);
-  const [status, setStatus] = useState<boolean>(false);
+  // const [status, setStatus] = useState<boolean>(false);
 
   const handleTokenSelect = (token: Token) => {
     const newQueryParams = new URLSearchParams(searchParams.toString());

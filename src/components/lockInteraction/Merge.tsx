@@ -1,4 +1,4 @@
-import { fromUnits, toUnits } from '@/utils/math.utils';
+import { fromUnits } from '@/utils/math.utils';
 import { lockById, locksByAccount, VeNFT } from '@/utils/sugar.utils';
 import React, { useEffect, useState } from 'react'
 import styled, { keyframes } from 'styled-components';
@@ -11,7 +11,6 @@ import { aerodromeContracts } from '@/utils/config.utils';
 import votingEscrowAbi from "../../abi/aerodrome/votingEscrow.json";
 import Notify from '../common/Notify';
 import { gobV2 } from '@/utils/constant.utils';
-import { allowance, approve } from '@/utils/web3.utils';
 import Progress from '../common/Progress';
 
 interface MergeProps {
