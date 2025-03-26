@@ -25,7 +25,7 @@ const RangeSlider = ({ value, onChange }) => {
   return (
     <div className="flex flex-col items-center p-4 w-full rounded-xl px-4 pb-4 bg-[#0b120d] border-[#2a2a2a] pt-6 border">
       <div className="mt-3 pb-8 text-xs text-start">
-        Locking for <span className="themeClr">{labels[values.indexOf(value)]}</span> for 0.0 veAERO voting power
+        Extending to <span className="themeClr">{labels[values.indexOf(value)]}</span> for 0.0 veAERO voting power
       </div>
       <Slider
         type="range"
@@ -41,7 +41,7 @@ const RangeSlider = ({ value, onChange }) => {
           <span
             key={index}
             className="text-[10px] "
-     
+
           >
             {item}
           </span>

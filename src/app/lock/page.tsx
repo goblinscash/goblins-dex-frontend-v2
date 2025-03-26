@@ -128,47 +128,6 @@ const Deposit = () => {
     }
   };
 
-  // const increase = async () => {
-  //   try {
-  //     if (!address) return toast.warn("Please connect your wallet");
-  //     if (!amount) return;
-
-  //     handleLoad("increase", true);  
-
-  //     const txApprove = await approve(
-  //       gobV2[chainId]?.address,
-  //       await signer,
-  //       aerodromeContracts[chainId].votingEscrow,
-  //       Number(amount),
-  //       gobV2[chainId]?.decimals
-  //     );
-  //     if (txApprove) {
-  //       await txApprove.wait();
-  //     }
-  //     handProgress("isAllowanceForToken", true);
-
-  //     const votingEscrow = new ethers.Contract(
-  //       aerodromeContracts[chainId].votingEscrow,
-  //       votingEscrowAbi,
-  //       await signer
-  //     );
-
-  //     const tx = await votingEscrow.createLock(
-  //       toUnits(amount, gobV2[chainId]?.decimals),
-  //       duration * 24 * 3600,
-  //       { gasLimit: 5000000 }
-  //     );
-
-  //     await tx.wait();
-  //     Notify({ chainId, txhash: tx.hash });
-  //     handProgress("tokenLocked", true);
-  //     handleLoad("createLock", false);
-  //   } catch (error) {
-  //     console.log(error);
-  //     handleLoad("createLock", false);
-  //   }
-  // };
-
   return (
     <>
       {!transfer_ && !increase_ && !merge_ && !extend_ && <section className="relative py-5 ">

@@ -1,4 +1,4 @@
-import { fromUnits, toUnits } from '@/utils/math.utils';
+import { formatTimestamp, fromUnits, toUnits } from '@/utils/math.utils';
 import { lockById, VeNFT } from '@/utils/sugar.utils';
 import React, { useEffect, useState } from 'react'
 import styled, { keyframes } from 'styled-components';
@@ -10,9 +10,8 @@ import { ethers } from 'ethers';
 import { aerodromeContracts } from '@/utils/config.utils';
 import votingEscrowAbi from "../../abi/aerodrome/votingEscrow.json";
 import Notify from '../common/Notify';
-import { gobV2 } from '@/utils/constant.utils';
-import { allowance, approve } from '@/utils/web3.utils';
 import Progress from '../common/Progress';
+import RangeSlider from '@/app/lock/RangeSlider';
 
 interface ExtendProps {
     tokenId: number;
@@ -21,10 +20,9 @@ interface ExtendProps {
 const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
     const [lock, setLock] = useState<VeNFT | null>(null);
     const [load, setLoad] = useState<{ [key: string]: boolean }>({});
-    const [amount, setAmount] = useState("");
+    const [duration, setDuration] = useState(1);
     const [status, setStatus] = useState<{ [key: string]: boolean }>({
-        isAllowanceForToken: false,
-        tokenLocked: false,
+        extendCompleted: false,
     });
 
     const signer = useEthersSigner();
@@ -39,18 +37,6 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
         setStatus((prev) => ({ ...prev, [action]: status }));
     };
 
-    const checkAllownceStatus = async (chainId: number) => {
-        if (!address) return;
-        const status0_ = await allowance(
-            chainId,
-            gobV2[chainId]?.address,
-            address,
-            aerodromeContracts[chainId].votingEscrow,
-            Number(amount),
-            gobV2[chainId]?.decimals
-        );
-        handProgress("isAllowanceForToken", status0_);
-    };
 
     const fetchLocksById = async () => {
         if (!tokenId) return
@@ -65,29 +51,11 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
         }
     }, [chainId, tokenId]);
 
-    useEffect(() => {
-        if (chainId && amount) {
-            checkAllownceStatus(chainId);
-        }
-    }, [chainId, amount]);
-
-    const increase = async () => {
+    const extend = async () => {
         try {
             if (!address) return toast.warn("Please connect your wallet");
-            handProgress("tokenLocked", false);
-            handleLoad("increase", true);
 
-            const txApprove = await approve(
-                gobV2[chainId]?.address,
-                await signer,
-                aerodromeContracts[chainId].votingEscrow,
-                Number(amount),
-                gobV2[chainId]?.decimals
-            );
-            if (txApprove) {
-                await txApprove.wait();
-            }
-            handProgress("isAllowanceForToken", true);
+            handleLoad("extendLock", true);
 
             const votingEscrow = new ethers.Contract(
                 aerodromeContracts[chainId].votingEscrow,
@@ -95,23 +63,27 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
                 await signer
             );
 
-            const tx = await votingEscrow.increaseAmount(
+            const _duration =  Number(lock?.expires_at) - Math.floor(Date.now() / 1000)
+
+            const tx = await votingEscrow.increaseUnlockTime(
                 tokenId,
-                toUnits(amount, gobV2[chainId]?.decimals),
+                _duration + duration * 24 * 3600,
                 { gasLimit: 5000000 }
             );
 
             await tx.wait();
             await fetchLocksById()
             Notify({ chainId, txhash: tx.hash });
-            handleLoad("increase", false);
-            handProgress("tokenLocked", true);
+            handProgress("extendCompleted", true);
+            handleLoad("extendLock", false);
         } catch (error) {
             console.log(error);
-            handleLoad("increase", false);
+            handleLoad("extendLock", false);
         }
     };
 
+    const formattedDate = lock?.expires_at === "0" ? "-" : formatTimestamp(Number(lock?.expires_at));
+    const date = duration && lock?.expires_at ? new Date(Number(lock.expires_at)*1000 + duration * 24 * 3600000).toUTCString() : ""
     return (
         <>
             <section className="py-8 relative">
@@ -122,7 +94,7 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
                                 <div className="space-y-12">
                                     <div className="space-y-3">
                                         <div className="text-lg">
-                                            Increasing <strong>Lock #{tokenId} </strong>
+                                            Extending <strong>Lock #{tokenId} </strong>
                                         </div>
                                         <div className="space-y-1">
                                             <div className="text-accent-50 text-xs">
@@ -160,7 +132,7 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
                                                     className="inline-block cursor-pointer"
                                                     data-testid="flowbite-tooltip-target"
                                                 >
-                                                    locked for 4 years
+                                                    {formattedDate}
                                                 </div>
                                                 <div
                                                     data-testid="flowbite-tooltip"
@@ -218,32 +190,15 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="space-y-3">
-                                        <label
-                                            className="font-medium dark:text-gray-300 text-xs text-accent-50"
-                                            data-testid="flowbite-label"
-                                            htmlFor="toAddress"
-                                        >
-                                            Wallet address where the lock will be transferred
-                                        </label>
-                                        <div className="flex">
-                                            <div className="relative w-full">
-                                                <input
-                                                    onChange={(e) => setAmount(e.target.value)}
-                                                    value={amount}
-                                                    type="number"
-                                                    className="block w-full disabled:cursor-not-allowed disabled:text-opacity-50 dark:disabled:text-opacity-30 bg-transparent border border-accent-30 hover:border-accent-40 focus:border-accent-40 placeholder-accent-40 outline-0 p-2.5 text-sm rounded-lg"
-                                                />
-                                            </div>
-                                        </div>
+
+                                    <div className="py-2">
+                                        <RangeSlider value={duration} onChange={setDuration} />
                                     </div>
                                     <div className="py-2">
                                         <div className="flex p-4 rounded-xl itmes-center gap-2 bg-[#1c1d2a] text-[#a55e10]">
                                             <span className="icn">{inforicn}</span>
                                             <p className="m-0">
-                                                Locking will give you an NFT , referred to as a
-                                                veNFT. You can increase the Lock amount or
-                                                extend the Lock time at any point after.
+                                                You can extend the lock or increase the lock amount. These actions will increase your voting power. The maximum lock time is 4 years!
                                             </p>
                                         </div>
                                     </div>
@@ -253,7 +208,7 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
                         <div className="md:col-span-6 col-span-12">
                             <div className="cardCstm p-3 md:p-4 rounded-md bg-[var(--backgroundColor2)] opacity-70 relative h-full flex justify-between flex-col">
                                 <div className="top w-full">
-                                    <h4 className="m-0 font-semibold text-xl">Lock Increase</h4>
+                                    <h4 className="m-0 font-semibold text-xl">Extend Lock</h4>
                                     <div className="content pt-3">
                                         <SwapList className="list-none py-3 relative z-10 pl-0 mb-0">
                                             {(
@@ -264,22 +219,16 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
                                                         </span>
                                                         <div className="content text-xs text-gray-400">
                                                             <p className="m-0">
-                                                                Depositing {amount ? amount : 0.0} {gobV2[chainId || 8453]?.symbol}
+                                                                New lock time  {date}
                                                             </p>
                                                         </div>
                                                     </li>
 
+
                                                     <Progress
-                                                        icon={
-                                                            status?.isAllowanceForToken ? unlock : lockIcon
-                                                        }
-                                                        symbol={gobV2[chainId || 8453]?.symbol}
-                                                        text="Allow the contracts to access"
-                                                    />
-                                                    <Progress
-                                                        icon={status?.tokenLocked ? unlock : lockIcon}
-                                                        symbol={gobV2[chainId || 8453]?.symbol}
-                                                        text="Lock Increased for"
+                                                        icon={status?.extendCompleted ? unlock : lockIcon}
+                                                        symbol={`#${tokenId} is completed.`}
+                                                        text="Extend Lock for"
                                                     />
                                                 </>
 
@@ -290,9 +239,9 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
                                 <div className="bottom w-full">
                                     <div className="btnWrpper mt-3">
                                         <ActButton
-                                            label="Deposit"
-                                            onClick={() => increase()}
-                                            load={load["increase"]}
+                                            label="Extend"
+                                            onClick={() => extend()}
+                                            load={load["extendLock"]}
                                         />
                                     </div>
                                 </div>
