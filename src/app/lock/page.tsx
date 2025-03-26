@@ -18,11 +18,13 @@ import Transfer from "@/components/lockInteraction/Transfer";
 import { useSearchParams } from "next/navigation";
 import { lockById, VeNFT } from "@/utils/sugar.utils";
 import { toast } from "react-toastify";
+import Increase from "@/components/lockInteraction/Increase";
 
 const Deposit = () => {
   const searchParams = useSearchParams();
   const transfer_ = searchParams.get("transfer");
   const id_ = searchParams.get("id");
+  const increase_ = searchParams.get("increase");
 
   const [load, setLoad] = useState<{ [key: string]: boolean }>({});
   const signer = useEthersSigner();
@@ -164,9 +166,10 @@ const Deposit = () => {
   //   }
   // };
 
+  console.log(increase_, "increase_")
   return (
     <>
-      {!transfer_ && <section className="relative py-5 ">
+      {!transfer_ && !increase_ && <section className="relative py-5 ">
         <div className="container">
           <div className="grid gap-3 grid-cols-12">
             <div className="col-span-12">
@@ -327,6 +330,7 @@ const Deposit = () => {
       </section>}
 
       {transfer_ && <Transfer tokenId={Number(id_)} lock={lock} />}
+      {increase_ && <Increase tokenId={Number(id_)} lock={lock} />}
     </>
   );
 };

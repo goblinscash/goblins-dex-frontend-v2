@@ -77,6 +77,11 @@ const Header = () => {
                     </Link>
                   </li>
                   <li className="px-2">
+                    <Link href="/incentivize" className="">
+                    Incentivize
+                    </Link>
+                  </li>
+                  <li className="px-2">
                     <Link href="/farm" className="">
                       Farm
                     </Link>
