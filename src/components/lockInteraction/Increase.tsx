@@ -225,7 +225,7 @@ const Increase: React.FC<IncreaseProps> = ({ tokenId }) => {
                                             data-testid="flowbite-label"
                                             htmlFor="toAddress"
                                         >
-                                            Wallet address where the lock will be transferred
+                                            Enter amount to lock
                                         </label>
                                         <div className="flex">
                                             <div className="relative w-full">

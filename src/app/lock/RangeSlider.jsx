@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-const RangeSlider = ({ value, onChange }) => {
+const RangeSlider = ({ value, onChange, title }) => {
   const labels = [
     "1 Day", "7 Days", "14 Days", "21 Days", "30 Days",
     "1 Month", "2 Months", "3 Months", "4 Months", "5 Months", "6 Months", "7 Months", "8 Months", "9 Months", "10 Months", "11 Months", "12 Months",
@@ -25,7 +25,7 @@ const RangeSlider = ({ value, onChange }) => {
   return (
     <div className="flex flex-col items-center p-4 w-full rounded-xl px-4 pb-4 bg-[#0b120d] border-[#2a2a2a] pt-6 border">
       <div className="mt-3 pb-8 text-xs text-start">
-        Extending to <span className="themeClr">{labels[values.indexOf(value)]}</span> for 0.0 veAERO voting power
+        {title} <span className="themeClr">{labels[values.indexOf(value)]}</span> for 0.0 veAERO voting power
       </div>
       <Slider
         type="range"

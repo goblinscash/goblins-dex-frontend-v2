@@ -192,7 +192,7 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
                                     </div>
 
                                     <div className="py-2">
-                                        <RangeSlider value={duration} onChange={setDuration} />
+                                        <RangeSlider value={duration} onChange={setDuration} title="Extending to" />
                                     </div>
                                     <div className="py-2">
                                         <div className="flex p-4 rounded-xl itmes-center gap-2 bg-[#1c1d2a] text-[#a55e10]">
