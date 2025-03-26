@@ -1,6 +1,6 @@
-import { fromUnits } from '@/utils/math.utils';
-import { VeNFT } from '@/utils/sugar.utils';
-import React, { useState } from 'react'
+import { fromUnits, toUnits } from '@/utils/math.utils';
+import { lockById, locksByAccount, VeNFT } from '@/utils/sugar.utils';
+import React, { useEffect, useState } from 'react'
 import styled, { keyframes } from 'styled-components';
 import ActButton from '../common/ActButton';
 import { useEthersSigner } from '@/hooks/useEthersSigner';
@@ -10,16 +10,24 @@ import { ethers } from 'ethers';
 import { aerodromeContracts } from '@/utils/config.utils';
 import votingEscrowAbi from "../../abi/aerodrome/votingEscrow.json";
 import Notify from '../common/Notify';
+import { gobV2 } from '@/utils/constant.utils';
+import { allowance, approve } from '@/utils/web3.utils';
+import Progress from '../common/Progress';
 
-interface TransferProps {
+interface MergeProps {
     tokenId: number;
-    lock: VeNFT | null;
 }
 
-const Transfer: React.FC<TransferProps> = ({ tokenId, lock }) => {
-    const [wallet, setWallet] = useState("")
+const Merge: React.FC<MergeProps> = ({ tokenId }) => {
+    const [lock, setLock] = useState<VeNFT | null>(null);
+    const [locks, setLocks] = useState<VeNFT[]>([]);
 
     const [load, setLoad] = useState<{ [key: string]: boolean }>({});
+    const [selectedId, setSelectedId] = useState("");
+    const [status, setStatus] = useState<{ [key: string]: boolean }>({
+        mergeCompleted: false,
+    });
+
     const signer = useEthersSigner();
     const chainId = useChainId();
     const { address } = useAccount();
@@ -28,12 +36,41 @@ const Transfer: React.FC<TransferProps> = ({ tokenId, lock }) => {
         setLoad((prev) => ({ ...prev, [action]: status }));
     };
 
-    const transfer = async () => {
+    const handProgress = (action: string, status: boolean) => {
+        setStatus((prev) => ({ ...prev, [action]: status }));
+    };
+
+    const fetchLocksById = async () => {
+        if (!tokenId) return
+        const locks_ = await lockById(chainId, Number(tokenId))
+        //@ts-expect-error ignore
+        setLock(locks_)
+    }
+
+    const fetchLocksByAccount = async () => {
+        if (!tokenId && !address) return
+        let locks_ = await locksByAccount(chainId, address as string)
+        locks_ = locks_.filter((item: VeNFT) => Number(item.expires_at) > (Date.now() / 1000) && Number(item.id) != tokenId);
+        setLocks(locks_)
+    }
+
+    useEffect(() => {
+        if (chainId && tokenId) {
+            fetchLocksById()
+        }
+    }, [chainId, tokenId]);
+
+    useEffect(() => {
+        if (chainId && address) {
+            fetchLocksByAccount()
+        }
+    }, [chainId, address]);
+
+    const merge = async () => {
         try {
             if (!address) return toast.warn("Please connect your wallet");
-            if (!wallet) return;
-
-            handleLoad("transfer", true);
+            if (selectedId == "") return toast.warn("Select tokenId first")
+            handleLoad("merge", true);
 
             const votingEscrow = new ethers.Contract(
                 aerodromeContracts[chainId].votingEscrow,
@@ -41,21 +78,26 @@ const Transfer: React.FC<TransferProps> = ({ tokenId, lock }) => {
                 await signer
             );
 
-            const tx = await votingEscrow.transferFrom(
-                address,
-                wallet,
-                tokenId,
+            const tx = await votingEscrow.merge(
+                selectedId,
+                tokenId,                
                 { gasLimit: 5000000 }
             );
 
             await tx.wait();
+            await fetchLocksById()
+            await fetchLocksByAccount()
             Notify({ chainId, txhash: tx.hash });
-            handleLoad("transfer", false);
+            handleLoad("merge", false);
+            handProgress("mergeCompleted", true);
+            setSelectedId("")
         } catch (error) {
             console.log(error);
-            handleLoad("transfer", false);
+            handleLoad("merge", false);
         }
     };
+
+    console.log(selectedId, "selectedId")
 
     return (
         <>
@@ -67,7 +109,7 @@ const Transfer: React.FC<TransferProps> = ({ tokenId, lock }) => {
                                 <div className="space-y-12">
                                     <div className="space-y-3">
                                         <div className="text-lg">
-                                            Transferring <strong>Lock #{tokenId} </strong>
+                                            Merging into <strong>Lock #{tokenId} </strong>
                                         </div>
                                         <div className="space-y-1">
                                             <div className="text-accent-50 text-xs">
@@ -80,7 +122,7 @@ const Transfer: React.FC<TransferProps> = ({ tokenId, lock }) => {
                                                         data-test-amount="2.5156102566030962"
                                                         className="tabular-nums"
                                                     >
-                                                        {lock && fromUnits(lock?.amount, Number(lock?.decimals))}<span className="opacity-70">&nbsp;GOB</span>
+                                                        {lock && fromUnits(lock?.amount, Number(lock?.decimals))}<span className="opacity-70">&nbsp;{gobV2[chainId || 8453]?.symbol}</span>
                                                     </span>
                                                 </div>
                                                 <div
@@ -169,45 +211,74 @@ const Transfer: React.FC<TransferProps> = ({ tokenId, lock }) => {
                                             data-testid="flowbite-label"
                                             htmlFor="toAddress"
                                         >
-                                            Wallet address where the lock will be transferred
+                                            Select the Lock you want to merge
                                         </label>
                                         <div className="flex">
-                                            <div className="relative w-full">
-                                                <input
-                                                    value={wallet}
-                                                    onChange={(e) => setWallet(e.target.value)}
-                                                    type="text"
-                                                    className="block w-full disabled:cursor-not-allowed disabled:text-opacity-50 dark:disabled:text-opacity-30 bg-transparent border border-accent-30 hover:border-accent-40 focus:border-accent-40 placeholder-accent-40 outline-0 p-2.5 text-sm rounded-lg"
-                                                    id="toAddress"
-                                                    placeholder="0x"
-                                                />
-                                            </div>
+                                            <select
+                                                id="options"
+                                                className='px-3 py-2 bg-[#000] rounded outline-0'
+                                                name="options"
+                                                onChange={(e) => setSelectedId(e.target.value)}
+                                            >
+                                                <option value="">Select tokenId</option>
+                                                {
+                                                    locks.map((item) => (
+                                                        <option key={item.id} value={item.id}>
+                                                            Lock #{item.id} with {fromUnits(item.amount, Number(item.decimals))} {gobV2[chainId || 8453]?.symbol}
+                                                        </option>
+                                                    ))
+                                                }
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="py-2">
+                                        <div className="flex p-4 rounded-xl itmes-center gap-2 bg-[#1c1d2a] text-[#a55e10]">
+                                            <span className="icn">{inforicn}</span>
+                                            <p className="m-0">
+                                                Merging two locks will inherit the longest lock time of the two and will increase the final Lock (veNFT) voting power by adding up the two underlying locked amounts based on the new lock time.
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
                         <div className="md:col-span-6 col-span-12">
-                            {wallet ? <div className="cardCstm p-3 md:p-4 rounded-md bg-[var(--backgroundColor2)] opacity-70 relative h-full flex justify-between flex-col">
+                            <div className="cardCstm p-3 md:p-4 rounded-md bg-[var(--backgroundColor2)] opacity-70 relative h-full flex justify-between flex-col">
                                 <div className="top w-full">
-                                    <h4 className="m-0 font-semibold text-xl">Transfer</h4>
+                                    <h4 className="m-0 font-semibold text-xl">Merge</h4>
+                                    <p>Important! Merging will reset any rewards and rebases!
+                                        Before continuing, please make sure you have reviewed and claimed all available rewards.</p>
                                     <div className="content pt-3">
                                         <SwapList className="list-none py-3 relative z-10 pl-0 mb-0">
                                             {(
                                                 <>
-                                                    {/* <Progress
-                                                        icon={
-                                                            status.isAllowanceForToken ? unlock : lock
-                                                        }
-                                                        symbol={gobV2[chainId || 8453]?.symbol}
-                                                        text="Allow the contracts to access"
-                                                    />
+                                                    {!selectedId ?
+                                                        <li className="py-1 flex itmes-start gap-3 ">
+                                                            <span className="flex bg-[var(--backgroundColor)] h-6 w-6 text-green-500 items-center justify-center rounded-full">
+                                                                1
+                                                            </span>
+                                                            <div className="content text-xs text-gray-400">
+                                                                <p className="m-0">
+                                                                    Select the Lock you want to merge
+                                                                </p>
+                                                            </div>
+                                                        </li> :
+                                                        <li className="py-1 flex itmes-start gap-3 ">
+                                                            <span className="flex bg-[var(--backgroundColor)] h-6 w-6 text-green-500 items-center justify-center rounded-full">
+                                                                1
+                                                            </span>
+                                                            <div className="content text-xs text-gray-400">
+                                                                <p className="m-0">
+                                                                    Merging Lock #{selectedId} into #{tokenId}
+                                                                </p>
+                                                            </div>
+                                                        </li>}
+
                                                     <Progress
-                                                        icon={status.tokenLocked ? unlock : lock}
+                                                        icon={status?.mergeCompleted ? unlock : lockIcon}
                                                         symbol={gobV2[chainId || 8453]?.symbol}
-                                                        text="Lock Created for"
-                                                    /> */}
+                                                        text="merge lock completed"
+                                                    />
                                                 </>
 
                                             )}
@@ -217,36 +288,13 @@ const Transfer: React.FC<TransferProps> = ({ tokenId, lock }) => {
                                 <div className="bottom w-full">
                                     <div className="btnWrpper mt-3">
                                         <ActButton
-                                            label="Transfer"
-                                            onClick={() => transfer()}
-                                            load={load["transfer"]}
+                                            label="Merge"
+                                            onClick={() => merge()}
+                                            load={load["merge"]}
                                         />
                                     </div>
                                 </div>
-                            </div> :
-                                <div className="md:p-8 p-4 rounded-xl bg-[#00ff4e] h-full">
-                                    <div className="flex flex-col justify-between h-full">
-                                        <div>
-                                            <div className="text-sm text-black pb-8">
-                                                Transferring a lock will also transfer any rewards and rebases! Before
-                                                continuing, please make sure you have{" "}
-                                                <a href="/dash" className="pt-4 underline hover:no-underline">
-                                                    claimed all available rewards
-                                                </a>
-                                                .
-                                            </div>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            className="group flex h-min items-center justify-center text-center focus:z-10 focus:outline-none focus:ring-transparent focus-visible:ring-inherit font-semibold border border-transparent bg-white hover:opacity-80 text-black transition rounded-xl focus:ring-2 w-full"
-                                        >
-                                            <span className="flex items-center rounded-md h-[38px] text-xs py-2 px-4">
-                                                Continue
-                                            </span>
-                                        </button>
-                                    </div>
-
-                                </div>}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -254,7 +302,6 @@ const Transfer: React.FC<TransferProps> = ({ tokenId, lock }) => {
         </>
     )
 }
-
 
 const fadeInOut = keyframes`
   0% {
@@ -288,4 +335,57 @@ const SwapList = styled.ul`
   }
 `;
 
-export default Transfer
+export default Merge
+
+const inforicn = (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+    >
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M12 16v-4"></path>
+        <path d="M12 8h.01"></path>
+    </svg>
+);
+
+const unlock = (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+    >
+        <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+        <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
+    </svg>
+);
+
+const lockIcon = (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="lucide lucide-lock !text-amber-600 animate-pulse"
+    >
+        <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+    </svg>
+);

@@ -17,14 +17,17 @@ import Notify from "@/components/common/Notify";
 import Transfer from "@/components/lockInteraction/Transfer";
 import { useSearchParams } from "next/navigation";
 import { lockById, VeNFT } from "@/utils/sugar.utils";
-import { toast } from "react-toastify";
 import Increase from "@/components/lockInteraction/Increase";
+import Merge from "@/components/lockInteraction/Merge";
+import Extend from "@/components/lockInteraction/Extend";
 
 const Deposit = () => {
   const searchParams = useSearchParams();
   const transfer_ = searchParams.get("transfer");
   const id_ = searchParams.get("id");
   const increase_ = searchParams.get("increase");
+  const merge_ = searchParams.get("merge");
+  const extend_ = searchParams.get("extend")
 
   const [load, setLoad] = useState<{ [key: string]: boolean }>({});
   const signer = useEthersSigner();
@@ -168,7 +171,7 @@ const Deposit = () => {
 
   return (
     <>
-      {!transfer_ && !increase_ && <section className="relative py-5 ">
+      {!transfer_ && !increase_ && !merge_ && !extend_ && <section className="relative py-5 ">
         <div className="container">
           <div className="grid gap-3 grid-cols-12">
             <div className="col-span-12">
@@ -330,6 +333,9 @@ const Deposit = () => {
 
       {transfer_ && <Transfer tokenId={Number(id_)} lock={lock} />}
       {increase_ && <Increase tokenId={Number(id_)} />}
+      {merge_ && <Merge tokenId={Number(id_)} />}
+      {extend_ && <Extend tokenId={Number(id_)} />}
+
     </>
   );
 };
@@ -405,18 +411,18 @@ const inforicn = (
 
 const lockIcon = (
   <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="12"
-      height="12"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="lucide lucide-lock !text-amber-600 animate-pulse"
+    xmlns="http://www.w3.org/2000/svg"
+    width="12"
+    height="12"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="lucide lucide-lock !text-amber-600 animate-pulse"
   >
-      <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
-      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
   </svg>
 );

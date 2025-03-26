@@ -66,14 +66,11 @@ const Increase: React.FC<IncreaseProps> = ({ tokenId }) => {
         }
     }, [chainId, tokenId]);
 
-
-
     useEffect(() => {
         if (chainId && amount) {
             checkAllownceStatus(chainId);
         }
     }, [chainId, amount]);
-
 
     const increase = async () => {
         try {
