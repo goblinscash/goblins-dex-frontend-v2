@@ -166,7 +166,6 @@ const Deposit = () => {
   //   }
   // };
 
-  console.log(increase_, "increase_")
   return (
     <>
       {!transfer_ && !increase_ && <section className="relative py-5 ">
@@ -187,13 +186,13 @@ const Deposit = () => {
                             <>
                               <Progress
                                 icon={
-                                  status.isAllowanceForToken ? unlock : lock
+                                  status.isAllowanceForToken ? unlock : lockIcon
                                 }
                                 symbol={gobV2[chainId || 8453]?.symbol}
                                 text="Allow the contracts to access"
                               />
                               <Progress
-                                icon={status.tokenLocked ? unlock : lock}
+                                icon={status.tokenLocked ? unlock : lockIcon}
                                 symbol={gobV2[chainId || 8453]?.symbol}
                                 text="Lock Created for"
                               />
@@ -330,7 +329,7 @@ const Deposit = () => {
       </section>}
 
       {transfer_ && <Transfer tokenId={Number(id_)} lock={lock} />}
-      {increase_ && <Increase tokenId={Number(id_)} lock={lock} />}
+      {increase_ && <Increase tokenId={Number(id_)} />}
     </>
   );
 };
@@ -386,59 +385,6 @@ const unlock = (
   </svg>
 );
 
-// const downArrow = (
-//   <svg
-//     xmlns="http://www.w3.org/2000/svg"
-//     width="14"
-//     height="14"
-//     viewBox="0 0 24 24"
-//     fill="none"
-//     stroke="currentColor"
-//     strokeWidth="2"
-//     strokeLinecap="round"
-//     strokeLinejoin="round"
-//   >
-//     <path d="m6 9 6 6 6-6"></path>
-//   </svg>
-// );
-
-// const transfer = (
-//   <svg
-//     xmlns="http://www.w3.org/2000/svg"
-//     width="15"
-//     height="15"
-//     viewBox="0 0 24 24"
-//     fill="none"
-//     stroke="currentColor"
-//     strokeWidth="2"
-//     strokeLinecap="round"
-//     strokeLinejoin="round"
-//   >
-//     <path d="m21 16-4 4-4-4"></path>
-//     <path d="M17 20V4"></path>
-//     <path d="m3 8 4-4 4 4"></path>
-//     <path d="M7 4v16"></path>
-//   </svg>
-// );
-
-// const infoIcn = (
-//   <svg
-//     xmlns="http://www.w3.org/2000/svg"
-//     width="12"
-//     height="12"
-//     viewBox="0 0 24 24"
-//     fill="none"
-//     stroke="currentColor"
-//     strokeWidth="2"
-//     strokeLinecap="round"
-//     strokeLinejoin="round"
-//   >
-//     <circle cx="12" cy="12" r="10"></circle>
-//     <path d="M12 16v-4"></path>
-//     <path d="M12 8h.01"></path>
-//   </svg>
-// );
-
 const inforicn = (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -454,5 +400,23 @@ const inforicn = (
     <circle cx="12" cy="12" r="10"></circle>
     <path d="M12 16v-4"></path>
     <path d="M12 8h.01"></path>
+  </svg>
+);
+
+const lockIcon = (
+  <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="12"
+      height="12"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="lucide lucide-lock !text-amber-600 animate-pulse"
+  >
+      <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
   </svg>
 );
