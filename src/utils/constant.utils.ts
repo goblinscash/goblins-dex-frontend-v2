@@ -23,7 +23,7 @@ type StableTokenMap = {
 export const gobV2: Record<number, TokenInfo> = {
     8453: {
         address: "0xcDBa3E4C5c505F37CfbBB7aCCF20D57e793568E3",
-        symbol: "GOBV2",
+        symbol: "AERO",
         decimals: 18
     },
     84532: {

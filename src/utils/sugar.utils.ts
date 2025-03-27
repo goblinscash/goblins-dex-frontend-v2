@@ -7,6 +7,7 @@ import veSugarAbi from "../abi/sugar/veSugar.json"
 import { formatValue, fromUnits } from "./math.utils";
 
 export type FormattedPool = {
+    chainId: number;
     lp: string;
     symbol: string;
     decimals: number;
@@ -183,8 +184,10 @@ export const positions = async (chainId: number, limit: number, offset: number, 
         );
 
         const positionsRaw = await instance.positions(limit, offset, account)
+        // const positionsRaw = await instance.positionsByFactory(limit, offset, account, aerodromeContracts[chainId].factory)
 
         console.log(positionsRaw, "positionsRaw")
+        return positionsRaw
 
     } catch (error) {
         console.log(error, chainId)
@@ -284,6 +287,26 @@ export const lockById = async (chainId: number, tokenId: number) => {
     }
 };
 //VE Sugar//
+
+//Reward Sugar
+export const allWithRewards = async (chainId: number, limit: number, offset: number) => {
+    try {        
+        const pools = await all(chainId, limit, offset, 1)
+
+        // const instance = new ethers.Contract(
+        //     aerodromeContracts[chainId].veSugar as string,
+        //     veSugarAbi,
+        //     new ethers.JsonRpcProvider(rpcUrls[chainId])
+        // );
+
+        return pools 
+    } catch (error) {
+        console.log(error, chainId)
+        return []
+    }
+};
+//Reward Sugar
+
 
 export const aprSugar = () => { return 0 }
 export const volume = () => { return 0 }

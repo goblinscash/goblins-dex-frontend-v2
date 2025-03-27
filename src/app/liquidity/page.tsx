@@ -177,7 +177,6 @@ const Liquidity = () => {
     }
   }, [chainId, type]);
 
-  console.log(pools, "poolsOOO");
   return (
     <section className="Liquidity py-5 relative">
       <div className="container ">

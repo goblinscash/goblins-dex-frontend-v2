@@ -199,6 +199,12 @@ const Incentivize = () => {
     }
   }, [chainId]);
 
+  // useEffect(() => {
+  //   if (chainId && address) {
+  //     fetchPositions();
+  //   }
+  // }, [chainId, address]);
+
   useEffect(() => {
     if (chainId && token?.address && address) {
       fetchRewardTokenBalance();
@@ -211,6 +217,12 @@ const Incentivize = () => {
     //@ts-expect-error ignore
     setFilteredTokenList(tokens_);
   };
+
+  // const fetchPositions = async () => {
+  //   if(!address) return
+  //   const position_ = await positions(chainId, 1,0, address)
+  //   console.log(position_, "position rrr")
+  // }
 
   const fetchPools = async () => {
     if (!token0 || !token1) return;
@@ -317,9 +329,6 @@ const Incentivize = () => {
       handleLoad("addReward", false);
     }
   };
-
-  console.log(pool, "pool++")
-
 
   return (
     <>
@@ -625,8 +634,8 @@ const Incentivize = () => {
 
 
                       <div className="md:col-span-5 col-span-12">
-                          <div className="cardCstm p-3 md:p-4 rounded-md bg-[var(--backgroundColor2)] opacity-70 relative h-full flex justify-between flex-col">
-                            <div className="top">
+                        <div className="cardCstm p-3 md:p-4 rounded-md bg-[var(--backgroundColor2)] opacity-70 relative h-full flex justify-between flex-col">
+                          <div className="top">
                             <div className="top">
                               <h4 className="m-0 font-semibold text-xl">
                                 Incentivize
@@ -701,9 +710,9 @@ const Incentivize = () => {
                                 </SwapList>
                               </div>}
 
-                            </div>
-                            
                           </div>
+
+                        </div>
                       </div>
                     </div>
                   </div>
