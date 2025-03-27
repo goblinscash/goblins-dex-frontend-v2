@@ -118,6 +118,7 @@ const Increase: React.FC<IncreaseProps> = ({ tokenId }) => {
             <section className="py-8 relative">
                 <div className="container">
                     <div className="grid gap-3 grid-cols-12">
+                    
                         <div className="md:col-span-6 col-span-12">
                             <div className="cardCstm p-3 md:p-10 rounded-2xl bg-[#000e0e] relative border border-[#2a2a2a]">
                                 <div className="space-y-12">
@@ -393,3 +394,4 @@ const lockIcon = (
         <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
     </svg>
 );
+

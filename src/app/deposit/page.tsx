@@ -528,6 +528,7 @@ const Deposit = () => {
                         />
                       </div>
                     </div>
+                    
                   </div>
                 </div>
                 <div className="md:col-span-7 col-span-12 md:sticky top-0">

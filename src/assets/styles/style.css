@@ -44,7 +44,7 @@ input.form-control:focus {
   color: #00ff4e;
 }
 
-section {
+section:not(.Toastify) {
   min-height: calc(100vh - 150px);
 }
 

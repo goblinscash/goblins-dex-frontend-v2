@@ -7,12 +7,35 @@ export const shortenPubkey = (address: string): string => {
     return `${address.slice(0, 5)}...${address.slice(-5)}`;
 };
 
-export const fromUnits = (value: string | number | bigint, decimals: number): string | undefined => {
-    if (!decimals) return;
-    const bigIntValue = BigInt(value.toString());
 
-    return ethers.formatUnits(bigIntValue, decimals);
+export const fromUnits = (value: string | number | bigint, decimals: number): string | undefined => {
+  if (value === undefined || value === null || isNaN(Number(value))) {
+    console.log("Invalid value:", value);
+    return;
+  }
+
+  if (!decimals && decimals !== 0) {
+    console.log("Invalid decimals:", decimals);
+    return;
+  }
+
+  // Convert to a safe BigInt format
+  let bigIntValue: bigint;
+  try {
+    if (typeof value === "number") {
+      bigIntValue = BigInt(Math.floor(value)); // Ensure integer
+    } else {
+      bigIntValue = BigInt(value.toString()); // Safe conversion for string/bigint
+    }
+  } catch (error) {
+    console.error("Error converting to BigInt:", error);
+    return;
+  }
+
+  const formatValue = ethers.formatUnits(bigIntValue, decimals)
+  return Number(formatValue).toFixed(4);
 };
+
 
 export const toUnits = (value: string | number, decimals: number): bigint => {
     return ethers.parseUnits(value.toString(), decimals);

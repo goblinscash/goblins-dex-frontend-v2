@@ -628,6 +628,7 @@ export const fetchV2Pools = async (chainId: number, token0: string, token1: stri
     );
 
     const symbol = await poolInstance.name()    
+    // const metadata = await poolInstance.metadata() 
 
     return [{
         chainId,
@@ -640,8 +641,33 @@ export const fetchV2Pools = async (chainId: number, token0: string, token1: stri
         stable,
         poolBalance: 0,
         action: "Deposit",
-        status: true
+        status: true,
+        // r0: metadata[2].toString(),
+        // r1: metadata[3].toString()
     }]
+}
+
+export const findIndex = async (chainId: number, pool: string) => {
+    if (!isValidChainId(chainId)) {
+        throw new Error(`Invalid chainId: ${chainId}`);
+    }
+
+    const poolFactory = new ethers.Contract(
+        aerodromeContracts[chainId].factory,
+        poolFactoryAbi,
+        new ethers.JsonRpcProvider(rpcUrls[chainId])
+    );
+
+    let index_ = 0
+    const totalPool = await poolFactory.allPoolsLength()
+    for (let index = 0; index < totalPool; index++) {       
+        const _pool = await poolFactory.allPools(index)
+        if(_pool.toLowerCase() === pool.toLocaleLowerCase()){
+            index_ = index
+            break;
+        }
+    }
+    return index_
 }
 
 // aerodrome //
