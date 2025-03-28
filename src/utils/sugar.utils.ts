@@ -3,7 +3,7 @@ import { aerodromeContracts, rpcUrls } from "./config.utils";
 
 import lpSugarAbi from "../abi/sugar/lpSugar.json"
 import veSugarAbi from "../abi/sugar/veSugar.json"
-import rewardSugarAbi from "../abi/sugar/rewardSugar.json"
+// import rewardSugarAbi from "../abi/sugar/rewardSugar.json"
 
 import { formatValue, fromUnits } from "./math.utils";
 
@@ -292,16 +292,31 @@ export const lockById = async (chainId: number, tokenId: number) => {
 //Reward Sugar
 export const allWithRewards = async (chainId: number, limit: number, offset: number) => {
     try {
-        const pools = await all(chainId, limit, offset, 1)
+        const pools = await all(chainId, limit, 0, 1)
 
-        const instance = new ethers.Contract(
-            aerodromeContracts[chainId].rewardSugar as string,
-            rewardSugarAbi,
-            new ethers.JsonRpcProvider(rpcUrls[chainId])
-        );
+         console.log(offset)
+        // const instance = new ethers.Contract(
+        //     aerodromeContracts[chainId].rewardSugar as string,
+        //     rewardSugarAbi,
+        //     new ethers.JsonRpcProvider(rpcUrls[chainId])
+        // );
 
-        const _ls = await instance.epochsLatest(10,1)
-        console.log(_ls, "_ls_ls_+++++++++++++++++++ls_ls")
+        // const _lpEpochs = await instance.epochsLatest(10,0)
+
+        // //@ts-expect-error ignore
+        // const formattedData = _lpEpochs.map((item) => ({
+        //     ts: Number(item[0]),          // Timestamp (uint256)
+        //     lp: item[1],                  // Address
+        //     votes: item[2].toString(),     // BigNumber -> String (to avoid precision issues)
+        //     emissions: item[3].toString(), // BigNumber -> String
+        //     bribes: item[4] || [],         // Handle empty DynArray
+        //     fees: item[5] || []            // Handle empty DynArray
+        // }));
+
+        // console.log(formattedData, "P***********", pools)
+        // // pools.forEach(element => {
+        //     console.log(element.lp, "P***********")
+        // });
 
         return pools
     } catch (error) {

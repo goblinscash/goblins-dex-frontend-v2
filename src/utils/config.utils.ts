@@ -63,7 +63,7 @@ export const aerodromeContracts: AerodromeContracts = {
         factory: "0x5F47613A76C1c01BcE11b3D398de16E38c3d4DCb",
         lpSugar: "0x53cAf0F9B280edf9A8393150Bf4e1A0C25094979", 
         veSugar: "0xEBeEF79Ca7eEe38b9a1c26e3035992D8fdE3E77F",
-        rewardSugar: "0x65cc29b3467209b268f9d7402353db0a54eb05ba",
+        rewardSugar: "0xe7f902bdB9f279a327F7F29D5b6c8FfA75B87085",
         universalRouter: "0xb73C095FE9818B0a75715E5959716faf29d27296",
         voter: "0xc84C4ebbC5671795D4DBf1d8A369897CB471B230",
         votingEscrow: '0xe015feb0B3cDDb683d450Cf698B34E0BeF714B65',        

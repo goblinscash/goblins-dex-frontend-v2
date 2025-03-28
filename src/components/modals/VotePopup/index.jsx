@@ -1,15 +1,163 @@
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
-import logo from "@/assets/Images/logo.png";
-import Image from "next/image";
-import TableLayout from "@/components/tableLayout";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Logo from "@/components/common/Logo";
+import { formatTimestamp, fromUnits, toUnits } from "@/utils/math.utils";
+import { gobV2 } from "@/utils/constant.utils";
 import ListLayout from "@/components/lockRow";
+import { useEthersSigner } from "@/hooks/useEthersSigner";
+import { useAccount } from "wagmi";
+import Notify from "@/components/common/Notify";
+import voterAbi from "../../../abi/aerodrome/voter.json"
+import { aerodromeContracts } from "@/utils/config.utils";
+import { ethers } from "ethers";
+import ActButton from "@/components/common/ActButton";
 
-const VotePopup = ({ vote, setVote }) => {
+const VotePopup = ({ chainId, vote, setVote, data, setData }) => {
   const handleVote = () => {
     setVote(!vote);
   };
+  const [load, setLoad] = useState(false);
+  const signer = useEthersSigner();
+  const { address } = useAccount();
+
+  const [selectedNft, setSelectedNft] = useState({})
+
+  const clearPools = (nftId) => {
+    setData((prevLocks) =>
+      prevLocks.map((lock) =>
+        Number(lock.id) === nftId ? { ...lock, pool: [] } : lock
+      )
+    );
+  };
+
+  // const handleSelectPool = (nftId, poolAddress, percentage) => {
+  //   setSelectedNft((prev) => {
+  //     let nft = prev[nftId] || { total: 100, pool: [], percentage: [] };
+
+  //     const poolIndex = nft.pool.indexOf(poolAddress);
+
+  //     if (poolIndex !== -1) {
+  //       // Pool exists, update only its percentage
+  //       const newPercentages = [...nft.percentage];
+  //       newPercentages[poolIndex] = percentage; // Update the percentage
+
+  //       return {
+  //         ...prev,
+  //         [nftId]: {
+  //           ...nft,
+  //           percentage: newPercentages
+  //         }
+  //       };
+  //     } else {
+  //       // Pool doesn't exist, add new entry
+  //       return {
+  //         ...prev,
+  //         [nftId]: {
+  //           ...nft,
+  //           pool: [...nft.pool, poolAddress],
+  //           percentage: [...nft.percentage, percentage]
+  //         }
+  //       };
+  //     }
+  //   });
+  // };
+
+
+  const handleSelectPool = (nftId, poolAddress, percentage) => {
+    setSelectedNft((prev) => {
+      let nft = prev[nftId] || { total: 100, pool: [], percentage: [] };
+
+      const poolIndex = nft.pool.indexOf(poolAddress);
+      let currentTotalUsed = nft.percentage.reduce((sum, p) => sum + p, 0);
+      let newTotalAvailable = 100 - currentTotalUsed;
+
+      if (poolIndex !== -1) {
+        // ✅ Pool exists, update only its percentage
+        const newPercentages = [...nft.percentage];
+        const oldPercentage = newPercentages[poolIndex];
+
+        // Calculate the new total allocation
+        let newTotalUsed = currentTotalUsed - oldPercentage + percentage;
+
+        if (newTotalUsed > 100) {
+          alert("Total allocation cannot exceed 100%");
+          return prev; // Prevent update
+        }
+
+        newPercentages[poolIndex] = percentage; // Update the percentage
+
+        return {
+          ...prev,
+          [nftId]: {
+            ...nft,
+            percentage: newPercentages,
+            total: 100 - newTotalUsed, // ✅ Update remaining percentage
+          },
+        };
+      } else {
+        // ✅ Pool doesn't exist, check if there's enough remaining percentage
+        if (percentage > newTotalAvailable) {
+          alert("Not enough remaining percentage to allocate");
+          return prev; // Prevent adding this pool
+        }
+
+        return {
+          ...prev,
+          [nftId]: {
+            ...nft,
+            pool: [...nft.pool, poolAddress],
+            percentage: [...nft.percentage, percentage],
+            total: newTotalAvailable - percentage, // ✅ Update remaining percentage
+          },
+        };
+      }
+    });
+  };
+
+
+
+  useEffect(() => {
+    setSelectedNft((prev) => {
+      const updatedState = { ...prev };
+
+      data.forEach((item) => {
+        if (!updatedState[item.id]) {
+          updatedState[item.id] = { total: 100, pool: [], percentage: [] };
+        }
+      });
+
+      return updatedState;
+    });
+  }, [data]);
+
+  const vote_ = async (id) => {
+    try {
+      if (!address) return alert("Please connect your wallet");
+      setLoad(true);
+
+      const voter = new ethers.Contract(
+        aerodromeContracts[chainId].voter,
+        voterAbi,
+        await signer
+      );
+
+      const tx = await voter.vote(
+        id,
+        selectedNft[id].pool,
+        selectedNft[id].percentage.map((item) => toUnits(item, 18)),
+        { gasLimit: 5000000 }
+      );
+
+      await tx.wait();
+      Notify({ chainId, txhash: tx.hash });
+      setLoad(false);
+    } catch (error) {
+      console.log(error);
+      setLoad(false);
+    }
+  };
+
 
   const column = [
     {
@@ -22,21 +170,39 @@ const VotePopup = ({ vote, setVote }) => {
               <ul className="list-none pl-3 mb-0 flex-shrink-0 flex items-center">
                 <li className="" style={{ marginLeft: -10 }}>
                   <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
-                    asfas
+                    <Logo
+                      chainId={item.chainId}
+                      token={item.token0}
+                      margin={0}
+                      height={20}
+                    />{" "}
+                  </div>
+                </li>{" "}
+                <li className="" style={{ marginLeft: -10 }}>
+                  <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
+                    <Logo
+                      chainId={item.chainId}
+                      token={item.token1}
+                      margin={0}
+                      height={20}
+                    />
                   </div>
                 </li>
               </ul>
               <div className="content">
-                <p className="m-0 text-muted">d</p>
+                <p className="m-0 text-muted">{item.symbol}</p>
                 <div className="flex items-center gap-2 mt-2 ">
                   <p className="m-0 text-xs text-yellow-500">
-                    <span className="me-2"> (x)</span> Basic Stable
+                    <span className="me-2"> (x)</span> Basic{" "}
+                    {Number(item.type) == 0 ? "Stable" : "Volatile"}
                   </p>
-                  dd
+                  {item.pool_fee}
                 </div>
               </div>
             </div>
-            <p className="m-0 text-[#757575] pt-2 text-xs">TVL ~11</p>
+            <p className="m-0 text-[#757575] pt-2 text-xs">
+              TVL ~{item.poolBalance}
+            </p>
           </div>
         );
       },
@@ -45,12 +211,17 @@ const VotePopup = ({ vote, setVote }) => {
       head: "Fees",
       accessor: "fees",
       component: (item) => {
+        const symbol = item.symbol?.split("-")[1]?.split("/");
         return (
           <div className="rounded p-3 bg-[#091616] text-xs h-full pb-5 text-right min-w-[200px]">
             <p className="m-0 pb-3 border-b border-[#2a2a2a]">~$ --</p>
             <div className="pt-3">
-              <p className="m-0 text-[#7e7e7e] ">11</p>
-              <p className="m-0 text-[#7e7e7e] ">11</p>
+              <p className="m-0 text-[#7e7e7e] ">
+                {fromUnits(Number(item.token0_fees), Number(item.decimals))} {symbol[0]}
+              </p>
+              <p className="m-0 text-[#7e7e7e] ">
+                {fromUnits(Number(item.token1_fees), Number(item.decimals))} {symbol[1]}
+              </p>
             </div>
           </div>
         );
@@ -75,13 +246,13 @@ const VotePopup = ({ vote, setVote }) => {
     {
       head: "Total Reward",
       accessor: "Total_Reward",
-      component: () => {
+      component: (item) => {
         return (
           <div className="rounded p-3 bg-[#091616] text-xs h-full pb-5 text-right min-w-[200px]">
             <div className="top mb-4 flex items-center justify-center gap-3">
               <div className="">
                 <p className="m-0 text-xs">Voting Power</p>
-                <p className="m-0 text-xs">0.0069 veAERO</p>
+                <p className="m-0 text-xs">{0} {gobV2[chainId || 8453]?.symbol}</p>
               </div>
               <div className="relative">
                 <span className="absolute icn right-2 top-[50%]  transform translate-y-[-50%]">
@@ -101,18 +272,51 @@ const VotePopup = ({ vote, setVote }) => {
                   </button>
                 </li>
                 <li className="">
-                  <button className="p-1 text-xs bg-[#000e0e] rounded-xl px-3">
+                  <button
+                    className="p-1 text-xs bg-[#000e0e] rounded-xl px-3"
+                    onClick={() => handleSelectPool(Number(item.nftId), item.lp, 0)}
+                  >
                     0 %
                   </button>
                 </li>
                 <li className="">
-                  <button className="p-1 text-xs bg-[#000e0e] rounded-xl px-3">
-                    0 %
+                  <button
+                    className="p-1 text-xs bg-[#000e0e] rounded-xl px-3"
+                    onClick={() => handleSelectPool(Number(item.nftId), item.lp, 10)}
+                  >
+                    10%
                   </button>
                 </li>
                 <li className="">
-                  <button className="p-1 text-xs bg-[#000e0e] rounded-xl px-3">
-                    0 %
+                  <button
+                    className="p-1 text-xs bg-[#000e0e] rounded-xl px-3"
+                    onClick={() => handleSelectPool(Number(item.nftId), item.lp, 25)}
+                  >
+                    25%
+                  </button>
+                </li>
+                <li className="">
+                  <button
+                    className="p-1 text-xs bg-[#000e0e] rounded-xl px-3"
+                    onClick={() => handleSelectPool(Number(item.nftId), item.lp, 50)}
+                  >
+                    50%
+                  </button>
+                </li>
+                <li className="">
+                  <button
+                    className="p-1 text-xs bg-[#000e0e] rounded-xl px-3"
+                    onClick={() => handleSelectPool(Number(item.nftId), item.lp, 75)}
+                  >
+                    75%
+                  </button>
+                </li>
+                <li className="">
+                  <button
+                    className="p-1 text-xs bg-[#000e0e] rounded-xl px-3"
+                    onClick={() => handleSelectPool(Number(item.nftId), item.lp, 100)}
+                  >
+                    100%
                   </button>
                 </li>
               </ul>
@@ -122,20 +326,8 @@ const VotePopup = ({ vote, setVote }) => {
       },
     },
   ];
-  const data = [
-    {
-      Pools: "Pools",
-      fees: "",
-      incentives: "incentives",
-      Total_Reward: "Total_Reward",
-    },
-    {
-      Pools: "Pools",
-      fees: "",
-      incentives: "incentives",
-      Total_Reward: "Total_Reward",
-    },
-  ];
+
+  console.log(selectedNft, "datadatadata")
   return (
     <div className="fixed z-[9999] inset-0 flex items-center justify-center cstmModal">
       <div className="absolute inset-0 bg-black z-[9] opacity-70"></div>
@@ -147,56 +339,85 @@ const VotePopup = ({ vote, setVote }) => {
           </button>
         </div>
         <div className="modalBody pt-3">
-          <div className="py-2">
-            <div className="sticky top-0 z-[999]">
-              <div className="cardCstm p-3 rounded-xl bg-[#0b120d] relative border border-[#2a2a2a] flex items-center justify-between  gap-3">
-                <div className="flex items-center gap-2">
-                  <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
-                    <Image
-                      src={logo}
-                      alt=""
-                      className="max-w-full h-[20px] w-auto"
-                      height={100000}
-                      width={100000}
-                    />
-                  </div>
-                  <div className="content">
-                    <h6 className="m-0 text-white text-xs font-medium flex items-center gap-1">
-                      Lock #232434 <span className="icn">{lockIcn}</span>
-                    </h6>
-                    <div className="flex items-center gap-3">
-                      <p className="m-0 text-[10px]">Locked for 4 years</p>
-                      <ul className="list-none pl-0 mb-0 flex items-center gap-2">
-                        <li className="">
-                          <Link
-                            href={""}
-                            className="themeClr text-[10px] font-medium"
-                          >
-                            link1
-                          </Link>
-                        </li>
-                        <li className="">
-                          <Link
-                            href={""}
-                            className="themeClr text-[10px] font-medium"
-                          >
-                            link1
-                          </Link>
-                        </li>
-                      </ul>
+          {data ? data.map((item) => (
+            <div className="py-2" key={item.id}>
+              <div className="sticky top-0 z-[999]">
+                <div className="cardCstm p-3 rounded-xl bg-[#0b120d] relative border border-[#2a2a2a] flex items-center justify-between  gap-3">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
+                      <Logo
+                        chainId={chainId}
+                        token={item.token}
+                        margin={0}
+                        height={20}
+                      />
+                    </div>
+                    <div className="content">
+                      <h6 className="m-0 text-white text-xs font-medium flex items-center gap-1">
+                        Lock #{item.id} <span className="icn">{lockIcn}</span>
+                      </h6>
+                      <div className="flex items-center gap-3">
+                        <p className="m-0 text-[10px]">
+                          {fromUnits(Number(item.amount), Number(item.decimals))} {gobV2[chainId || 8453]?.symbol}
+                          {"  "}{item.expires_at === "0" ? "-" : formatTimestamp(Number(item.expires_at))}
+                        </p>
+                        <ul className="list-none pl-0 mb-0 flex items-center gap-2">
+                          <li className="">
+                            <Link
+                              href={`lock?increase=true&id=${item.id}`}
+                              className="themeClr text-[10px] font-medium"
+                            >
+                              Increase
+                            </Link>
+                          </li>
+                          <li className="">
+                            <Link
+                              href={`lock?extend=true&id=${item.id}`}
+                              className="themeClr text-[10px] font-medium"
+                            >
+                              Extend
+                            </Link>
+                          </li>
+                          <li className="">
+                            <button
+                              onClick={() => clearPools(Number(item.id))}
+                              className="themeClr text-[10px] font-medium"
+                            >
+                              Clear Votes
+                            </button>
+                          </li>
+                        </ul>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className="right text-right">
-                  <p className="m-0 text-base">97.55%</p>
-                  <p className="m-0 text-green-500 text-xs">8 Pools Selected</p>
+                  <div className="right text-right">
+                    <p className="m-0 text-base">
+                      {selectedNft ? Number(selectedNft[item.id]?.total) === 0 ? 
+                        <div className="bottom w-full">
+                          <div className="btnWrpper mt-3">
+                            <ActButton
+                              label="Vote"
+                              onClick={() => vote_(item.id)}
+                              load={load}
+                            />
+                          </div>
+                        </div> : selectedNft[item.id]?.total + "%"  : ""
+                      }</p>
+                    <p className="m-0 text-green-500 text-xs">{item.pool?.length} Pools Selected</p>
+                  </div>
                 </div>
               </div>
+              <div className="mt-3">
+                {item.pool?.length ?
+                  <ListLayout column={column} data={item.pool.map(pool => ({ ...pool, nftId: item.id }))} />
+                  :
+                  <div className="text-center mb-5 py-3">
+                    You haven't selected any pools for this lock yet.
+                  </div>
+                }
+              </div>
             </div>
-            <div className="mt-3">
-              <ListLayout column={column} data={data} />
-            </div>
-          </div>
+          )) : ""}
         </div>
       </div>
     </div>
