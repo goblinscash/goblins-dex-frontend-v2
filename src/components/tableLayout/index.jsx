@@ -48,7 +48,7 @@ const TableLayout = ({ column, data }) => {
           </tbody>
         </Table>
       </div>
-      </>
+    </>
   );
 };
 

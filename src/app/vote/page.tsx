@@ -2,21 +2,28 @@
 
 import TableLayout from "@/components/tableLayout";
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import logo from "@/assets/Images/logo.png";
-import { allWithRewards, FormattedPool, locksByAccount, VeNFT } from "@/utils/sugar.utils";
+import Slider from "react-slick";
+import {
+  allWithRewards,
+  FormattedPool,
+  locksByAccount,
+  VeNFT,
+} from "@/utils/sugar.utils";
 import { useAccount, useChainId } from "wagmi";
 import Logo from "@/components/common/Logo";
+import VotePopup from "@/components/modals/VotePopup/index";
 import Link from "next/link";
 import { fromUnits } from "@/utils/math.utils";
 import { gobV2 } from "@/utils/constant.utils";
+import { createPortal } from "react-dom";
 
 type Tab = {
   title: string;
   content: React.ReactNode; // This can be any JSX element
 };
-
 
 type Column = {
   head: string;
@@ -42,40 +49,58 @@ const tabs: Tab[] = [
 
 const Vote = () => {
   const [activeTab, setActiveTab] = useState<number>(0);
-  const [pool, setPool] = useState<FormattedPool[]>([])
-  const [locks, setLocks] = useState<VeNFT[]>([])
+  const [vote, setVote] = useState<Boolean>();
+  const [pool, setPool] = useState<FormattedPool[]>([]);
+  const [locks, setLocks] = useState<VeNFT[]>([]);
+  const sliderRef = useRef<Slider | null>(null);
+
+  const nextSlide = () => {
+    sliderRef.current?.slickNext();
+  };
+
+  const prevSlide = () => {
+    sliderRef.current?.slickPrev();
+  };
+  var settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 2,
+    slidesToScroll: 1,
+    arrows: false,
+  };
 
   const chainId = useChainId();
-  const { address } = useAccount()
+  const { address } = useAccount();
 
   const showTab = (tab: number) => {
     setActiveTab(tab);
   };
 
   const fetchPool = async () => {
-    const pool = await allWithRewards(chainId, 10, 0)
-    setPool(pool)
-  }
+    const pool = await allWithRewards(chainId, 10, 0);
+    setPool(pool);
+  };
 
   const fetchLocksByAccount = async () => {
-    if (!chainId && !address) return
-    const locks_ = await locksByAccount(chainId, address as string)
-    setLocks(locks_)
-  }
+    if (!chainId && !address) return;
+    const locks_ = await locksByAccount(chainId, address as string);
+    setLocks(locks_);
+  };
 
   useEffect(() => {
     if (chainId && address) {
-      fetchLocksByAccount()
+      fetchLocksByAccount();
     }
   }, [chainId, address]);
 
   useEffect(() => {
     if (chainId) {
-      fetchPool()
+      fetchPool();
     }
-  }, [chainId])
+  }, [chainId]);
 
-  console.log(pool, "pooldujihdsaf", locks)
+  console.log(pool, "pooldujihdsaf", locks);
 
   const column: Column[] = [
     {
@@ -111,13 +136,16 @@ const Vote = () => {
                 <p className="m-0 text-muted">{item.symbol}</p>
                 <div className="flex items-center gap-2 mt-2 ">
                   <p className="m-0 text-xs text-yellow-500">
-                    <span className="me-2"> (x)</span> Basic {Number(item.type) == 0 ? "Stable" : "Volatile"}
+                    <span className="me-2"> (x)</span> Basic{" "}
+                    {Number(item.type) == 0 ? "Stable" : "Volatile"}
                   </p>
                   {item.pool_fee}
                 </div>
               </div>
             </div>
-            <p className="m-0 text-[#757575] pt-2 text-xs">TVL ~{item.poolBalance}</p>
+            <p className="m-0 text-[#757575] pt-2 text-xs">
+              TVL ~{item.poolBalance}
+            </p>
           </div>
         );
       },
@@ -126,12 +154,10 @@ const Vote = () => {
       head: "Fees",
       accessor: "fees",
       component: (item: FormattedPool) => {
-        const symbol = item.symbol?.split("-")[1]?.split("/")
+        const symbol = item.symbol?.split("-")[1]?.split("/");
         return (
           <div className="rounded p-3 bg-[#091616] text-xs h-full pb-5 text-right">
-            <p className="m-0 pb-3 border-b border-[#2a2a2a]">
-              ~$  --
-            </p>
+            <p className="m-0 pb-3 border-b border-[#2a2a2a]">~$ --</p>
             <div className="pt-3">
               <p className="m-0 text-[#7e7e7e] ">
                 {item.token0_fees} {symbol[0]}
@@ -153,7 +179,9 @@ const Vote = () => {
             <p className="m-0 pb-3 border-b border-[#2a2a2a]">
               No available incentives
             </p>
-            <Link href="/incentivize" className="m-0 text-blue-500 pt-3">Add incentives</Link>
+            <Link href="/incentivize" className="m-0 text-blue-500 pt-3">
+              Add incentives
+            </Link>
           </div>
         );
       },
@@ -183,7 +211,7 @@ const Vote = () => {
               <p className="m-0 text-[#7e7e7e] pt-3">
                 ~ 0.0% Votes <br />
                 0.99938 veAERO
-                { }
+                {}
               </p>
               <p className="m-0 text-[#7e7e7e] pt-3">Vote</p>
             </div>
@@ -199,28 +227,34 @@ const Vote = () => {
                 tabIndex={0}
                 className="dropdown-content menu bg-white text-dark right-0 rounded-box z-1 w-52 p-2 shadow-sm"
               >
-                {locks && locks?.length && locks?.map((lock: VeNFT) => (
-                  <li key={lock.id}>
-                    <button className="flex items-center gap-2">
-                      <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
-                        <Logo
-                          chainId={chainId}
-                          token={lock.token}
-                          margin={0}
-                          height={20}
-                        />
-                      </div>
-                      <div className="content">
-                        <h6 className="m-0 text-black text-xs font-medium flex items-center gap-1">
-                          Lock #{lock.id} <span className="icn">{lockIcn}</span>
-                        </h6>
-                        <p className="m-0 text-[#2a2a2a] text-[10px]">
-                          {Number(fromUnits(lock.amount, Number(lock.decimals))).toFixed(3)} {gobV2[chainId || 8453]?.symbol}
-                        </p>
-                      </div>
-                    </button>
-                  </li>
-                ))}
+                {locks &&
+                  locks?.length &&
+                  locks?.map((lock: VeNFT) => (
+                    <li key={lock.id}>
+                      <button className="flex items-center gap-2">
+                        <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
+                          <Logo
+                            chainId={chainId}
+                            token={lock.token}
+                            margin={0}
+                            height={20}
+                          />
+                        </div>
+                        <div className="content">
+                          <h6 className="m-0 text-black text-xs font-medium flex items-center gap-1">
+                            Lock #{lock.id}{" "}
+                            <span className="icn">{lockIcn}</span>
+                          </h6>
+                          <p className="m-0 text-[#2a2a2a] text-[10px]">
+                            {Number(
+                              fromUnits(lock.amount, Number(lock.decimals))
+                            ).toFixed(3)}{" "}
+                            {gobV2[chainId || 8453]?.symbol}
+                          </p>
+                        </div>
+                      </button>
+                    </li>
+                  ))}
               </ul>
             </div>
           </>
@@ -229,9 +263,13 @@ const Vote = () => {
     },
   ];
 
-
   return (
     <>
+      {vote &&
+        createPortal(
+          <VotePopup vote={vote} setVote={setVote} />,
+          document.body
+        )}
       <section className="pt-8 pb-[100px] relative ">
         <div className="container">
           <div className="grid gap-3 grid-cols-12">
@@ -304,8 +342,9 @@ const Vote = () => {
                         <button
                           key={key}
                           onClick={() => showTab(key)}
-                          className={`${activeTab === key && "active"
-                            } tab-button font-medium relative py-2 flex-shrink-0  text-xs text-gray-400`}
+                          className={`${
+                            activeTab === key && "active"
+                          } tab-button font-medium relative py-2 flex-shrink-0  text-xs text-gray-400`}
                         >
                           {item.title}
                         </button>
@@ -323,68 +362,75 @@ const Vote = () => {
           </div>
         </div>
 
-        <div className="fixed p-5 bottom-0 z-[9999] left-0 w-full bg-[#131313] flex items-center justify-between gap-3">
+        <div className="fixed p-5 bottom-0 z-[9999] left-0 w-full bg-[#131313] ">
           <div className="grid gap-3 grid-cols-12 w-full">
-            <div className="sm:col-span-6 col-span-12">
-              <div className="cardCstm p-3 rounded-xl bg-[#0b120d] relative border border-[#2a2a2a] flex items-center justify-between  gap-3">
-                <div className="flex items-center gap-2">
-                  <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
-                    <Image
-                      src={logo}
-                      alt=""
-                      className="max-w-full h-[20px] w-auto"
-                      height={100000}
-                      width={100000}
-                    />
-                  </div>
-                  <div className="content">
-                    <h6 className="m-0 text-white text-xs font-medium flex items-center gap-1">
-                      Lock #232434 <span className="icn">{lockIcn}</span>
-                    </h6>
-                    <p className="m-0 text-[10px]">Locked for 4 years</p>
-                  </div>
-                </div>
-                <div className="right text-right">
-                  <p className="m-0 text-base">97.55%</p>
-                  <p className="m-0 text-green-500 text-xs">8 Pools Selected</p>
-                </div>
-              </div>
-            </div>{" "}
-            <div className="sm:col-span-6 col-span-12">
-              <div className="cardCstm p-3 rounded-xl bg-[#0b120d] relative border border-[#2a2a2a] flex items-center justify-between  gap-3">
-                <div className="flex items-center gap-2">
-                  <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
-                    <Image
-                      src={logo}
-                      alt=""
-                      className="max-w-full h-[20px] w-auto"
-                      height={100000}
-                      width={100000}
-                    />
-                  </div>
-                  <div className="content">
-                    <h6 className="m-0 text-white text-xs font-medium flex items-center gap-1">
-                      Lock #232434 <span className="icn">{lockIcn}</span>
-                    </h6>
-                    <p className="m-0 text-[10px]">Locked for 4 years</p>
-                  </div>
-                </div>
-                <div className="right text-right">
-                  <p className="m-0 text-base">97.55%</p>
-                  <p className="m-0 text-green-500 text-xs">8 Pools Selected</p>
-                </div>
+            <div className="col-span-1">
+              <div className="flex gap-2 h-full">
+                <button
+                  className="px-3 h-full bg-[#0b120d] flex items-center justify-center rounded-xl"
+                  onClick={prevSlide}
+                >
+                  {prevBtn}
+                </button>
+                <button
+                  className="px-3 h-full bg-[#0b120d] flex items-center justify-center rounded-xl"
+                  onClick={nextSlide}
+                >
+                  {nextBtn}
+                </button>
               </div>
             </div>
+            <div className="col-span-10">
+              <Slider
+                ref={(slider) => (sliderRef.current = slider)}
+                {...settings}
+              >
+                {[1, 2, 3, 4, 5].map((item, key) => (
+                  <div key={key} className="px-3">
+                    <div className="cardCstm p-3 rounded-xl bg-[#0b120d] relative border border-[#2a2a2a] flex items-center justify-between  gap-3">
+                      <div className="flex items-center gap-2">
+                        <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
+                          <Image
+                            src={logo}
+                            alt=""
+                            className="max-w-full h-[20px] w-auto"
+                            height={100000}
+                            width={100000}
+                          />
+                        </div>
+                        <div className="content">
+                          <h6 className="m-0 text-white text-xs font-medium flex items-center gap-1">
+                            Lock #232434 <span className="icn">{lockIcn}</span>
+                          </h6>
+                          <p className="m-0 text-[10px]">Locked for 4 years</p>
+                        </div>
+                      </div>
+                      <div className="right text-right">
+                        <p className="m-0 text-base">97.55%</p>
+                        <p className="m-0 text-green-500 text-xs">
+                          8 Pools Selected
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </Slider>
+            </div>
+            <div className="col-span-1">
+              <button
+                onClick={() => setVote(!vote)}
+                className="flex items-center justify-center commonBtn w-full px-8 rounded text-base font-medium "
+                style={{ height: "100%" }}
+              >
+                Vote
+              </button>
+            </div>
           </div>
-          <button className="flex items-center justify-center commonBtn px-3 rounded text-xs font-medium h-full">
-            Vote
-          </button>
         </div>
       </section>
     </>
   );
 };
-
 
 export default Vote;
 
@@ -443,5 +489,37 @@ const lockIcn = (
   >
     <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
     <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+  </svg>
+);
+
+const nextBtn = (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="m9 18 6-6-6-6"></path>
+  </svg>
+);
+
+const prevBtn = (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="m15 18-6-6 6-6"></path>
   </svg>
 );
