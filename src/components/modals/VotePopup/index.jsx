@@ -17,7 +17,7 @@ const VotePopup = ({ chainId, vote, setVote, data, setData }) => {
   const handleVote = () => {
     setVote(!vote);
   };
-  const [load, setLoad] = useState(false);
+  const [load, setLoad] = useState({});
   const signer = useEthersSigner();
   const { address } = useAccount();
 
@@ -30,39 +30,6 @@ const VotePopup = ({ chainId, vote, setVote, data, setData }) => {
       )
     );
   };
-
-  // const handleSelectPool = (nftId, poolAddress, percentage) => {
-  //   setSelectedNft((prev) => {
-  //     let nft = prev[nftId] || { total: 100, pool: [], percentage: [] };
-
-  //     const poolIndex = nft.pool.indexOf(poolAddress);
-
-  //     if (poolIndex !== -1) {
-  //       // Pool exists, update only its percentage
-  //       const newPercentages = [...nft.percentage];
-  //       newPercentages[poolIndex] = percentage; // Update the percentage
-
-  //       return {
-  //         ...prev,
-  //         [nftId]: {
-  //           ...nft,
-  //           percentage: newPercentages
-  //         }
-  //       };
-  //     } else {
-  //       // Pool doesn't exist, add new entry
-  //       return {
-  //         ...prev,
-  //         [nftId]: {
-  //           ...nft,
-  //           pool: [...nft.pool, poolAddress],
-  //           percentage: [...nft.percentage, percentage]
-  //         }
-  //       };
-  //     }
-  //   });
-  // };
-
 
   const handleSelectPool = (nftId, poolAddress, percentage) => {
     setSelectedNft((prev) => {
@@ -115,7 +82,9 @@ const VotePopup = ({ chainId, vote, setVote, data, setData }) => {
     });
   };
 
-
+  const handleLoad = (action, status) => {
+    setLoad((prev) => ({ ...prev, [action]: status }));
+  };
 
   useEffect(() => {
     setSelectedNft((prev) => {
@@ -134,7 +103,7 @@ const VotePopup = ({ chainId, vote, setVote, data, setData }) => {
   const vote_ = async (id) => {
     try {
       if (!address) return alert("Please connect your wallet");
-      setLoad(true);
+      handleLoad(id, true);
 
       const voter = new ethers.Contract(
         aerodromeContracts[chainId].voter,
@@ -151,10 +120,10 @@ const VotePopup = ({ chainId, vote, setVote, data, setData }) => {
 
       await tx.wait();
       Notify({ chainId, txhash: tx.hash });
-      setLoad(false);
+      handleLoad(id, false);
     } catch (error) {
       console.log(error);
-      setLoad(false);
+      handleLoad(id, false);
     }
   };
 
@@ -327,7 +296,6 @@ const VotePopup = ({ chainId, vote, setVote, data, setData }) => {
     },
   ];
 
-  console.log(selectedNft, "datadatadata")
   return (
     <div className="fixed z-[9999] inset-0 flex items-center justify-center cstmModal">
       <div className="absolute inset-0 bg-black z-[9] opacity-70"></div>
@@ -398,7 +366,7 @@ const VotePopup = ({ chainId, vote, setVote, data, setData }) => {
                             <ActButton
                               label="Vote"
                               onClick={() => vote_(item.id)}
-                              load={load}
+                              load={load[item.id]}
                             />
                           </div>
                         </div> : selectedNft[item.id]?.total + "%"  : ""
