@@ -3,6 +3,7 @@ import { aerodromeContracts, rpcUrls } from "./config.utils";
 
 import lpSugarAbi from "../abi/sugar/lpSugar.json"
 import veSugarAbi from "../abi/sugar/veSugar.json"
+import rewardSugarAbi from "../abi/sugar/rewardSugar.json"
 
 import { formatValue, fromUnits } from "./math.utils";
 
@@ -100,7 +101,7 @@ export const all = async (chainId: number, limit: number, offset: number, type: 
             factory: pool[18],
             emissions: formatValue(pool[19]),
             emissions_token: pool[20],
-            pool_fee: `${Number(formatValue(pool[21]))/100}%`,
+            pool_fee: `${Number(formatValue(pool[21])) / 100}%`,
             unstaked_fee: formatValue(pool[22]),
             token0_fees: formatValue(pool[23]),
             token1_fees: formatValue(pool[24]),
@@ -111,7 +112,7 @@ export const all = async (chainId: number, limit: number, offset: number, type: 
             poolBalance: `$${Number(fromUnits(pool[8], Number(pool[2]))) + Number(fromUnits(pool[11], Number(pool[2])))}`,
             apr: 0,
             volume: 0,
-            url: `/deposit?id=${index}&token0=${pool[7]}&token1=${pool[10]}&stable=${Number(pool.type) == -1 ? false: true}`
+            url: `/deposit?id=${index}&token0=${pool[7]}&token1=${pool[10]}&stable=${Number(pool.type) == -1 ? false : true}`
         }));
         //@ts-expect-error ignore warning
         const pool = type === 1 ? formattedPools : formattedPools.filter((pool) => Number(pool.type) == type)
@@ -236,7 +237,7 @@ export const locksByAccount = async (chainId: number, account: string) => {
         }));
 
 
-        return formattedLocks 
+        return formattedLocks
     } catch (error) {
         console.log(error, chainId)
         return []
@@ -280,7 +281,7 @@ export const lockById = async (chainId: number, tokenId: number) => {
         };
 
 
-        return formattedLocks 
+        return formattedLocks
     } catch (error) {
         console.log(error, chainId)
         return []
@@ -290,16 +291,19 @@ export const lockById = async (chainId: number, tokenId: number) => {
 
 //Reward Sugar
 export const allWithRewards = async (chainId: number, limit: number, offset: number) => {
-    try {        
+    try {
         const pools = await all(chainId, limit, offset, 1)
 
-        // const instance = new ethers.Contract(
-        //     aerodromeContracts[chainId].veSugar as string,
-        //     veSugarAbi,
-        //     new ethers.JsonRpcProvider(rpcUrls[chainId])
-        // );
+        const instance = new ethers.Contract(
+            aerodromeContracts[chainId].rewardSugar as string,
+            rewardSugarAbi,
+            new ethers.JsonRpcProvider(rpcUrls[chainId])
+        );
 
-        return pools 
+        const _ls = await instance.epochsLatest(10,1)
+        console.log(_ls, "_ls_ls_+++++++++++++++++++ls_ls")
+
+        return pools
     } catch (error) {
         console.log(error, chainId)
         return []

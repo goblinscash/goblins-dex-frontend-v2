@@ -377,7 +377,6 @@ const Deposit = () => {
     }
   };
 
-  console.log(pool, "pool");
   return (
     <>
       {tokenBeingSelected &&

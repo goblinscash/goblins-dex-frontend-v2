@@ -10,12 +10,10 @@ export const shortenPubkey = (address: string): string => {
 
 export const fromUnits = (value: string | number | bigint, decimals: number): string | undefined => {
   if (value === undefined || value === null || isNaN(Number(value))) {
-    console.log("Invalid value:", value);
     return;
   }
 
   if (!decimals && decimals !== 0) {
-    console.log("Invalid decimals:", decimals);
     return;
   }
 
@@ -46,7 +44,6 @@ export const formatValue = (value: bigint | string | number | boolean | null | u
 export const formatTimestamp = (timestamp: number) => {
     const now = Math.floor(Date.now() / 1000);
     const diff = timestamp - now; // Positive if in the future, negative if in the past
-    console.log(timestamp, "timestamp")
     const secondsInMinute = 60;
     const secondsInHour = 3600;
     const secondsInDay = 86400;

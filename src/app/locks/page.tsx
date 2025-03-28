@@ -14,8 +14,6 @@ type Column = {
   isComponent?: boolean; // For columns with specific components (like a switch)
 };
 
-
-
 const column: Column[] = [
   {
     accessor: "Lock",

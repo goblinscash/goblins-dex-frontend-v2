@@ -96,8 +96,6 @@ const Merge: React.FC<MergeProps> = ({ tokenId }) => {
         }
     };
 
-    console.log(selectedId, "selectedId")
-
     return (
         <>
             <section className="py-8 relative">

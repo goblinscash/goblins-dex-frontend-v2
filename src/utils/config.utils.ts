@@ -14,6 +14,7 @@ export type AerodromeContract = {
     universalRouter: string;
     voter: string;
     votingEscrow: string;
+    rewardSugar: string;
 
 }
 
@@ -60,8 +61,9 @@ export const aerodromeContracts: AerodromeContracts = {
     84532: {
         router: "0x1B683c08f448eA190Dd9B53EA756aB7B00085DE1",
         factory: "0x5F47613A76C1c01BcE11b3D398de16E38c3d4DCb",
-        lpSugar: "0x53cAf0F9B280edf9A8393150Bf4e1A0C25094979", //"0x7C5B8fF7d833020085538F5c4dFdE3B1E03f52A3",
+        lpSugar: "0x53cAf0F9B280edf9A8393150Bf4e1A0C25094979", 
         veSugar: "0xEBeEF79Ca7eEe38b9a1c26e3035992D8fdE3E77F",
+        rewardSugar: "0x65cc29b3467209b268f9d7402353db0a54eb05ba",
         universalRouter: "0xb73C095FE9818B0a75715E5959716faf29d27296",
         voter: "0xc84C4ebbC5671795D4DBf1d8A369897CB471B230",
         votingEscrow: '0xe015feb0B3cDDb683d450Cf698B34E0BeF714B65',        
@@ -71,6 +73,7 @@ export const aerodromeContracts: AerodromeContracts = {
         factory: "",
         lpSugar: "0x2Efe0713EfA0221070A2202b14bD1a6E3E12CEbE",  //"0x799351F408a51A0Ca5fdB4CD9E93157D8703b70A" //"0x8D1eaAFe47D6b2d560d69Ff44A7e0D48980ab69b"
         veSugar: "0x09b54f38d78468647e0469fc4c64502433c710cf", //"0x4c5d3925fe65DFeB5A079485136e4De09cb664A5",
+        rewardSugar: "0xA44600F4DBA6683d8BD99270B1A6a143fB9F1C3B",
         universalRouter: "0x6Cb442acF35158D5eDa88fe602221b67B400Be3E",
         voter: "0x16613524e02ad97eDfeF371bC883F2F5d6C480A5",
         votingEscrow: "0xeBf418Fe2512e7E6bd9b87a8F0f294aCDC67e6B4"
@@ -80,6 +83,7 @@ export const aerodromeContracts: AerodromeContracts = {
         factory: "",
         lpSugar: "",
         veSugar: "",
+        rewardSugar: "",
         universalRouter: "",
         voter: "",
         votingEscrow: ''
