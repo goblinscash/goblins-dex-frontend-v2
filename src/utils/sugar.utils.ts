@@ -3,7 +3,7 @@ import { aerodromeContracts, rpcUrls } from "./config.utils";
 
 import lpSugarAbi from "../abi/sugar/lpSugar.json"
 import veSugarAbi from "../abi/sugar/veSugar.json"
-// import rewardSugarAbi from "../abi/sugar/rewardSugar.json"
+import rewardSugarAbi from "../abi/sugar/rewardSugar.json"
 
 import { formatValue, fromUnits } from "./math.utils";
 
@@ -324,6 +324,18 @@ export const allWithRewards = async (chainId: number, limit: number, offset: num
         return []
     }
 };
+
+export const rewardsByAddress = async (chainId: number, lp: string) => {
+    const instance = new ethers.Contract(
+        aerodromeContracts[chainId].rewardSugar as string,
+        rewardSugarAbi,
+        new ethers.JsonRpcProvider(rpcUrls[chainId])
+    );
+
+    const rewards = await instance.rewardsByAddress(chainId, lp)
+    console.log(rewards, ")********************")
+
+}
 //Reward Sugar
 
 

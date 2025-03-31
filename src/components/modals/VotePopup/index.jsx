@@ -12,6 +12,7 @@ import voterAbi from "../../../abi/aerodrome/voter.json"
 import { aerodromeContracts } from "@/utils/config.utils";
 import { ethers } from "ethers";
 import ActButton from "@/components/common/ActButton";
+import { toast } from "react-toastify";
 
 const VotePopup = ({ chainId, vote, setVote, data, setData }) => {
   const handleVote = () => {
@@ -23,7 +24,7 @@ const VotePopup = ({ chainId, vote, setVote, data, setData }) => {
 
   const [selectedNft, setSelectedNft] = useState({})
 
-  const clearPools = (nftId) => {
+  const clearNft = (nftId) => {
     setData((prevLocks) =>
       prevLocks.map((lock) =>
         Number(lock.id) === nftId ? { ...lock, pool: [] } : lock
@@ -40,7 +41,7 @@ const VotePopup = ({ chainId, vote, setVote, data, setData }) => {
       let newTotalAvailable = 100 - currentTotalUsed;
 
       if (poolIndex !== -1) {
-        // ✅ Pool exists, update only its percentage
+        // ✅ Pool exists, update its percentage
         const newPercentages = [...nft.percentage];
         const oldPercentage = newPercentages[poolIndex];
 
@@ -48,7 +49,7 @@ const VotePopup = ({ chainId, vote, setVote, data, setData }) => {
         let newTotalUsed = currentTotalUsed - oldPercentage + percentage;
 
         if (newTotalUsed > 100) {
-          alert("Total allocation cannot exceed 100%");
+          toast.warn("Total allocation cannot exceed 100%")
           return prev; // Prevent update
         }
 
@@ -65,7 +66,7 @@ const VotePopup = ({ chainId, vote, setVote, data, setData }) => {
       } else {
         // ✅ Pool doesn't exist, check if there's enough remaining percentage
         if (percentage > newTotalAvailable) {
-          alert("Not enough remaining percentage to allocate");
+          toast.warn("Not enough remaining percentage to allocate")
           return prev; // Prevent adding this pool
         }
 
@@ -74,13 +75,14 @@ const VotePopup = ({ chainId, vote, setVote, data, setData }) => {
           [nftId]: {
             ...nft,
             pool: [...nft.pool, poolAddress],
-            percentage: [...nft.percentage, percentage],
+            percentage: [...nft.percentage, percentage], // ✅ Ensuring array length matches
             total: newTotalAvailable - percentage, // ✅ Update remaining percentage
           },
         };
       }
     });
   };
+
 
   const handleLoad = (action, status) => {
     setLoad((prev) => ({ ...prev, [action]: status }));
@@ -216,6 +218,43 @@ const VotePopup = ({ chainId, vote, setVote, data, setData }) => {
       head: "Total Reward",
       accessor: "Total_Reward",
       component: (item) => {
+        const nftData = selectedNft[item.nftId] || { total: 100, pool: [], percentage: [] };
+        const poolIndex = nftData.pool.indexOf(item.lp);
+        const existingPercentage = poolIndex !== -1 ? nftData.percentage[poolIndex] : 0;
+
+        const [inputValue, setInputValue] = useState(existingPercentage.toString());
+
+        const handleInputChange = (e) => {
+          let value = e.target.value;
+
+          // Ensure only numbers are entered
+          if (!/^\d*$/.test(value)) return;
+
+          let percentage = Number(value);
+
+          // Ensure percentage is within 0-100 range
+          if (percentage > 100) {
+            percentage = 100;
+          }
+
+          setInputValue(value);
+          handleSelected(value)
+        };
+
+        const handleSelected = (inputValue_) => {
+          let percentage = Number(inputValue_);
+          if (percentage >= 0 && percentage <= 100) {
+            handleSelectPool(Number(item.nftId), item.lp, percentage);
+          }
+        };
+
+        const handleBlur = () => {
+          let percentage = Number(inputValue);
+          if (percentage >= 0 && percentage <= 100) {
+            handleSelectPool(Number(item.nftId), item.lp, percentage);
+          }
+        };
+
         return (
           <div className="rounded p-3 bg-[#091616] text-xs h-full pb-5 text-right min-w-[200px]">
             <div className="top mb-4 flex items-center justify-center gap-3">
@@ -229,65 +268,28 @@ const VotePopup = ({ chainId, vote, setVote, data, setData }) => {
                 </span>
                 <input
                   type="text"
+                  value={inputValue}
+                  onChange={handleInputChange}
+                  onBlur={handleBlur}
                   className="form-control rounded-xl border border-[#3c3c3c] text-xs bg-transparent max-w-[150px] p-3"
                 />
               </div>
             </div>
             <div className="bottom pt-4">
               <ul className="list-none pl-0 mb-0 flex items-center justify-center gap-2">
-                <li className="">
-                  <button className="p-1 text-xs bg-[#000e0e] rounded-xl px-3">
-                    {deleteIcn}
-                  </button>
-                </li>
-                <li className="">
-                  <button
-                    className="p-1 text-xs bg-[#000e0e] rounded-xl px-3"
-                    onClick={() => handleSelectPool(Number(item.nftId), item.lp, 0)}
-                  >
-                    0 %
-                  </button>
-                </li>
-                <li className="">
-                  <button
-                    className="p-1 text-xs bg-[#000e0e] rounded-xl px-3"
-                    onClick={() => handleSelectPool(Number(item.nftId), item.lp, 10)}
-                  >
-                    10%
-                  </button>
-                </li>
-                <li className="">
-                  <button
-                    className="p-1 text-xs bg-[#000e0e] rounded-xl px-3"
-                    onClick={() => handleSelectPool(Number(item.nftId), item.lp, 25)}
-                  >
-                    25%
-                  </button>
-                </li>
-                <li className="">
-                  <button
-                    className="p-1 text-xs bg-[#000e0e] rounded-xl px-3"
-                    onClick={() => handleSelectPool(Number(item.nftId), item.lp, 50)}
-                  >
-                    50%
-                  </button>
-                </li>
-                <li className="">
-                  <button
-                    className="p-1 text-xs bg-[#000e0e] rounded-xl px-3"
-                    onClick={() => handleSelectPool(Number(item.nftId), item.lp, 75)}
-                  >
-                    75%
-                  </button>
-                </li>
-                <li className="">
-                  <button
-                    className="p-1 text-xs bg-[#000e0e] rounded-xl px-3"
-                    onClick={() => handleSelectPool(Number(item.nftId), item.lp, 100)}
-                  >
-                    100%
-                  </button>
-                </li>
+                {[0, 10, 25, 50, 75, 100].map((percent) => (
+                  <li key={percent} className="">
+                    <button
+                      className="p-1 text-xs bg-[#000e0e] rounded-xl px-3"
+                      onClick={() => {
+                        setInputValue(percent.toString());
+                        handleSelectPool(Number(item.nftId), item.lp, percent);
+                      }}
+                    >
+                      {percent}%
+                    </button>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
@@ -348,7 +350,7 @@ const VotePopup = ({ chainId, vote, setVote, data, setData }) => {
                           </li>
                           <li className="">
                             <button
-                              onClick={() => clearPools(Number(item.id))}
+                              onClick={() => clearNft(Number(item.id))}
                               className="themeClr text-[10px] font-medium"
                             >
                               Clear Votes
@@ -360,7 +362,7 @@ const VotePopup = ({ chainId, vote, setVote, data, setData }) => {
                   </div>
                   <div className="right text-right">
                     <p className="m-0 text-base">
-                      {selectedNft ? Number(selectedNft[item.id]?.total) === 0 ? 
+                      {selectedNft ? Number(selectedNft[item.id]?.total) === 0 ?
                         <div className="bottom w-full">
                           <div className="btnWrpper mt-3">
                             <ActButton
@@ -369,7 +371,7 @@ const VotePopup = ({ chainId, vote, setVote, data, setData }) => {
                               load={load[item.id]}
                             />
                           </div>
-                        </div> : selectedNft[item.id]?.total + "%"  : ""
+                        </div> : selectedNft[item.id]?.total + "%" : ""
                       }</p>
                     <p className="m-0 text-green-500 text-xs">{item.pool?.length} Pools Selected</p>
                   </div>

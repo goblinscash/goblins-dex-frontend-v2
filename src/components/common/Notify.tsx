@@ -1,4 +1,5 @@
 import { explorerUrls } from '@/utils/config.utils';
+import Link from 'next/link';
 import React from 'react';
 import { toast } from 'react-toastify';
 
@@ -13,14 +14,15 @@ const Notify: React.FC<NotifyProps> = ({ chainId, txhash }) => {
   toast.success(
     <div>
       Transaction completed successfully!
-      <a
+      <Link
         href={url}
-        style={{ color: 'blue', textDecoration: 'underline', marginLeft: '8px' }}
+        className='themeClr font-medium'
+        style={{  textDecoration: 'underline', marginLeft: '8px' }}
         target="_blank"
         rel="noopener noreferrer"
       >
         View Transaction
-      </a>
+      </Link>
     </div>
   );
 
