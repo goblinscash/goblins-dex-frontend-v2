@@ -81,11 +81,11 @@ const Header = () => {
                     Incentivize
                     </Link>
                   </li>
-                  <li className="px-2">
+                  {/* <li className="px-2">
                     <Link href="/farm" className="">
                       Farm
                     </Link>
-                  </li>
+                  </li> */}
                   <li className="px-1">
                     <button
                       className="btn flex items-center justify-center commonBtn rounded text-xs font-medium "

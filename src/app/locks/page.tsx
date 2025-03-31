@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useAccount, useChainId } from "wagmi";
-import { locksByAccount, VeNFT } from "@/utils/sugar.utils";
+import { allRelay, locksByAccount, Relay, VeNFT } from "@/utils/sugar.utils";
 import ListLayout from "@/components/lockRow";
 import Link from "next/link";
 import { calculateRebaseAPR, formatTimestamp } from "@/utils/math.utils";
@@ -10,8 +10,8 @@ import LockInteraction from "@/components/lockInteraction/LockInteraction";
 
 type Column = {
   accessor: string;
-  component?: (item: VeNFT, key: number) => React.ReactNode; // Optional component property
-  isComponent?: boolean; // For columns with specific components (like a switch)
+  component?: (item: VeNFT, key: number) => React.ReactNode;
+  isComponent?: boolean; 
 };
 
 const column: Column[] = [
@@ -76,9 +76,11 @@ const Locks = () => {
   const chainId = useChainId();
   const { address } = useAccount();
   const [locks, setLocks] = useState<VeNFT | null>(null);
+  const [relay, setRelay] = useState<Relay | null>(null)
   useEffect(() => {
     if (chainId && address) {
       fetchLocksByAccount()
+      fetchRelay()
     }
   }, [chainId, address]);
 
@@ -87,6 +89,14 @@ const Locks = () => {
     const locks_ = await locksByAccount(chainId, address)
     setLocks(locks_)
   }
+
+  const fetchRelay = async() => {
+    const relay_ = await allRelay(chainId, address as string)
+    //@ts-expect-error ignore
+    setRelay(relay_)
+  }
+
+  console.log(relay, "relayrelay")
 
   return (
     <section className="Liquidity py-5 relative">

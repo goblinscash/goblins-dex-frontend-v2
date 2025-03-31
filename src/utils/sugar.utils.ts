@@ -4,6 +4,7 @@ import { aerodromeContracts, rpcUrls } from "./config.utils";
 import lpSugarAbi from "../abi/sugar/lpSugar.json"
 import veSugarAbi from "../abi/sugar/veSugar.json"
 import rewardSugarAbi from "../abi/sugar/rewardSugar.json"
+import relaySugarAbi from "../abi/sugar/relaySugar.json"
 
 import { formatValue, fromUnits } from "./math.utils";
 
@@ -62,6 +63,31 @@ export type VeNFT = {
     permanent: boolean;
     delegate_id: string;
     managed_id: string;
+};
+
+type ManagedVenft = {
+    id: string;
+    amount: string;
+    earned: string;
+};
+
+export type Relay = {
+    venft_id: string;
+    decimals: number;
+    amount: string;
+    voting_amount: string;
+    used_voting_amount: string;
+    voted_at: string;
+    votes: LpVote[];
+    token: string;
+    compounded: string;
+    withdrawable: string;
+    run_at: string;
+    manager: string;
+    relay: string;
+    inactive: boolean;
+    name: string;
+    account_venfts: ManagedVenft[];
 };
 
 
@@ -294,7 +320,7 @@ export const allWithRewards = async (chainId: number, limit: number, offset: num
     try {
         const pools = await all(chainId, limit, 0, 1)
 
-         console.log(offset)
+        console.log(offset)
         // const instance = new ethers.Contract(
         //     aerodromeContracts[chainId].rewardSugar as string,
         //     rewardSugarAbi,
@@ -337,6 +363,57 @@ export const rewardsByAddress = async (chainId: number, lp: string) => {
 
 }
 //Reward Sugar
+
+//Relay Sugar//
+export const allRelay = async (chainId: number, account: string) => {
+    try {
+        const provider = new ethers.JsonRpcProvider(rpcUrls[chainId]);
+        const instance = new ethers.Contract(
+            aerodromeContracts[chainId].relaySugar as string,
+            relaySugarAbi,
+            provider
+        );
+
+        const relayRaw = await instance.all(account);
+
+
+        const relay: Relay[] = relayRaw.map((fields:Relay) => ({
+            venft_id: formatValue(fields.venft_id),
+            decimals: Number(fields.decimals),
+            amount: formatValue(fields.amount),
+            voting_amount: formatValue(fields.voting_amount),
+            used_voting_amount: formatValue(fields.used_voting_amount),
+            voted_at: formatValue(fields.voted_at),
+            votes: fields.votes.map((vote:LpVote) => ({
+                lp: vote.lp,
+                weight: formatValue(vote.weight),
+            })),
+            token: fields.token,
+            compounded: formatValue(fields.compounded),
+            withdrawable: formatValue(fields.withdrawable),
+            run_at: formatValue(fields.run_at),
+            manager: fields.manager,
+            relay: fields.relay,
+            inactive: fields.inactive,
+            name: fields.name?.trim(),
+            account_venfts: fields.account_venfts.map((venft: ManagedVenft) => ({
+                id: formatValue(venft.id),
+                amount: formatValue(venft.amount),
+                earned: formatValue(venft.earned),
+            })),
+        }));
+
+
+        return relay;
+    } catch (error) {
+        console.log(error, chainId);
+        return [];
+    }
+};
+
+//Relay Sugar//
+
+
 
 
 export const aprSugar = () => { return 0 }
