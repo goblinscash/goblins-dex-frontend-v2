@@ -246,9 +246,9 @@ const Relays = () => {
                                                     />
 
                                                     <Progress
-                                                        icon={isResetAvailable(Number(selectedId?.voted_at)) ? unlock : lockIcon}
+                                                        icon={isResetAvailable(Number(selectedId?.voted_at), chainId) ? unlock : lockIcon}
                                                         symbol={""}
-                                                        text={isResetAvailable(Number(selectedId?.voted_at)) ? "Reset is not available for this lock" : "Reset is not available after a vote, wait for the next epoch."}
+                                                        text={isResetAvailable(Number(selectedId?.voted_at), chainId) ? "Reset is available for this lock" : "Reset is not available after a vote, wait for the next epoch."}
                                                     />
 
                                                     <Progress

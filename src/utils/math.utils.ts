@@ -116,12 +116,13 @@ export const getTimeSince = (timestamp: number): TimeResult => {
   };
 }
 
-export const isResetAvailable = (timestamp: number): boolean => {
+export const isResetAvailable = (timestamp: number, chainId: number): boolean => {
   const now: number = Math.floor(Date.now() / 1000);
 
-  const oneDayInSeconds: number = 24 * 60 * 60;
+  const day = chainId === 8453 ? 7 : 1
+  const dayInSeconds: number = day * 24 * 60 * 60;
 
-  return (now - timestamp) > oneDayInSeconds;
+  return (now - timestamp) > dayInSeconds;
 }
 
 
