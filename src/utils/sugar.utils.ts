@@ -377,7 +377,7 @@ export const allRelay = async (chainId: number, account: string) => {
         const relayRaw = await instance.all(account);
 
 
-        const relay: Relay[] = relayRaw.map((fields:Relay) => ({
+        let relay: Relay[] = relayRaw.map((fields:Relay) => ({
             venft_id: formatValue(fields.venft_id),
             decimals: Number(fields.decimals),
             amount: formatValue(fields.amount),
@@ -402,6 +402,8 @@ export const allRelay = async (chainId: number, account: string) => {
                 earned: formatValue(venft.earned),
             })),
         }));
+
+        relay = relay.filter((item: Relay) => item.inactive !== true )
 
 
         return relay;

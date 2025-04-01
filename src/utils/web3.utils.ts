@@ -604,7 +604,7 @@ export const fetchV2Pools = async (chainId: number, token0: string, token1: stri
     );
 
     const pool = await poolFactory['getPool(address,address,bool)'](token0, token1, stable);
-    
+
     if (pool === ZeroAddress) {
         const _token0 = await fetchTokenDetails(chainId, token0)
         const _token1 = await fetchTokenDetails(chainId, token1)
@@ -627,7 +627,7 @@ export const fetchV2Pools = async (chainId: number, token0: string, token1: stri
         new ethers.JsonRpcProvider(rpcUrls[chainId])
     );
 
-    const symbol = await poolInstance.name()    
+    const symbol = await poolInstance.name()
     // const metadata = await poolInstance.metadata() 
 
     return [{
@@ -660,14 +660,33 @@ export const findIndex = async (chainId: number, pool: string) => {
 
     let index_ = 0
     const totalPool = await poolFactory.allPoolsLength()
-    for (let index = 0; index < totalPool; index++) {       
+    for (let index = 0; index < totalPool; index++) {
         const _pool = await poolFactory.allPools(index)
-        if(_pool.toLowerCase() === pool.toLocaleLowerCase()){
+        if (_pool.toLowerCase() === pool.toLocaleLowerCase()) {
             index_ = index
             break;
         }
     }
     return index_
+}
+
+export const isReset = async (chainId: number, tokenId: number) => {
+    if (!isValidChainId(chainId)) {
+        throw new Error(`Invalid chainId: ${chainId}`);
+    }
+
+    const voter = new ethers.Contract(
+        aerodromeContracts[chainId].voter,
+        voterAbi,
+        new ethers.JsonRpcProvider(rpcUrls[chainId])
+    );
+
+    const isWeight = await voter.usedWeights(tokenId)
+    if (Number(isWeight) === 0) {
+        return true
+    } else {
+        return false
+    }
 }
 
 // aerodrome //

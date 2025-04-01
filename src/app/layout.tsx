@@ -11,6 +11,7 @@ import { cookieToInitialState } from "wagmi";
 import { config } from "@/config";
 import Web3ModalProvider from "@/context";
 import { ToastContainer } from "react-toastify";
+import 'react-tooltip/dist/react-tooltip.css'
 import "react-toastify/dist/ReactToastify.css";
 
 // const geistSans = Geist({
