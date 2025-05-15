@@ -1,0 +1,371 @@
+diff --git a/node_modules/@myswap/token-list/build/goblinscash-default.tokenlist.json b/node_modules/@myswap/token-list/build/goblinscash-default.tokenlist.json
+index cd78386..7b9f417 100644
+--- a/node_modules/@myswap/token-list/build/goblinscash-default.tokenlist.json
++++ b/node_modules/@myswap/token-list/build/goblinscash-default.tokenlist.json
+@@ -14,121 +14,65 @@
+   ],
+   "tokens": [
+     {
+-      "name": "Binance-Peg Cardano Token",
+-      "symbol": "ADA",
+-      "address": "0x3EE2200Efb3400fAbB9AacF31297cBdD1d435D47",
++      "name": "Goblin V2",
++      "symbol": "GOBV2",
++      "address": "0xf69b558bfb2215e26c001d30f80e9926168e6880",
+       "chainId": 56,
+       "decimals": 18,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/cardano.png"
++      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/gob.png"
+     },
+     {
+-      "name": "Aero Token",
+-      "symbol": "AERO",
+-      "address": "0x76d7062a70F5c129B6180BaAb2607c788A962B1b",
+-      "chainId": 56,
+-      "decimals": 18,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/aero.png"
+-    },
+-    {
+-      "name": "Bonk Token",
+-      "symbol": "BONK",
+-      "address": "0xA697e272a73744b343528C3Bc4702F2565b2F422",
+-      "chainId": 56,
+-      "decimals": 5,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/bonk.png"
+-    },
+-    {
+-      "name": "Binance-Peg BTCB Token",
+-      "symbol": "BTCB",
+-      "address": "0x7130d2A12B9BCbFAe4f2634d864A1Ee1Ce3Ead9c",
+-      "chainId": 56,
+-      "decimals": 18,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/btcb.png"
+-    },
+-    {
+-      "name": "DAI Token",
+-      "symbol": "DAI",
+-      "address": "0x1AF3F329e8BE154074D8769D1FFa4eE058B1DBc3",
+-      "chainId": 56,
+-      "decimals": 18,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/dia.png"
+-    },
+-    {
+-      "name": "Doge Token",
+-      "symbol": "DOGE",
+-      "address": "0xbA2aE424d960c26247Dd6c32edC70B295c744C43",
+-      "chainId": 56,
+-      "decimals": 8,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/doge.png"
+-    },
+-    {
+-      "name": "Binance-Peg Ethereum Token",
+-      "symbol": "ETH",
+-      "address": "0x2170Ed0880ac9A755fd29B2688956BD959F933F8",
+-      "chainId": 56,
+-      "decimals": 18,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/ether.png"
+-    },
+-    {
+-      "name": "Floki Token",
+-      "symbol": "FLOKI",
+-      "address": "0xfb5B838b6cfEEdC2873aB27866079AC55363D37E",
++      "name": "Goblin",
++      "symbol": "GOB",
++      "address": "0x205f59c72385c82b2328fc1c7776640c8d10f836",
+       "chainId": 56,
+       "decimals": 9,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/floki.png"
+-    },
+-    {
+-      "name": "Binance-Peg Litecoin Token",
+-      "symbol": "LTC",
+-      "address": "0x4338665CBB7B2485A8855A139b75D5e34AB0DB94",
+-      "chainId": 56,
+-      "decimals": 18,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/litecoin.png"
++      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/gob.png"
+     },
+     {
+-      "name": "Pepe Token",
+-      "symbol": "PEPE",
+-      "address": "0x25d887Ce7a35172C62FeBFD67a1856F20FaEbB00",
++      "name": "Test Ethereum",
++      "symbol": "tETH",
++      "address": "0x4fad9b2458634b1e5d679732ca3f6c203e565b13",
+       "chainId": 56,
+       "decimals": 18,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/pepe.png"
++      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/ether.png"
+     },
+     {
+-      "name": "MyShell Token",
+-      "symbol": "SHELL",
+-      "address": "0xf2c88757f8d03634671208935974B60a2a28Bdb3",
++      "name": "Test USDC",
++      "symbol": "tUSDC",
++      "address": "0x53b6a051dd3193d4f80c1e66c56316af180755f6",
+       "chainId": 56,
+-      "decimals": 18,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/shell.png"
++      "decimals": 6,
++      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/usdc.png"
+     },
+     {
+-      "name": "Shib Token",
+-      "symbol": "SHIB",
+-      "address": "0x2859e4544C4bB03966803b044A93563Bd2D0DD4D",
++      "name": "Test USDT",
++      "symbol": "tUSDT",
++      "address": "0xa44319d6232afeaa21a38b040ca095110ad76d38",
+       "chainId": 56,
+       "decimals": 18,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/shib.png"
++      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/usdt.png"
+     },
+     {
+-      "name": "Binance-Peg SOLANA Token",
+-      "symbol": "SOL",
+-      "address": "0x570A5D26f7765Ecb712C0924E4De545B89fD43dF",
++      "name": "Test BCH",
++      "symbol": "tBCH",
++      "address": "0x767dc7981a5d58539814110dea8dd88857164fa1",
+       "chainId": 56,
+       "decimals": 18,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/sol.png"
++      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/bcbch.png"
+     },
+     {
+-      "name": "Binance-Peg XRP Token",
+-      "symbol": "XRP",
+-      "address": "0x1D2F0da169ceB9fC7B3144628dB156f3F6c60dBE",
++      "name": "Wrapped BNB",
++      "symbol": "WBNB",
++      "address": "0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c",
+       "chainId": 56,
+       "decimals": 18,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/xrp.png"
++      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/ether.png"
+     },
+     {
+       "name": "AERO Token",
+       "symbol": "AERO",
+-      "address": "0x940181a94A35A4569E4529A3CDfB74e38FD98631",
++      "address": "0x940181a94a35a4569e4529a3cdfb74e38fd98631",
+       "chainId": 8453,
+       "decimals": 18,
+       "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/aero.png"
+@@ -136,7 +80,7 @@
+     {
+       "name": "BITCOIN Token",
+       "symbol": "BITCOIN",
+-      "address": "0x2a06A17CBC6d0032Cac2c6696DA90f29D39a1a29",
++      "address": "0x2a06a17cbc6d0032cac2c6696da90f29d39a1a29",
+       "chainId": 8453,
+       "decimals": 8,
+       "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/bitcoin.png"
+@@ -144,7 +88,7 @@
+     {
+       "name": "Mog Token",
+       "symbol": "MOG",
+-      "address": "0x2Da56AcB9Ea78330f947bD57C54119Debda7AF71",
++      "address": "0x2da56acb9ea78330f947bd57c54119debda7af71",
+       "chainId": 8453,
+       "decimals": 18,
+       "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/mog.png"
+@@ -152,7 +96,7 @@
+     {
+       "name": "Neiro Token",
+       "symbol": "Neiro",
+-      "address": "0x5Ca35eBC4f25B042d2cAE75914c7e882E631fA9A",
++      "address": "0x5ca35ebc4f25b042d2cae75914c7e882e631fa9a",
+       "chainId": 8453,
+       "decimals": 9,
+       "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/neiro.png"
+@@ -160,7 +104,7 @@
+     {
+       "name": "PT Moonwell USDC 26JUN2025",
+       "symbol": "PT-mUSDC-26JUN2025",
+-      "address": "0x2A9e9256E0d1Ad0f7f9d7c7248cb7e2f06072DeB",
++      "address": "0x2a9e9256e0d1ad0f7f9d7c7248cb7e2f06072deb",
+       "chainId": 8453,
+       "decimals": 6,
+       "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/ptmusdc26june2025.png"
+@@ -168,7 +112,7 @@
+     {
+       "name": "SPX Token",
+       "symbol": "SPX",
+-      "address": "0x50dA645f148798F68EF2d7dB7C1CB22A6819bb2C",
++      "address": "0x50da645f148798f68ef2d7db7c1cb22a6819bb2c",
+       "chainId": 8453,
+       "decimals": 8,
+       "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/spx.png"
+@@ -176,154 +120,10 @@
+     {
+       "name": "Virtual Protocol",
+       "symbol": "VIRTUAL",
+-      "address": "0x0b3e328455c4059EEb9e3f84b5543F74E24e7E1b",
++      "address": "0x0b3e328455c4059eeb9e3f84b5543f74e24e7e1b",
+       "chainId": 8453,
+       "decimals": 18,
+       "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/virtual.png"
+-    },
+-    {
+-      "name": "AERO Token",
+-      "symbol": "AERO",
+-      "address": "0xc993Af7fa109E3DD17347c7cE612a5Ed848F4B74",
+-      "chainId": 10000,
+-      "decimals": 18,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/aero.png"
+-    },
+-    {
+-      "name": "bbBCH Token",
+-      "symbol": "bbBCH",
+-      "address": "0xbb7b43eb950C0fDBb645D7d05a27395Ed8D944fA",
+-      "chainId": 10000,
+-      "decimals": 18,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/bcbch.png"
+-    },
+-    {
+-      "name": "bbBTC Token",
+-      "symbol": "bbBTC",
+-      "address": "0xbbeF77270d6425E113e1E37f008cf141a9FC215A",
+-      "chainId": 10000,
+-      "decimals": 18,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/btc.png"
+-    },
+-    {
+-      "name": "bbETH Token",
+-      "symbol": "bbETH",
+-      "address": "0xbb10B6D11db70f33417b08e0B87042275C933Bb9",
+-      "chainId": 10000,
+-      "decimals": 18,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/eth.png"
+-    },
+-    {
+-      "name": "bbUSDT Token",
+-      "symbol": "bbUSDT",
+-      "address": "0xbbb3700F33fCb64437Dc28A7Beb6b21f5cC76FB9",
+-      "chainId": 10000,
+-      "decimals": 18,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/bbusdt.png"
+-    },
+-    {
+-      "name": "bcBNB Token",
+-      "symbol": "bcBNB",
+-      "address": "0xBc7b858B5694D485AD17c89675649cE44De21BEa",
+-      "chainId": 10000,
+-      "decimals": 18,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/bnb.png"
+-    },
+-    {
+-      "name": "BITCOIN Token",
+-      "symbol": "BITCOIN",
+-      "address": "0x85689bE665562c06Aa052e0E2A2422b286d30C44",
+-      "chainId": 10000,
+-      "decimals": 8,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/bitcoin.png"
+-    },
+-    {
+-      "name": "Bonk Token",
+-      "symbol": "Bonk",
+-      "address": "0x799351F408a51A0Ca5fdB4CD9E93157D8703b70A",
+-      "chainId": 10000,
+-      "decimals": 5,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/bonk.png"
+-    },
+-    {
+-      "name": "DEGEN Token",
+-      "symbol": "DEGEN",
+-      "address": "0xB6B54DDE7282fbcD19Cb1d447dFE425454a831Eb",
+-      "chainId": 10000,
+-      "decimals": 18,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/degen.png"
+-    },
+-    {
+-      "name": "Doge Token",
+-      "symbol": "DOGE",
+-      "address": "0x9Ca6F10D19CBDa52bBd615f7E1F1821386Abe3D1",
+-      "chainId": 10000,
+-      "decimals": 8,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/doge.png"
+-    },
+-    {
+-      "name": "FLOKI Token",
+-      "symbol": "FLOKI",
+-      "address": "0x6c6b3E0F1a7B3513c55E1f288C99d53441990613",
+-      "chainId": 10000,
+-      "decimals": 9,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/floki.png"
+-    },
+-    {
+-      "name": "MOG Token",
+-      "symbol": "MOG",
+-      "address": "0x0dF6A7169132265Bb4f2b0Fac0a37b26ea6F93Fc",
+-      "chainId": 10000,
+-      "decimals": 18,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/mog.png"
+-    },
+-    {
+-      "name": "Neiro Token",
+-      "symbol": "Neiro",
+-      "address": "0x751C9c9F98f839E97b039BE2d5A66b92c622335F",
+-      "chainId": 10000,
+-      "decimals": 9,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/neiro.png"
+-    },
+-    {
+-      "name": "PEPE Token",
+-      "symbol": "PEPE",
+-      "address": "0x8CF81850Aa9D5a4E3Df180AFBaF0d2093A3F3379",
+-      "chainId": 10000,
+-      "decimals": 18,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/pepe.png"
+-    },
+-    {
+-      "name": "PT Moonwell USDC 26JUN2025 Token",
+-      "symbol": "PT-mUSDC-26JUN2025",
+-      "address": "0x2b7f108a6ee5e5B2F74a95678De2cF31c82AE8E7",
+-      "chainId": 10000,
+-      "decimals": 6,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/ptmusdc26june2025.png"
+-    },
+-    {
+-      "name": "SHIB Token",
+-      "symbol": "SHIB",
+-      "address": "0x21BA72Ff5b25AdD1Dc3d42Cab987f1c4e0466814",
+-      "chainId": 10000,
+-      "decimals": 18,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/shib.png"
+-    },
+-    {
+-      "name": "SPX Token",
+-      "symbol": "SPX",
+-      "address": "0x617599B1177d56d130Da5FD5cf896E3f186eB6f1",
+-      "chainId": 10000,
+-      "decimals": 8,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/spx.png"
+-    },
+-    {
+-      "name": "USD Coin",
+-      "symbol": "USDC",
+-      "address": "0x70244D73dfd3815Ba783C8e3Fae88409DC620c29",
+-      "chainId": 10000,
+-      "decimals": 6,
+-      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/usdc.png"
+     }
+   ],
+   "tokenLogos": {
+@@ -380,6 +180,12 @@
+     "0x4200000000000000000000000000000000000006": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/weth.png",
+     "0x7be0cc2cadcd4a8f9901b4a66244dcdd9bd02e0f": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/ubch.png",
+     "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/usdc.png",
+-    "0x4ed4e862860bed51a9570b96d89af5e1b0efefed": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/degen.png"
++    "0x4ed4e862860bed51a9570b96d89af5e1b0efefed": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/degen.png",
++    "0x53b6a051dd3193d4f80c1e66c56316af180755f6": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/usdc.png",
++    "0xa44319d6232afeaa21a38b040ca095110ad76d38": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/usdt.png",
++    "0x767dc7981a5d58539814110dea8dd88857164fa1": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/bcbch.png",
++    "0x4fad9b2458634b1e5d679732ca3f6c203e565b13": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/ether.png",
++    "0x205f59c72385c82b2328fc1c7776640c8d10f836": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/gob.png",
++    "0xf69b558bfb2215e26c001d30f80e9926168e6880": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/gob.png"
+   }
+ }

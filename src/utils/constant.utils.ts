@@ -1,7 +1,7 @@
 export const MAX_UINT_128 = "340282366920938463463374607431768211455"; // 2^128 - 1
 export const UNI_ROUTING_API_URL = "https://vo7hqx6hkl.execute-api.us-east-1.amazonaws.com/prod";
 export const ROUTE_API_URI = "https://fastapi.goblins.cash/quote"
-export const SUPPORTED_CHAIN = [8453, 84532]
+export const SUPPORTED_CHAIN = [8453, 84532, 56];
 
 type TokenInfo = {
     address: string;
@@ -28,6 +28,11 @@ export const gobV2: Record<number, TokenInfo> = {
     },
     84532: {
         address: "0xe0D6d4649e27882A8C235C27634F8cC4683c4DAc",
+        symbol: "GOBV2",
+        decimals: 18
+    },
+    56: {
+        address: "0xF69B558bfB2215e26C001D30F80E9926168e6880",
         symbol: "GOBV2",
         decimals: 18
     }
@@ -85,11 +90,29 @@ export const stableToken: StableTokenMap = {
         //     "decimals": 18,
         //     "logoURI": "https://basescan.org/token/images/tether_128.png"
         // }
+    ],
+    56: [
+        {
+            "name": "Tether USD",
+            "symbol": "USDT",
+            "address": "0x55d398326f99059fF775485246999027B3197955",
+            "chainId": 56,
+            "decimals": 18,
+            "logoURI": "https://basescan.org/token/images/tether_128.png"
+        },
+        {
+            "name": "USD Coin",
+            "symbol": "USDC",
+            "address": "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
+            "chainId": 56,
+            "decimals": 18,
+            "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/usdc.png"
+        }
     ]
 }
 
 export const stableTokens = (chainId: number) => {
-    const SUPPORTED_CHAIN = [8453, 84532];
+    const SUPPORTED_CHAIN = [8453, 84532, 56];
     const id = SUPPORTED_CHAIN.includes(chainId) ? chainId : 8453;
     return (stableToken)[id] || []
 }

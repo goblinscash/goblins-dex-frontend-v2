@@ -82,15 +82,15 @@ export const aerodromeContracts: AerodromeContracts = {
         votingEscrow: "0xeBf418Fe2512e7E6bd9b87a8F0f294aCDC67e6B4"
     },
     56: {
-        router: "",
-        factory: "",
-        lpSugar: "",
-        veSugar: "",
-        rewardSugar: "",
-        relaySugar: "",
-        universalRouter: "",
-        voter: "",
-        votingEscrow: ''
+        router: "0xe70642eCD92bB57F785d6185Dfe0a55f06c4318F",
+        factory: "0x756a2162B3289e45441E97807cba806e03e5F6c8",
+        lpSugar: "0xe70b7376dfEA62Ef5bE77f5b48F4ffCc2CBbDB48",
+        veSugar: "0xA58EB13B93CEB759F7aB7b11B0c0b1061e9dB5FE",
+        rewardSugar: "0x52A722c29aD70E5979A55C65928437F13E8fa892",
+        relaySugar: "0xfECB8E35dd70300B1e00030fFA93DC7E3bA4189F",
+        universalRouter: "0xf6E51745910027CC14E422Edf964E11646f4bD34",
+        voter: "0xd3F575500E06C52070DD0a3b53d22024d3644787",
+        votingEscrow: "0x933BAaa7c74D81FA07701F19f1d53CBBaA69640D"
     }
 };
 
@@ -140,13 +140,13 @@ export type RpcUrls = {
 export const rpcUrls: RpcUrls = {
     84532: "https://base-sepolia-rpc.publicnode.com",
     8453: "https://mainnet.base.org",
-    56: ""
+    56: "https://virulent-dark-hill.bsc.quiknode.pro/01a06406e72abc1a563792bc3ae47c5c620299af"
 } as const
 
 export const explorerUrls: RpcUrls = {
     84532: "https://sepolia.basescan.org/tx/",
     8453: "https://basescan.org/tx/",
-    56: ""
+    56: "https://bscscan.com/tx/"
 } as const
 
 
