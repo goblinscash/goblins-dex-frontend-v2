@@ -103,7 +103,7 @@ const column: Column[] = [
       );
     },
   },
-  { head: "Apr", accessor: "apr" },
+  { head: "APR", accessor: "apr" },
   {
     head: "Volume",
     accessor: "volume",

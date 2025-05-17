@@ -66,7 +66,7 @@ const SelectTokenPopup = ({ tokenBeingSelected, onSelectToken, onClose, chainId,
             <div className="iconWithText relative">
               <span className="absolute icn left-2">{search}</span>
               <input
-                placeholder="Search by token address..."
+                placeholder="Search tokens"
                 type="search"
                 value={searchQuery}
                 onChange={handleChange}

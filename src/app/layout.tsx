@@ -25,8 +25,8 @@ import "react-toastify/dist/ReactToastify.css";
 // });
 
 export const metadata: Metadata = {
-  title: "Goblin Cash",
-  description: "Goblin Cash",
+  title: "Goblins Cash",
+  description: "Goblins Cash",
 };
 
 export default async function RootLayout({

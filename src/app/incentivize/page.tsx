@@ -88,7 +88,7 @@ const column: Column[] = [
     },
   },
   {
-    accessor: "Apr",
+    accessor: "APR",
     component: () => {
       return (
         <>
@@ -384,7 +384,7 @@ const Incentivize = () => {
                               </div>
                               <div className="content">
                                 <p className="m-0 text-white/50 text-xs font-medium">
-                                  {token0 ? token0.symbol : "Select first token"}
+                                  {token0 ? token0.symbol : "Select a token"}
                                 </p>
                               </div>
                             </div>
@@ -409,7 +409,7 @@ const Incentivize = () => {
                               </div>
                               <div className="content">
                                 <p className="m-0 text-white/50 text-xs font-medium">
-                                  {token1 ? token1.symbol : "Select second token"}
+                                  {token1 ? token1.symbol : "Select a token"}
                                 </p>
                               </div>
                             </div>

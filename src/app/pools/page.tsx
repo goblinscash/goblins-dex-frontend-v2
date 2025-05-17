@@ -76,7 +76,7 @@ const column: Column[] = [
     },
   },
   {
-    accessor: "Apr",
+    accessor: "APR",
     component: () => {
       return (
         <>
@@ -204,7 +204,7 @@ const Pools = () => {
                         </div>
                         <div className="content">
                           <p className="m-0 text-white/50 text-xs font-medium">
-                            {token0 ? token0.symbol : "Select first token"}
+                            {token0 ? token0.symbol : "Select a token"}
                           </p>
                         </div>
                       </div>
@@ -229,7 +229,7 @@ const Pools = () => {
                         </div>
                         <div className="content">
                           <p className="m-0 text-white/50 text-xs font-medium">
-                            {token1 ? token1.symbol : "Select second token"}
+                            {token1 ? token1.symbol : "Select a token"}
                           </p>
                         </div>
                       </div>
@@ -240,8 +240,7 @@ const Pools = () => {
                           <span className="">{infoIcn}</span>
                           <div className="content">
                             <p className="m-0 text-white/50 text-xs font-medium">
-                              Start by selecting the tokens. The liquidity pools
-                              available for deposit will show up next.
+                            Select your tokens first. Available liquidity pools for deposit will then appear.
                             </p>
                           </div>
                         </div>
