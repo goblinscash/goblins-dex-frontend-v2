@@ -9,6 +9,7 @@ import {
   approve,
   erc20Balance,
   fetchTokenDetails,
+  quoteV2AddLiquidity,
 } from "@/utils/web3.utils";
 import { aerodromeContracts } from "@/utils/config.utils";
 import aerodromeRouterAbi from "../../abi/aerodromeRouter.json";
@@ -36,7 +37,8 @@ const Deposit = () => {
   const token0Address = searchParams.get("token0");
   const token1Address = searchParams.get("token1");
   const id = searchParams.get("id");
-  const stable = searchParams.get("stable");
+  const stableParam = searchParams.get("stable");
+  const stable = stableParam === "true";
 
   const [token0, setToken0] = useState<Token | null>(null);
   const [token1, setToken1] = useState<Token | null>(null);
@@ -45,7 +47,7 @@ const Deposit = () => {
   const [amount1, setAmount1] = useState("");
   const [amount, setAmount] = useState("");
   const [pool, setPool] = useState<FormattedPool | null>(null);
-
+  const [ratio, setRatio] = useState<number | null>(null)
   const [tokenBeingSelected, setTokenBeingSelected] = useState<
     "token0" | "token1" | null
   >(null);
@@ -75,6 +77,25 @@ const Deposit = () => {
   const handleChange = (value: string) => {
     setAmount(value);
   };
+
+  const handleChangeAmount = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    if (name === "amount0") {
+      setAmount0(value)
+      if (ratio != null && value !== "" && !isNaN(+value)) {
+        setAmount1((+value * ratio).toString())
+      } else {
+        setAmount1("")
+      }
+    } else if (name === "amount1") {
+      setAmount1(value)
+      if (ratio != null && value !== "" && !isNaN(+value)) {
+        setAmount0((+value / ratio).toString())
+      } else {
+        setAmount0("")
+      }
+    }
+  }
 
   const setInitialToken = () => {
     let tokens_ = tokens.filter((item) => item.chainId == chainId);
@@ -136,6 +157,12 @@ const Deposit = () => {
     }
   }, [chainId, token?.address, address]);
 
+  useEffect(() => {
+    if (chainId && token0?.address) {
+      fetchTokenRatio()
+    }
+  }, [token0, token1])
+
   const fetchToken = async (
     chainId: number,
     token0: string,
@@ -160,6 +187,31 @@ const Deposit = () => {
     //@ts-expect-error ignore warn
     setPool(pool_);
   };
+
+
+  const fetchTokenRatio = async () => {
+    try {
+      if (!token0?.address || !token1?.address) return;
+      const data = await quoteV2AddLiquidity(
+        chainId,
+        token0.address,
+        token1.address,
+        stable,
+        // @ts-expect-error ignore
+        toUnits(100, Number(token0.decimals)),
+        toUnits(100, Number(token1.decimals))
+      )
+
+      //@ts-expect-error ignore
+      const ratio = fromUnits(data.amountOne, token0.decimals) / fromUnits(data.amountTwo, token1.decimals)
+      setRatio(ratio)
+      console.log(fromUnits(data.amountOne, token0.decimals), "dat+>>>", fromUnits(data.amountTwo, token1.decimals), ratio)
+    } catch (error) {
+      setRatio(null)
+      console.log(error)
+    }
+  }
+
 
   const fetchTokenBalance = async () => {
     if (!token0?.address || !token1?.address || !address) return;
@@ -527,7 +579,7 @@ const Deposit = () => {
                         />
                       </div>
                     </div>
-                    
+
                   </div>
                 </div>
                 <div className="md:col-span-7 col-span-12 md:sticky top-0">
@@ -558,9 +610,11 @@ const Deposit = () => {
                               <span className="">{token0?.symbol}</span>
                             </div>
                             <input
-                              onChange={(e) => setAmount0(e.target.value)}
-                              value={amount0}
+                              name="amount0"
                               type="number"
+                              value={amount0}
+                              onChange={handleChangeAmount}
+                              placeholder="Token0 amount"
                               className="form-control border-0 p-3 h-10 text-xs bg-transparent w-full"
                             />
                           </div>
@@ -599,9 +653,11 @@ const Deposit = () => {
                               <span className="">{token1?.symbol}</span>
                             </div>
                             <input
-                              onChange={(e) => setAmount1(e.target.value)}
-                              value={amount1}
+                              name="amount1"
                               type="number"
+                              value={amount1}
+                              onChange={handleChangeAmount}
+                              placeholder="Token1 amount"
                               className="form-control border-0 p-3 h-10 text-xs bg-transparent w-full"
                             />
                           </div>

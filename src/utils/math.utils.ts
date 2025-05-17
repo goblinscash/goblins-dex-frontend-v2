@@ -15,7 +15,7 @@ export const shortenPubkey = (address: string): string => {
 };
 
 
-export const fromUnits = (value: string | number | bigint, decimals: number): string | undefined => {
+export const fromUnits = (value: string | number | bigint, decimals: number): string | number | undefined => {
   if (value === undefined || value === null || isNaN(Number(value))) {
     return;
   }
@@ -38,12 +38,23 @@ export const fromUnits = (value: string | number | bigint, decimals: number): st
   }
 
   const formatValue = ethers.formatUnits(bigIntValue, decimals)
-  return Number(formatValue).toFixed(4);
+  return Number(Number(formatValue).toFixed(4));
 };
 
 
 export const toUnits = (value: string | number, decimals: number): bigint => {
-  return ethers.parseUnits(value.toString(), decimals);
+  const str = value.toString()
+  const [ integer, fraction = "" ] = str.split(".")
+
+  // Truncate fraction to at most `decimals` digits
+  const truncatedFraction = fraction.slice(0, decimals)
+
+  // Reassemble—if there’s any fractional part left, include the dot
+  const sanitized = truncatedFraction.length
+    ? `${integer}.${truncatedFraction}`
+    : integer
+
+  return ethers.parseUnits(sanitized, decimals)
 }
 
 export const formatValue = (value: bigint | string | number | boolean | null | undefined) => (typeof value === "bigint" ? value.toString() : value);

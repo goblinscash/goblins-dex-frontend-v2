@@ -689,4 +689,30 @@ export const isReset = async (chainId: number, tokenId: number) => {
     }
 }
 
+export const quoteV2AddLiquidity = async (chainId: number, token0: string, token1: string, stable: boolean, amount0: number, amount1: number) => {
+    if (!isValidChainId(chainId)) {
+        throw new Error(`Invalid chainId: ${chainId}`);
+    }
+
+    const router = new ethers.Contract(
+        aerodromeContracts[chainId].router,
+        routerAbi,
+        new ethers.JsonRpcProvider(rpcUrls[chainId])
+    );
+
+    const result = await router.quoteAddLiquidity(
+        token0,
+        token1,
+        stable,
+        aerodromeContracts[chainId].factory,
+        amount0.toString(),
+        amount1.toString()
+    );
+
+    const [amountOne, amountTwo, liquidity] = result as unknown as bigint[];
+    return {
+        amountOne, amountTwo, liquidity
+    }
+}
+
 // aerodrome //

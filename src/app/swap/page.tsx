@@ -172,7 +172,7 @@ const Swap = () => {
               tokenTwo.decimals,
               quote?.data
             );
-            setAmountOut(outAmount);
+            setAmountOut(outAmount.toString());
             setQuoteData(quote);
           } else if (quote.command_type === "V3_SWAP_EXACT_IN") {
             setAmountOut("");
