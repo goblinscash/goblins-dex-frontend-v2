@@ -13,11 +13,14 @@ import Notify from '../common/Notify';
 import Progress from '../common/Progress';
 import RangeSlider from '@/app/lock/RangeSlider';
 
+import { Switch } from '@headlessui/react';
+import { LockKeyhole } from 'lucide-react';
 interface ExtendProps {
     tokenId: number;
 }
 
 const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
+    const [enabled, setEnabled] = useState(false);
     const [lock, setLock] = useState<VeNFT | null>(null);
     const [load, setLoad] = useState<{ [key: string]: boolean }>({});
     const [duration, setDuration] = useState(1);
@@ -63,7 +66,7 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
                 await signer
             );
 
-            const _duration =  Number(lock?.expires_at) - Math.floor(Date.now() / 1000)
+            const _duration = Number(lock?.expires_at) - Math.floor(Date.now() / 1000)
 
             const tx = await votingEscrow.increaseUnlockTime(
                 tokenId,
@@ -83,7 +86,9 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
     };
 
     const formattedDate = lock?.expires_at === "0" ? "-" : formatTimestamp(Number(lock?.expires_at));
-    const date = duration && lock?.expires_at ? new Date(Number(lock.expires_at)*1000 + duration * 24 * 3600000).toUTCString() : ""
+    const date = duration && lock?.expires_at ? new Date(Number(lock.expires_at) * 1000 + duration * 24 * 3600000).toUTCString() : ""
+
+    console.log(duration)
     return (
         <>
             <section className="py-8 relative">
@@ -190,6 +195,40 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
                                             </div>
                                         </div>
                                     </div>
+
+
+                                    <div className="p-4 rounded-xl shadow-sm w-full flex items-start gap-4">
+                                        <div className="mt-1">
+                                            <LockKeyhole className="text-green-500 w-8 h-5" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex justify-between items-center mb-1">
+                                                <h4 className="font-medium text-base">Auto Max-Lock Mode</h4>
+                                                <Switch
+                                                    checked={enabled}
+                                                    onChange={() => {
+                                                        console.log(enabled, "lllll");
+                                                        setEnabled(!enabled);
+                                                        console.log(enabled)
+                                                        setDuration(enabled == false && 1460 || 1)
+                                                    }}
+                                                    className={`${enabled ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}
+              relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none`}
+                                                >
+                                                    <span
+                                                        className={`${enabled ? 'translate-x-6' : 'translate-x-1'}
+                inline-block h-4 w-4 transform rounded-full bg-white transition`}
+                                                    />
+                                                </Switch>
+                                            </div>
+                                            <p className="text-sm text-gray-600 dark:text-gray-300 leading-snug">
+                                                When activated, it sets the lock to maximum unlock time, until disabled. Once disabled,
+                                                the regular vesting unlock time will apply. Maximum unlock time gives a 1-to-1 voting
+                                                power to the amount of locked tokens.
+                                            </p>
+                                        </div>
+                                    </div>
+
 
                                     <div className="py-2">
                                         <RangeSlider value={duration} onChange={setDuration} title="Extending to" />
