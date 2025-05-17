@@ -2,7 +2,7 @@
 import React from "react";
 import styled from "styled-components";
 
-const TableLayout = ({ column, data }) => {
+const TableLayout = ({ column, data}) => {
   return (
     <>
       <div className="overflow-x-auto">
@@ -46,6 +46,7 @@ const TableLayout = ({ column, data }) => {
                 </tr>
               ))}
           </tbody>
+
         </Table>
       </div>
     </>

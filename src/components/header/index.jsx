@@ -14,6 +14,7 @@ import { Tooltip } from "react-tooltip";
 import { shortenPubkey } from "@/utils/math.utils";
 import { useWeb3Modal } from "@web3modal/wagmi/react";
 import { useAccount } from "wagmi";
+import { helper } from "@/utils/routes/routes.utils";
 
 const Header = () => {
   const { theme, toggleTheme } = useTheme();
@@ -51,6 +52,7 @@ const Header = () => {
               height={10000}
               width={10000}
             />
+            {/* <button onClick={()=>{helper()}}>CHECK KR GURU</button> */}
             <MobileMenu
               className={`cstmMenu flex items-center justify-end w-full ps-lg-4 gap-2`}
             >
@@ -78,7 +80,7 @@ const Header = () => {
                   </li>
                   <li className="px-2">
                     <Link href="/incentivize" className="">
-                    Incentivize
+                      Incentivize
                     </Link>
                   </li>
                   {/* <li className="px-2">

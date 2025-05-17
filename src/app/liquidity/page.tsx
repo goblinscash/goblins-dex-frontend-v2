@@ -1,12 +1,12 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, act } from "react";
 import styled from "styled-components";
 import TableLayout from "@/components/tableLayout";
 import { useChainId } from "wagmi";
 import { all } from "@/utils/sugar.utils";
 import Link from "next/link";
 import Logo from "@/components/common/Logo";
-
+import { ChevronLeft, ChevronRight } from "lucide-react";
 const Nav = styled.div`
   button {
     &:after {
@@ -163,6 +163,10 @@ const Liquidity = () => {
   const [activeTab, setActiveTab] = useState<number>(0);
   const [pools, setPools] = useState([]);
   const [type, setType] = useState(1);
+  const [pagination, setPagination] = useState({
+    count: 10,
+    current_page: 1
+  })
 
   const showTab = (tab: number) => {
     setActiveTab(tab);
@@ -171,11 +175,53 @@ const Liquidity = () => {
 
   const chainId = useChainId();
 
+  function handlePagination(actionType: string) {
+    if (!chainId) return;
+
+    let nextPage = pagination.current_page;
+
+    if (actionType === "left" && nextPage > 1) {
+      nextPage -= 1;
+    } else if (actionType === "right") {
+      nextPage += 1;
+    } else {
+      return; // No valid pagination movement
+    }
+
+    const offset = (nextPage - 1) * pagination.count;
+
+    // Check next page data first
+    all(chainId, pagination.count, offset, type).then((result) => {
+      if (result && result.length > 0) {
+        setPools(result);
+        setPagination((prev) => ({
+          ...prev,
+          current_page: nextPage,
+        }));
+      } else {
+        // optional: show message like "No more records"
+        console.log("No data on next page, not changing pagination.");
+      }
+    });
+  }
+
+
+  useEffect(() => {
+
+  }, [pagination.current_page]);
+
   useEffect(() => {
     if (chainId) {
-      all(chainId, 8, 0, type).then((result) => setPools(result));
+      let offset = pagination.count * (pagination.current_page - 1);
+      all(chainId, pagination.count, offset, type).then((result) => setPools(result));
     }
   }, [chainId, type]);
+  // useEffect(() => {
+  //   if (chainId) {
+  //     all(chainId, pagination.count, (pagination.current_page - 1) * pagination.count, type).then((result) => setPools(result));
+  //   }
+  // }, [pagination.current_page, chainId, type]);
+
 
   return (
     <section className="Liquidity py-5 relative">
@@ -208,9 +254,8 @@ const Liquidity = () => {
                     <button
                       key={key}
                       onClick={() => showTab(key)}
-                      className={`${
-                        activeTab === key && "active"
-                      } tab-button font-medium relative py-2 flex-shrink-0  text-xs text-gray-400`}
+                      className={`${activeTab === key && "active"
+                        } tab-button font-medium relative py-2 flex-shrink-0  text-xs text-gray-400`}
                     >
                       {item.title}
                     </button>
@@ -218,6 +263,27 @@ const Liquidity = () => {
               </Nav>
               <div className="tabContent pt-3">
                 <TableLayout column={column} data={pools} />
+                <div className="flex items-center justify-center gap-4 mt-4">
+                  <button
+                    onClick={() => handlePagination("left")}
+                    disabled={pagination.current_page === 1}
+                    className="p-2 rounded-full border border-gray-700 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    <ChevronLeft size={20} />
+                  </button>
+
+                  <span className="text-sm font-medium px-3 py-1 border rounded-md border-gray-600">
+                    {pagination.current_page || 1}
+                  </span>
+
+                  <button
+                    onClick={() => handlePagination("right")}
+                    disabled={pools.length < pagination.count}
+                    className="p-2 rounded-full border border-gray-700 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  >
+                    <ChevronRight size={20} />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
