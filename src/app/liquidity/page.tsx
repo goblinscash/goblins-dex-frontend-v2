@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, act } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import TableLayout from "@/components/tableLayout";
 import { useChainId } from "wagmi";
@@ -212,17 +212,10 @@ const Liquidity = () => {
 
   useEffect(() => {
     if (chainId) {
-      let offset = pagination.count * (pagination.current_page - 1);
+      const offset = pagination.count * (pagination.current_page - 1);
       all(chainId, pagination.count, offset, type).then((result) => setPools(result));
     }
   }, [chainId, type]);
-  // useEffect(() => {
-  //   if (chainId) {
-  //     all(chainId, pagination.count, (pagination.current_page - 1) * pagination.count, type).then((result) => setPools(result));
-  //   }
-  // }, [pagination.current_page, chainId, type]);
-
-
   return (
     <section className="Liquidity py-5 relative">
       <div className="container ">

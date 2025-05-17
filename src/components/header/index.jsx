@@ -10,11 +10,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import styled from "styled-components";
 import { useTheme } from "../../ContextApi/ThemeContext";
-import { Tooltip } from "react-tooltip";
+
 import { shortenPubkey } from "@/utils/math.utils";
 import { useWeb3Modal } from "@web3modal/wagmi/react";
 import { useAccount } from "wagmi";
-import { helper } from "@/utils/routes/routes.utils";
+
 
 const Header = () => {
   const { theme, toggleTheme } = useTheme();
