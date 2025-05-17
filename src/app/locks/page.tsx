@@ -112,7 +112,7 @@ const Locks = () => {
         <div className="grid gap-3 grid-cols-12">
           <div className="col-span-12">
             <div className="flex items-center justify-between flex-wrap bg-[#000e0e] rounded-xl p-5">
-              <h4 className="m-0 font-normal ">Gain greater voting power and higher rewards, by locking more tokens for longer.
+              <h4 className="m-0 font-normal ">Gain greater voting power and higher rewards by locking more tokens for longer.
               </h4>
               <form action="">
                 <div className="flex items-center gap-3">

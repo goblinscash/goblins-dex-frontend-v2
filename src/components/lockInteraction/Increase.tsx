@@ -243,9 +243,7 @@ const Increase: React.FC<IncreaseProps> = ({ tokenId }) => {
                                         <div className="flex p-4 rounded-xl itmes-center gap-2 bg-[#1c1d2a] text-[#a55e10]">
                                             <span className="icn">{inforicn}</span>
                                             <p className="m-0">
-                                                Locking will give you an NFT , referred to as a
-                                                veNFT. You can increase the Lock amount or
-                                                extend the Lock time at any point after.
+                                            Locking will give you an NFT, referred to as a veNFT. You can increase the lock amount or extend the lock time at any time afterward.
                                             </p>
                                         </div>
                                     </div>

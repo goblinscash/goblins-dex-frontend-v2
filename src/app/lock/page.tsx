@@ -177,7 +177,7 @@ const Deposit = () => {
                                 </span>
                                 <div className="content text-xs text-gray-400">
                                   <p className="m-0">
-                                    Select the number of weeks. The minimum lock time is one week, and the maximum lock time is 4 years.
+                                  Select the number of weeks. The minimum lock period is one week, and the maximum lock time is 4 years.
                                   </p>
                                 </div>
                               </li>
@@ -186,7 +186,7 @@ const Deposit = () => {
                                   3
                                 </span>
                                 <div className="content text-xs text-gray-400">
-                                  <p className="m-0">Confirm the locking!</p>
+                                  <p className="m-0">Confirm your lock!</p>
                                 </div>
                               </li>
                               <li className="py-1 flex itmes-start gap-3 ">
@@ -195,8 +195,7 @@ const Deposit = () => {
                                 </span>
                                 <div className="content text-xs text-gray-400">
                                   <p className="m-0">
-                                    Your lock will be available in the
-                                    dashboard.
+                                  Your lock will be available on the dashboard.
                                   </p>
                                 </div>
                               </li>
@@ -273,9 +272,7 @@ const Deposit = () => {
                             <div className="flex p-4 rounded-xl itmes-center gap-2 bg-[#1c1d2a] text-[#a55e10]">
                               <span className="icn">{inforicn}</span>
                               <p className="m-0">
-                                Locking will give you an NFT , referred to as a
-                                veNFT. You can increase the Lock amount or
-                                extend the Lock time at any point after.
+                              Locking will give you an NFT, referred to as a veNFT. You can increase the lock amount or extend the lock time at any time afterward.
                               </p>
                             </div>
                           </div>
