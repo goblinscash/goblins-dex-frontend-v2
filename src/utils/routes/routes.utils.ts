@@ -14,7 +14,9 @@ const MAX_ROUTES = 10;
 //@ts-expect-error ignore
 export function buildGraph(pairs) {
 
-    const graph = new Graph({ multi: true });
+    // const graph = new Graph({ multi: true });
+    const graph = new Graph();
+
     const pairsByAddress = {};
 
     if (!isEmpty(pairs))
