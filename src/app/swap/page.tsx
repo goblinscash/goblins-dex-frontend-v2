@@ -375,6 +375,7 @@ const Swap = () => {
                             type="number"
                             className="form-control border-0 p-3 h-10 text-xs bg-transparent w-full"
                             value={amount0 ?? ""}
+                            placeholder="0"
                             onChange={(e) => {
                               if (token0 && token1) {
                                 handleChange(e.target.value, token0, token1);
@@ -423,6 +424,7 @@ const Swap = () => {
                             value={amountOut}
                             readOnly
                             className="form-control border-0 p-3 h-10 text-xs bg-transparent w-full"
+                            placeholder="0"
                           />
                         </div>
                       </div>

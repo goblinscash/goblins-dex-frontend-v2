@@ -161,7 +161,7 @@ const Deposit = () => {
                             </>
                           ) : (
                             <>
-                              <li className="py-1 flex itmes-start gap-3 ">
+                              <li className="py-1 flex items-start gap-3 ">
                                 <span className="flex bg-[var(--backgroundColor)] h-6 w-6 text-green-500 items-center justify-center rounded-full">
                                   1
                                 </span>
@@ -171,17 +171,17 @@ const Deposit = () => {
                                   </p>
                                 </div>
                               </li>
-                              <li className="py-1 flex itmes-start gap-3 ">
-                                <span className="flex bg-[var(--backgroundColor)] h-6 w-6 text-green-500 items-center justify-center rounded-full">
+                              <li className="py-1 flex items-start gap-3 ">
+                                <span className="flex bg-[var(--backgroundColor)] px-3 py-1 h-6 w-6 text-green-500 items-center justify-center rounded-full">
                                   2
                                 </span>
                                 <div className="content text-xs text-gray-400">
                                   <p className="m-0">
-                                  Select the number of weeks. The minimum lock period is one week, and the maximum lock time is 4 years.
+                                    Select the number of weeks. The minimum lock period is one week, and the maximum lock time is 4 years.
                                   </p>
                                 </div>
                               </li>
-                              <li className="py-1 flex itmes-start gap-3 ">
+                              <li className="py-1 flex items-start gap-3 ">
                                 <span className="flex bg-[var(--backgroundColor)] h-6 w-6 text-green-500 items-center justify-center rounded-full">
                                   3
                                 </span>
@@ -189,7 +189,7 @@ const Deposit = () => {
                                   <p className="m-0">Confirm your lock!</p>
                                 </div>
                               </li>
-                              <li className="py-1 flex itmes-start gap-3 ">
+                              <li className="py-1 flex items-start gap-3 ">
                                 <span className="flex bg-[var(--backgroundColor)] h-6 w-6 text-green-500 items-center justify-center rounded-full">
                                   4
                                 </span>
@@ -252,6 +252,7 @@ const Deposit = () => {
                                 value={amount}
                                 type="number"
                                 className="form-control text-right border-0 p-3 h-10 text-xs bg-transparent w-full"
+                                placeholder="0"
                               />
                             </div>
                           </div>
