@@ -7,15 +7,21 @@ import { chunk, isEmpty } from "lodash";
 import { ethers } from "ethers";
 import { aerodromeContracts, rpcUrls } from "../config.utils";
 import { toUnits } from "../math.utils";
-
+import { GraphType } from "graphology-types";
 
 const MAX_ROUTES = 10;
 
+type GraphOptions = {
+    allowSelfLoops?: boolean;
+    multi?: boolean;
+    type?: GraphType;
+};
 //@ts-expect-error ignore
 export function buildGraph(pairs) {
 
-    // const graph = new Graph({ multi: true });
-    const graph = new Graph();
+    const options: GraphOptions = { multi: true }
+
+    const graph = new Graph(options);
 
     const pairsByAddress = {};
 
@@ -25,7 +31,7 @@ export function buildGraph(pairs) {
             const tokenA = pair.token0.toLowerCase();
             const tokenB = pair.token1.toLowerCase();
             const pairAddress = pair.lp.toLowerCase();
-            
+
             graph.mergeEdgeWithKey(`direct:${pairAddress}`, tokenA, tokenB);
             graph.mergeEdgeWithKey(`reversed:${pairAddress}`, tokenB, tokenA);
 
@@ -35,7 +41,6 @@ export function buildGraph(pairs) {
 
     return [graph, pairsByAddress];
 }
-
 
 
 export async function getPools(chainId: number) {
