@@ -52,7 +52,6 @@ const Header = () => {
               height={10000}
               width={10000}
             />
-            {/* <button onClick={()=>{helper()}}>CHECK KR GURU</button> */}
             <MobileMenu
               className={`cstmMenu flex items-center justify-end w-full ps-lg-4 gap-2`}
             >

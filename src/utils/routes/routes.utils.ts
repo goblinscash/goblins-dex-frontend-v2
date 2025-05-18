@@ -1,225 +1,260 @@
-// // SPDX-License-Identifier: BUSL-1.1
-// import { Contract } from "@ethersproject/contracts";
-// import { Provider } from "@ethersproject/providers";
-// import { BigNumber } from "@ethersproject/bignumber";
-// import { allSimpleEdgeGroupPaths } from "graphology-simple-path";
-// // import { abi as convAbi } from "";
-// import {
-//     PROCESSING_COMPLETE,
-//     LP_SUGAR_ADDRESS,
-//     ZERO_ADDRESS,
-//     RewardContractInfo,
-//     Reward,
-//     RELAY_REGISTRY_ADDRESS,
-//     ROUTER_ADDRESS,
-// } from "@/utils/constants";
+import { BigNumber } from "@ethersproject/bignumber";
+import { allSimpleEdgeGroupPaths } from "graphology-simple-path";
 
-// import lpSugarAbi from "../../abi/sugar/lpSugar.json"
-// import Graph from "graphology";
-// import { chunk, isEmpty } from "lodash";
-// import { ethers } from "ethers";
-// import { aerodromeContracts, rpcUrls } from "../config.utils";
+import lpSugarAbi from "../../abi/sugar/lpSugar.json"
+import Graph from "graphology";
+import { chunk, isEmpty } from "lodash";
+import { ethers } from "ethers";
+import { aerodromeContracts, rpcUrls } from "../config.utils";
+import { toUnits } from "../math.utils";
 
-// const MAX_ROUTES = 25;
 
-// export function buildGraph(pairs: any) {
+const MAX_ROUTES = 10;
 
-//     const graph = new Graph({ multi: true });
-//     const pairsByAddress: any = {};
+//@ts-expect-error ignore
+export function buildGraph(pairs) {
 
-//     if (!isEmpty(pairs))
-//         pairs.forEach((pair: any) => {
-//             const tokenA = pair.token0.toLowerCase();
-//             const tokenB = pair.token1.toLowerCase();
-//             const pairAddress = pair.lp.toLowerCase();
+    const graph = new Graph({ multi: true });
+    const pairsByAddress = {};
 
-//             // @ts-ignore
-//             graph.mergeEdgeWithKey(`direct:${pairAddress}`, tokenA, tokenB);
-//             // @ts-ignore
-//             graph.mergeEdgeWithKey(`reversed:${pairAddress}`, tokenB, tokenA);
+    if (!isEmpty(pairs))
+        //@ts-expect-error ignore
+        pairs.forEach((pair) => {
+            const tokenA = pair.token0.toLowerCase();
+            const tokenB = pair.token1.toLowerCase();
+            const pairAddress = pair.lp.toLowerCase();
+            
+            graph.mergeEdgeWithKey(`direct:${pairAddress}`, tokenA, tokenB);
+            graph.mergeEdgeWithKey(`reversed:${pairAddress}`, tokenB, tokenA);
 
-//             pairsByAddress[pairAddress] = { ...pair, address: pairAddress };
-//         });
+            //@ts-expect-error ignore
+            pairsByAddress[pairAddress] = { ...pair, address: pairAddress };
+        });
 
-//     return [graph, pairsByAddress];
-// }
+    return [graph, pairsByAddress];
+}
 
 
 
-// let provider = new ethers.JsonRpcProvider(rpcUrls[56]);
-// export async function getPools(chainId: number) {
-//     const instance = new ethers.Contract(
-//         aerodromeContracts[chainId].lpSugar as string,
-//         lpSugarAbi,
-//         new ethers.JsonRpcProvider(rpcUrls[chainId])
-//     );
+export async function getPools(chainId: number) {
+    const instance = new ethers.Contract(
+        aerodromeContracts[chainId].lpSugar as string,
+        lpSugarAbi,
+        new ethers.JsonRpcProvider(rpcUrls[chainId])
+    );
 
-//     console.log(aerodromeContracts[chainId].lpSugar, "++++++++++++++++")
-//     return await instance.forSwaps(10, 0);
-// }
+    return await instance.forSwaps(100, 0);
+}
 
-// export function getRoutes(
-//     graph: any,
-//     pairsByAddress: any,
-//     fromToken: string,
-//     toToken: string,
-//     highLiqTokens: string[],
-//     maxHops = 3
-// ): any[][] {
-//     if (!fromToken || !toToken) {
-//         return [];
-//     }
+export function getRoutes(
+    //@ts-expect-error ignore
+    graph,
+    //@ts-expect-error ignore
+    pairsByAddress,
+    fromToken: string,
+    toToken: string,
+    highLiqTokens: string[],
+    maxHops = 3
+): [][] {
+    if (!fromToken || !toToken) {
+        return [];
+    }
 
-//     // @ts-ignore
-//     if (graph?.size < 1) {
-//         return [];
-//     }
+    if (graph?.size < 1) {
+        return [];
+    }
 
-//     let graphPaths = [];
+    let graphPaths = [];
 
-//     try {
-//         graphPaths = allSimpleEdgeGroupPaths(graph, fromToken, toToken, {
-//             maxDepth: maxHops,
-//         });
-//     } catch {
-//         return [];
-//     }
+    try {
+        graphPaths = allSimpleEdgeGroupPaths(graph, fromToken, toToken, {
+            maxDepth: maxHops,
+        });
+    } catch {
+        return [];
+    }
 
-//     let paths: any[][] = [];
+    const paths: [][] = [];
 
-//     graphPaths.map((pathSet: any) => {
-//         let mappedPathSets: any = [];
+    graphPaths.map((pathSet) => {
+        //@ts-expect-error ignore
+        let mappedPathSets = [];
 
-//         pathSet.map((pairAddresses: any, index: any) => {
-//             const currentMappedPathSets: any = [];
-//             pairAddresses.map((pairAddressWithDirection: any) => {
-//                 const [dir, pairAddress] = pairAddressWithDirection.split(":");
-//                 const pair = pairsByAddress[pairAddress];
-//                 const routeComponent = {
-//                     from: pair.token0,
-//                     to: pair.token1,
-//                     stable: pair.stable,
-//                     factory: pair.factory,
-//                 };
-//                 if (dir === "reversed") {
-//                     routeComponent.from = pair.token1;
-//                     routeComponent.to = pair.token0;
-//                 }
+        pathSet.map((pairAddresses, index) => {
+            //@ts-expect-error ignore
+            const currentMappedPathSets = [];
+            pairAddresses.map((pairAddressWithDirection) => {
+                const [dir, pairAddress] = pairAddressWithDirection.split(":");
+                const pair = pairsByAddress[pairAddress];
 
-//                 index == 0
-//                     ? currentMappedPathSets.push([routeComponent])
-//                     : mappedPathSets.map((incompleteSet: any) => {
-//                         currentMappedPathSets.push(
-//                             incompleteSet.concat([routeComponent])
-//                         );
-//                     });
-//             });
+                const from = pair[2]
+                const to = pair[3]
 
-//             mappedPathSets = [...currentMappedPathSets];
-//         });
-//         paths.push(...mappedPathSets);
-//     });
+                const routeComponent = {
+                    from,
+                    to,
+                    stable: pair[1] == 0 ? true : false,  //pair.stable,
+                    factory: pair[4] //pair.factory,
+                };
+                if (dir === "reversed") {
+                    routeComponent.from = to;
+                    routeComponent.to = from;
+                }
 
-//     // Filters out High Liquidity Tokens and extra Routes if max length is exceeded
-//     return filterPaths(paths, [...highLiqTokens, fromToken, toToken], MAX_ROUTES);
-// }
+                if (index == 0) {
+                    currentMappedPathSets.push([routeComponent]);
+                } else {
+                    //@ts-expect-error ignore
+                    mappedPathSets.map((incompleteSet) => {
+                        currentMappedPathSets.push(
+                            incompleteSet.concat([routeComponent])
+                        );
+                    });
+                }
+                
+            });
 
-// // Filters out 2 Hop Paths until MaxLength is not surpassed
-// function filterPaths(
-//     paths: any[][],
-//     highLiqTokens: string[],
-//     maxLength: number
-// ): any[][] {
-//     paths = paths.filter((routes: any[]) =>
-//         routes.every(
-//             (r: any) =>
-//                 highLiqTokens.includes(r.to.toLowerCase()) &&
-//                 highLiqTokens.includes(r.from.toLowerCase())
-//         )
-//     );
-//     if (paths.length > maxLength) {
-//         const itemsToRemove: number = paths.length - maxLength;
-//         let filteredArray: any[][] = [];
-//         let count = 0;
-//         for (let i = 0; i < paths.length; i++) {
-//             const path: any[] = paths[i];
-//             if (count < itemsToRemove) {
-//                 if (path.length == 1) filteredArray.push(path);
-//                 // Ignore tokens with more than 1 hop
-//                 else count++;
-//             } else filteredArray.push(path);
-//         }
-//         paths = filteredArray;
-//     }
-//     return paths;
-// }
+            //@ts-expect-error ignore
+            mappedPathSets = [...currentMappedPathSets];
+        });
+        //@ts-expect-error ignore
+        paths.push(...mappedPathSets);
+    });
 
-// /**
-//  * Returns the best quote for a bunch of routes and an amount
-//  *
-//  * if the quoted amount is the same. This should theoretically limit
-//  * the price impact on a trade.
-//  */
-// export async function fetchQuote(
-//     routes: any[][],
-//     amount: BigNumber,
-//     provider: Provider,
-//     chunkSize = 50
-// ) {
-//     const routeChunks = chunk(routes, chunkSize);
-//     const router: Contract = new Contract(
-//         ROUTER_ADDRESS,
-//         [
-//             "function getAmountsOut(uint256,tuple(address from, address to, bool stable, address factory)[]) public view returns (uint256[] memory)",
-//         ],
-//         provider
-//     );
+    // Filters out High Liquidity Tokens and extra Routes if max length is exceeded
+    return filterPaths(paths, [...highLiqTokens, fromToken, toToken], MAX_ROUTES);
+}
 
-//     let quoteChunks = [];
-//     // Split into chunks and get the route quotes...
-//     for (const routeChunk of routeChunks) {
-//         for (const route of routeChunk) {
-//             let amountsOut;
-//             try {
-//                 amountsOut = await router.getAmountsOut(amount, route);
-//             } catch (err) {
-//                 amountsOut = [];
-//             }
+// Filters out 2 Hop Paths until MaxLength is not surpassed
+function filterPaths(
+    paths: [][],
+    highLiqTokens: string[],
+    maxLength: number
+): [][] {
+    console.log(paths, "++")
+    paths = paths.filter((routes: []) =>
+        routes.every(
+            (r) =>
+                //@ts-expect-error ignore
+                highLiqTokens.includes(r.to.toLowerCase()) && highLiqTokens.includes(r.from.toLowerCase())
+        )
+    );
+    if (paths.length > maxLength) {
+        const itemsToRemove: number = paths.length - maxLength;
+        const filteredArray: [][] = [];
+        let count = 0;
+        for (let i = 0; i < paths.length; i++) {
+            const path: [] = paths[i];
+            if (count < itemsToRemove) {
+                //@ts-expect-error ignore
+                if (path.length == 1) filteredArray.push(path);
+                // Ignore tokens with more than 1 hop
+                else count++;
+            } else filteredArray.push(path);
+        }
+        paths = filteredArray;
+    }
+    return paths;
+}
 
-//             // Ignore bad quotes...
-//             if (amountsOut && amountsOut.length >= 1) {
-//                 const amountOut = amountsOut[amountsOut.length - 1];
+/**
+ * Returns the best quote for a bunch of routes and an amount
+ *
+ * if the quoted amount is the same. This should theoretically limit
+ * the price impact on a trade.
+ */
+export async function fetchQuote(
+    routes: [][],
+    amount: BigNumber,
+    chainId: number,
+    chunkSize = 50
+) {
+    const routeChunks = chunk(routes, chunkSize);
+    const router = new ethers.Contract(
+        aerodromeContracts[chainId].router as string,
+        [
+            "function getAmountsOut(uint256,tuple(address from, address to, bool stable, address factory)[]) public view returns (uint256[] memory)",
+        ],
+        new ethers.JsonRpcProvider(rpcUrls[chainId])
+    );
 
-//                 // Ignore zero quotes...
-//                 if (!amountOut.isZero())
-//                     quoteChunks.push({ route, amount, amountOut, amountsOut });
-//             }
-//         }
-//     }
+    const quoteChunks = [];
+    // Split into chunks and get the route quotes...
+    for (const routeChunk of routeChunks) {
+        for (const route of routeChunk) {
+            let amountsOut;
+            try {
+                amountsOut = await router.getAmountsOut(amount, route);
+            } catch (err) {
+                console.log(err)
+                amountsOut = [];
+            }
+            // Ignore bad quotes...
+            if (amountsOut && amountsOut.length >= 1) {
+                const amountOut = amountsOut[amountsOut.length - 1];
 
-//     // Filter out bad quotes and find the best one...
-//     const bestQuote = quoteChunks
-//         .flat()
-//         .filter(Boolean)
-//         .reduce((best: any, quote) => {
-//             if (!best) {
-//                 return quote;
-//             } else {
-//                 return best.amountOut.gt(quote.amountOut) ? best : quote;
-//             }
-//         }, null);
+                // Ignore zero quotes...
+                if (!BigNumber.from(amountOut).isZero())
+                    quoteChunks.push({ route, amount, amountOut, amountsOut });
+            }
+        }
+    }
 
-//     if (!bestQuote) {
-//         return null;
-//     }
+    // Filter out bad quotes and find the best one...
+    const bestQuote = quoteChunks
+        .flat()
+        .filter(Boolean)
+        //@ts-expect-error ignore
+        .reduce((best, quote) => {
+            if (!best) {
+                return quote;
+            } else {
+                //@ts-expect-error ignore
+                return best.amountOut.gt(quote.amountOut) ? best : quote;
+            }
+        }, null);
 
-//     return bestQuote;
-// }
+    if (!bestQuote) {
+        return null;
+    }
 
-// // under testing
+    return bestQuote;
+}
 
-// export async function helper() {
+// under testing
 
-    
-//     const [poolsGraph, poolsByAddress] = buildGraph(await getPools(56));
-// }
+export async function quoteForSwap(chainId: number, token0: string, token1: string, amount: number, decimal0: number) {
+    // console.log(decimal0, ">>>>>>>><<<<<<<<<<", token0, token1, amount)
+    try {
+        const [poolsGraph, poolsByAddress] = buildGraph(await getPools(chainId));
+        const routes = getRoutes(
+            poolsGraph,
+            poolsByAddress,
+            token0?.toLowerCase(), //token0
+            token1?.toLowerCase(), //token1
+            []
+        )
+
+        const quote = await fetchQuote(
+            routes,
+            //@ts-expect-error ignore
+            toUnits(amount, decimal0),
+            chainId,
+        )
+        console.log(quote, "quote+++++")
+
+
+        return {
+            data: quote?.route,
+            amountOut: quote?.amountOut,
+            command_type: "V2_SWAP_EXACT_IN"
+        }
+    } catch (error) {
+        console.log(error)
+        return {
+            data: null,
+            amountOut: 0,
+            command_type: "V2_SWAP_EXACT_IN"
+        }
+    }
+}

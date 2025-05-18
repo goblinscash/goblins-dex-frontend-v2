@@ -5,7 +5,7 @@ import {
   approve,
   encodedRoute,
   erc20Balance,
-  fetchAmountsOut,
+  // fetchAmountsOut,
 } from "@/utils/web3.utils";
 import { ethers } from "ethers";
 import styled, { keyframes } from "styled-components";
@@ -20,12 +20,13 @@ import { createPortal } from "react-dom";
 import SelectTokenPopup from "@/components/modals/SelectTokenPopup";
 import Logo from "@/components/common/Logo";
 import { CommandType, RoutePlanner } from "@/utils/planner";
-import { toUnits } from "@/utils/math.utils";
-import axios from "axios";
+import { fromUnits, toUnits } from "@/utils/math.utils";
+// import axios from "axios";
 //@ts-expect-error ignore
 import debounce from "lodash.debounce";
 import BtnLoader from "@/components/common/BtnLoader";
-import { ROUTE_API_URI, stableTokens } from "@/utils/constant.utils";
+import { stableTokens } from "@/utils/constant.utils";
+import { quoteForSwap } from "@/utils/routes/routes.utils";
 
 interface SwapStep {
   from: string;
@@ -133,18 +134,21 @@ const Swap = () => {
   const fetchQuote = async (
     tokenOne: string,
     tokenTwo: string,
-    amount: number
+    amount: number,
+    decimals: number
   ) => {
-    const params = {
-      token0: tokenOne,
-      token1: tokenTwo,
-      chainId: chainId,
-      amount: amount,
-    };
+    // const params = {
+    //   token0: tokenOne,
+    //   token1: tokenTwo,
+    //   chainId: chainId,
+    //   amount: amount,
+    // };
+
+    return await quoteForSwap(chainId, tokenOne, tokenTwo, amount, decimals)
 
     try {
-      const response = await axios.get(ROUTE_API_URI, { params });
-      return response.data;
+      // const response = await axios.get(ROUTE_API_URI, { params });
+      // return response.data;
     } catch (err) {
       console.error("Error fetching quote:", err);
     }
@@ -157,25 +161,32 @@ const Swap = () => {
         const quote = await fetchQuote(
           tokenOne.address,
           tokenTwo.address,
-          value
+          value,
+          tokenOne.decimals
         );
         if (quote?.data != null) {
           if (tokenOne.address === tokenTwo.address) {
             setAmountOut(amount0);
+            //@ts-expect-error ignore
             setQuoteData(quote);
           }
           else if (quote.command_type === "V2_SWAP_EXACT_IN") {
-            const outAmount = await fetchAmountsOut(
-              chainId,
-              value,
-              tokenOne.decimals,
-              tokenTwo.decimals,
-              quote?.data
-            );
-            setAmountOut(outAmount.toString());
+            // const outAmount = await fetchAmountsOut(
+            //   chainId,
+            //   value,
+            //   tokenOne.decimals,
+            //   tokenTwo.decimals,
+            //   quote?.data
+            // );
+
+            // setAmountOut(outAmount.toString());
+            const out = fromUnits(quote.amountOut, tokenTwo.decimals)
+            setAmountOut(String(out ?? "0"));
+            //@ts-expect-error ignore
             setQuoteData(quote);
           } else if (quote.command_type === "V3_SWAP_EXACT_IN") {
             setAmountOut("");
+            //@ts-expect-error ignore
             setQuoteData(quote);
           }
         } else {
