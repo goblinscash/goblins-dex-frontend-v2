@@ -27,6 +27,18 @@ import "react-toastify/dist/ReactToastify.css";
 export const metadata: Metadata = {
   title: "Goblins Cash",
   description: "Goblins Cash",
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon.png', type: 'image/png' }
+    ],
+    apple: [
+      { url: '/favicon/apple-touch-icon.png' }
+    ],
+    shortcut: [
+      { url: '/favicon.ico' }
+    ],
+  },
 };
 
 export default async function RootLayout({
@@ -39,6 +51,11 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png" />
+      </head>
       <body>
         <ThemeProvider>
           <Web3ModalProvider initialState={initialState}>

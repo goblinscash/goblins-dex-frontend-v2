@@ -53,10 +53,15 @@ const Header = () => {
               width={10000}
             />
             <MobileMenu
-              className={`cstmMenu flex items-center justify-end w-full ps-lg-4 gap-2`}
+              className={`cstmMenu ml-8 flex items-center justify-start w-full ps-lg-4 gap-2`}
             >
-              <div className="right flex items-center gap-3">
+              <div className="left flex items-center gap-3">
                 <ul className="list-none pl-0 mb-0 flex items-center justify-end gap-3">
+                  <li className="px-2">
+                    <Link href="/dashboard" className="">
+                      Dashboard
+                    </Link>
+                  </li>
                   <li className="px-2">
                     <Link href="/swap" className="">
                       Swap
@@ -82,11 +87,14 @@ const Header = () => {
                       Incentivize
                     </Link>
                   </li>
-                  {/* <li className="px-2">
-                    <Link href="/farm" className="">
-                      Farm
-                    </Link>
-                  </li> */}
+                </ul>
+              </div>
+            </MobileMenu>
+            <MobileMenu
+              className={`cstmMenu flex items-center justify-end w-full ps-lg-4 gap-2`}
+            >
+              <div className="right flex items-center gap-3">
+                <ul className="list-none pl-0 mb-0 flex items-center justify-end gap-3">
                   <li className="px-1">
                     <button
                       className="btn flex items-center justify-center commonBtn rounded text-xs font-medium "

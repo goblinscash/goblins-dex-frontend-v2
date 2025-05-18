@@ -128,7 +128,7 @@ const Vote = () => {
       accessor: "Pools",
       component: (item: FormattedPool) => {
         return (
-          <div>
+          <div className="h-full flex flex-col justify-between">
             <div className="flex items-center gap-3 border-b pb-3 border-[#2a2a2a] mb-3">
               <ul className="list-none pl-3 mb-0 flex-shrink-0 flex items-center">
                 <li className="" style={{ marginLeft: -10 }}>
@@ -176,7 +176,7 @@ const Vote = () => {
       component: (item: FormattedPool) => {
         const symbol = item.symbol?.split("-")[1]?.split("/");
         return (
-          <div className="rounded p-3 bg-[#091616] text-xs h-full pb-5 text-right">
+          <div className="rounded p-3 bg-[#091616] text-xs h-full flex flex-col justify-between pb-5 text-right">
             <p className="m-0 pb-3 border-b border-[#2a2a2a]">~$ --</p>
             <div className="pt-3">
               <p className="m-0 text-[#7e7e7e] ">
@@ -195,7 +195,7 @@ const Vote = () => {
       accessor: "incentives",
       component: () => {
         return (
-          <div className="rounded p-3 bg-[#091616] text-xs h-full pb-5 text-right">
+          <div className="rounded p-3 bg-[#091616] text-xs h-full flex flex-col justify-between pb-5 text-right">
             <p className="m-0 pb-3 border-b border-[#2a2a2a]">
               No available incentives
             </p>
@@ -211,7 +211,7 @@ const Vote = () => {
       accessor: "Total_Reward",
       component: () => {
         return (
-          <div className="rounded p-3 bg-[#091616] text-xs h-full pb-5 text-right">
+          <div className="rounded p-3 bg-[#091616] text-xs h-full flex flex-col justify-between pb-5 text-right">
             <p className="m-0 pb-3 border-b border-[#2a2a2a]">
               No available incentives
             </p>
@@ -226,14 +226,16 @@ const Vote = () => {
       component: (item: FormattedPool) => {
         return (
           <>
-            <div className="rounded p-3 bg-[#091616] text-xs h-full pb-5 text-right">
+            <div className="rounded p-3 bg-[#091616] text-xs h-full flex flex-col justify-between pb-5 text-right">
               <p className="m-0 pb-3 border-b border-[#2a2a2a]">7.35852%</p>
-              <p className="m-0 text-[#7e7e7e] pt-3">
-                ~ 0.0% Votes <br />
-                0.99938 veAERO
-                { }
-              </p>
-              <p className="m-0 text-[#7e7e7e] pt-3">Vote</p>
+              <div className="pt-3">
+                <p className="m-0 text-[#7e7e7e]">
+                  ~ 0.0% Votes <br />
+                  0.99938 veAERO
+                  { }
+                </p>
+                <p className="m-0 text-[#7e7e7e] pt-3">Vote</p>
+              </div>
             </div>
             <div className="dropdown w-full">
               <div

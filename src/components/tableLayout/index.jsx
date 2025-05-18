@@ -31,14 +31,14 @@ const TableLayout = ({ column, data}) => {
                     column.map((item, colIndex) => {
                       if (item.component) {
                         return (
-                          <td key={colIndex} className="border-0 p-3 fw-sbold">
+                          <td key={colIndex} className="border-0 p-3 fw-sbold table-cell-fixed-height">
                             {item.component(rowData, rowIndex, data)}
                           </td>
                         );
                       }
 
                       return (
-                        <td key={colIndex} className="border-0 p-3 fw-sbold">
+                        <td key={colIndex} className="border-0 p-3 fw-sbold table-cell-fixed-height">
                           {rowData[item?.accessor]}
                         </td>
                       );
@@ -75,6 +75,11 @@ const Table = styled.table`
     background: #000e0e;
     color: #fff;
     vertical-align: top;
+  }
+  .table-cell-fixed-height {
+    height: 180px; /* Set a fixed height for all cells */
+    max-height: 180px;
+    overflow: hidden;
   }
 `;
 
