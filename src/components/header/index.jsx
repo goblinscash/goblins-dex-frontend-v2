@@ -7,7 +7,7 @@ import Image from "next/image";
 // image
 import logo from "@/assets/Images/logo.png";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import styled from "styled-components";
 import { useTheme } from "../../ContextApi/ThemeContext";
 
@@ -19,8 +19,9 @@ import { useAccount } from "wagmi";
 const Header = () => {
   const { theme, toggleTheme } = useTheme();
   const router = useRouter();
+  const currentPath = usePathname();
 
-  const pathname = router.pathname;
+  // const pathname = router.pathname; //This is no longer used
   const [openDropdown, setOpenDropdown] = useState(null);
   const [menu, setMenu] = useState("");
 
@@ -57,32 +58,32 @@ const Header = () => {
             >
               <div className="left flex items-center gap-3">
                 <ul className="list-none pl-0 mb-0 flex items-center justify-end gap-3">
-                  <li className="px-2">
+                  <li className={`px-2 ${currentPath === "/dashboard" ? "menu-item-active" : "menu-item-inactive"}`}>
                     <Link href="/dashboard" className="">
                       Dashboard
                     </Link>
                   </li>
-                  <li className="px-2">
+                  <li className={`px-2 ${currentPath === "/swap" ? "menu-item-active" : "menu-item-inactive"}`}>
                     <Link href="/swap" className="">
                       Swap
                     </Link>
                   </li>
-                  <li className="px-2">
+                  <li className={`px-2 ${currentPath === "/liquidity" ? "menu-item-active" : "menu-item-inactive"}`}>
                     <Link href="/liquidity" className="">
                       Liquidity
                     </Link>
                   </li>
-                  <li className="px-2">
+                  <li className={`px-2 ${currentPath === "/locks" ? "menu-item-active" : "menu-item-inactive"}`}>
                     <Link href="/locks" className="">
                       Lock
                     </Link>
                   </li>
-                  <li className="px-2">
+                  <li className={`px-2 ${currentPath === "/vote" ? "menu-item-active" : "menu-item-inactive"}`}>
                     <Link href="/vote" className="">
                       Vote
                     </Link>
                   </li>
-                  <li className="px-2">
+                  <li className={`px-2 ${currentPath === "/incentivize" ? "menu-item-active" : "menu-item-inactive"}`}>
                     <Link href="/incentivize" className="">
                       Incentivize
                     </Link>
@@ -123,9 +124,7 @@ const Header = () => {
 const MobileMenu = styled.div`
   a {
     transition: 0.4s;
-    &:hover {
-      color: #00ff4e;
-    }
+    /* The &:hover rule that set color to #00ff4e has been removed */
   }
 `;
 
