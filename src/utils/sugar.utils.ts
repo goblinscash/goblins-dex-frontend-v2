@@ -92,7 +92,7 @@ export type Relay = {
 
 
 //LP Sugar//
-export const all = async (chainId: number, limit: number, offset: number, type: number) => {
+export const all = async (chainId: number, limit: number, offset: number, type: number): Promise<FormattedPool[]> => {
     try {
         const instance = new ethers.Contract(
             aerodromeContracts[chainId].lpSugar as string,
@@ -202,7 +202,26 @@ export const byIndex = async (chainId: number, index: number) => {
     }
 };
 
-export const positions = async (chainId: number, limit: number, offset: number, account: string) => {
+export interface Position {
+    id: bigint;
+    lp: string;
+    liquidity: bigint;
+    staked: bigint;
+    amount0: bigint;
+    amount1: bigint;
+    staked0: bigint;
+    staked1: bigint;
+    unstaked_earned0: bigint;
+    unstaked_earned1: bigint;
+    emissions_earned: bigint;
+    tick_lower: bigint;
+    tick_upper: bigint;
+    sqrt_ratio_lower: bigint;
+    sqrt_ratio_upper: bigint;
+    alm: string;
+}
+
+export const positions = async (chainId: number, limit: number, offset: number, account: string): Promise<Position[]> => {
     try {
         const instance = new ethers.Contract(
             aerodromeContracts[chainId].lpSugar as string,
@@ -213,8 +232,7 @@ export const positions = async (chainId: number, limit: number, offset: number, 
         const positionsRaw = await instance.positions(limit, offset, account)
         // const positionsRaw = await instance.positionsByFactory(limit, offset, account, aerodromeContracts[chainId].factory)
 
-        console.log(positionsRaw, "positionsRaw")
-        return positionsRaw
+        return positionsRaw as Position[]
 
     } catch (error) {
         console.log(error, chainId)

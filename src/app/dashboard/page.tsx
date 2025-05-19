@@ -4,7 +4,7 @@ import DepositCard from './DepositCard';
 import LockCard from './LockCard';
 import ClaimCard from './ClaimCard';
 import Link from 'next/link';
-import { VeNFT, Relay, locksByAccount, allRelay } from '@/utils/sugar.utils';
+import { VeNFT, Relay, locksByAccount, allRelay, positions, all, Position, FormattedPool } from '@/utils/sugar.utils';
 import { useChainId, useAccount } from 'wagmi';
 import { calculateRebaseAPR, formatLockedFor, formatTimestamp } from '@/utils/math.utils';
 import { tokens } from "@myswap/token-list";
@@ -19,6 +19,28 @@ type LockItem = {
     rebaseAmount: string;
     logoUri: string;
 };
+
+type DepositItem = {
+    id: number;
+    tokenPair: {
+        token0Name: string;
+        token1Name: string;
+        fee: string;
+        type: string;
+        token0Amount: string;
+        token1Amount: string;
+        unstaked0Amount: string;
+        unstaked1Amount: string;
+        apr: string;
+        emissionsToken: string;
+        emissionsAmount: string;
+        tradingFees0: string;
+        tradingFees1: string;
+        depositedUsd: string;
+        poolTotalUsd: string;
+    };
+};
+
 
 // Mock data for demonstration
 const mockDeposits = [
@@ -72,10 +94,12 @@ const Dashboard = () => {
     const chainId = useChainId();
     const { address } = useAccount();
     const [locks, setLocks] = useState<LockItem[] | null>(null);
+    const [deposits, setDeposits] = useState<DepositItem[]>([]);
 
     useEffect(() => {
         if (chainId && address) {
             fetchLocksByAccount()
+            fetchDepositsByAccount()
         }
     }, [chainId, address]);
 
@@ -94,6 +118,45 @@ const Dashboard = () => {
             rebaseAmount: String(parseFloat(lock.rebase_amount) / 10 ** parseInt(lock.decimals)),
             } as LockItem)
         ))
+    }
+
+    const fetchDepositsByAccount = async () => {
+        if (!address) return
+        const deposits_ = await positions(chainId, 100, 0, address)
+        const pools = await all(chainId, 100, 0, 1);
+        console.log("Deposits by account: ", deposits_)
+
+        setDeposits(deposits_.map((deposit: Position) => {
+            const pool = pools.find((pool: FormattedPool) => pool.lp === deposit.lp)!;
+
+            const token0 = tokens.find(token => token.address === pool.token0.toLowerCase())!;
+            const token1 = tokens.find(token => token.address === pool.token1.toLowerCase())!;
+            const rewardToken = tokens.find(token => token.address === pool.emissions_token.toLowerCase());
+
+            const depositInfo = {
+                id: Number(deposit.id),
+                tokenPair: {
+                    token0Name: token0.name,
+                    token1Name: token1.name,
+                    fee: pool.pool_fee || "",
+                    type: pool.type === 0 ? "Basic Volatile" : "Basic Stable",
+                    token0Amount: String(Number(deposit.amount0) / 10 ** token0.decimals),
+                    token1Amount: String(Number(deposit.amount1) / 10 ** token1.decimals),
+                    unstaked0Amount: String(Number(deposit.staked0) / 10 ** token0.decimals),
+                    unstaked1Amount: String(Number(deposit.staked1) / 10 ** token1.decimals),
+                    apr: `${pool.apr}%`,
+                    emissionsToken: rewardToken?.symbol ?? "",
+                    emissionsAmount: rewardToken ? String(Number(deposit.emissions_earned) / 10 ** rewardToken.decimals) : "",
+                    tradingFees0: String(Number(deposit.unstaked_earned0) / 10 ** token0.decimals),
+                    tradingFees1: String(Number(deposit.unstaked_earned1) / 10 ** token1.decimals),
+                    depositedUsd: `$${(parseFloat(String(pool.poolBalance).replace("$", "")) * Number(deposit.liquidity) / pool.liquidity).toFixed(2)}`,
+                    poolTotalUsd: `${pool.poolBalance}`,
+                }
+            } as DepositItem;
+
+            console.log("Deposit Info: ", depositInfo)
+            return depositInfo;
+        }));
     }
 
     const toggleExpandAllDeposits = () => {
@@ -144,9 +207,9 @@ const Dashboard = () => {
                 </div>
                 {/* Deposit Cards */}
                 <div className="space-y-5">
-                    {mockDeposits.map((deposit) => (
+                    {deposits.map((deposit, index) => (
                         <DepositCard
-                            key={deposit.id}
+                            key={index}
                             depositId={deposit.id}
                             tokenPair={deposit.tokenPair}
                             forceExpanded={allDepositsExpanded}
