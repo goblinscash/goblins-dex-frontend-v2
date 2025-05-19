@@ -488,11 +488,11 @@ export const allRelay = async (chainId: number, account: string) => {
             relay: fields.relay,
             inactive: fields.inactive,
             name: fields.name?.trim(),
-            account_venfts: fields.account_venfts ? fields.account_venfts.map((venft: ManagedVenft) => ({ // Added null check for account_venfts
+            account_venfts: fields.account_venfts && Array.isArray(fields.account_venfts) ? fields.account_venfts.map((venft: ManagedVenft) => ({
                 id: formatValue(venft.id),
                 amount: formatValue(venft.amount),
                 earned: formatValue(venft.earned),
-            }) : [], // Default to empty array if undefined
+            })) : [],
         }));
 
         // Hardcode the "veGOB maxi" relay data
