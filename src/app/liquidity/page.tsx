@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import TableLayout from "@/components/tableLayout";
 import { useChainId } from "wagmi";
-import { all } from "@/utils/sugar.utils";
+import { all, FormattedPool } from "@/utils/sugar.utils";
 import Link from "next/link";
 import Logo from "@/components/common/Logo";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -161,7 +161,8 @@ const tabFilter = {
 
 const Liquidity = () => {
   const [activeTab, setActiveTab] = useState<number>(0);
-  const [pools, setPools] = useState([]);
+  // const [pools, setPools] = useState([]);
+  const [pools, setPools] = useState<FormattedPool[]>([]);
   const [type, setType] = useState(1);
   const [pagination, setPagination] = useState({
     count: 10,
