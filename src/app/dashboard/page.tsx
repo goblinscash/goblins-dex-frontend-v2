@@ -197,7 +197,7 @@ const Dashboard = () => {
                             </svg>
                         </button>
 
-                        <Link href="/liquidity" className="w-1/2 sm:w-auto">
+                        <Link href="/pools" className="w-1/2 sm:w-auto">
                             <button className="px-3 py-2 bg-[#3E63DD] text-white font-medium rounded-md hover:bg-[#3555BE] whitespace-nowrap w-full">
                                 <span className="sm:hidden">New</span>
                                 <span className="hidden sm:inline">New Deposit</span>
