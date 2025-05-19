@@ -9,6 +9,31 @@ const Footer = () => {
     <>
       <footer className="siteFooter bg-[#000] z-[999] py-3 sticky bottom-0">
         <div className="container">
+          <div className="grid gap-3 grid-cols-12 py-8">
+            <div className="col-span-12">
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                {/* <p className="m-0 text-gray-500">Copyright © Goblins Cash</p> */}
+                <ul className="list-none pl-0 mb-0 flex items-center gap-3">
+                  <li className="">
+                    <Link
+                      href={"/tokenlist"}
+                      className="font-medium text-sm transition duration-400 text-gray-500 hover:text-[#00ff4e]"
+                    >
+                      Tokens
+                    </Link>
+                  </li>
+                  {/* <li className="">
+                    <Link
+                      href={""}
+                      className="font-medium text-xs transition duration-400 text-gray-500 hover:text-[#00ff4e]"
+                    >
+                      Terms & Condition
+                    </Link>
+                  </li> */}
+                </ul>
+              </div>
+            </div>
+          </div>
           <div className="grid gap-3 grid-cols-12">
             <div className="col-span-12">
               <div className="flex items-center justify-between gap-3 flex-wrap">

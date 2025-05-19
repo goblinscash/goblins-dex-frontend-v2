@@ -478,7 +478,7 @@ const Deposit = () => {
                         <Progress
                           icon={status.isCompleted ? unlock : lock}
                           symbol={token1?.symbol}
-                          text="Deposit Liqidity"
+                          text="Deposit Liquidity"
                         />
                       </SwapList>
                       <div className="btnWrpper mt-3">
