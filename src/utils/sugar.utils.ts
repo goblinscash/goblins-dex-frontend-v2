@@ -488,7 +488,7 @@ export const allRelay = async (chainId: number, account: string) => {
             relay: fields.relay,
             inactive: fields.inactive,
             name: fields.name?.trim(),
-            account_venfts: fields.account_venfts && Array.isArray(fields.account_venfts) ? fields.account_venfts.map((venft: ManagedVenft) => ({
+            account_venfts: fields.account_venfts && Array.isArray(fields.account_venfts) && true ? fields.account_venfts.map((venft: ManagedVenft) => ({
                 id: formatValue(venft.id),
                 amount: formatValue(venft.amount),
                 earned: formatValue(venft.earned),
