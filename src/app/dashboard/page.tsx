@@ -113,8 +113,8 @@ const Dashboard = () => {
             amount: String(parseFloat(lock.amount) / 10 ** parseInt(lock.decimals)),
             lockedFor: formatLockedFor(Number(lock.expires_at)),
             type: "locked",
-            tokenSymbol: tokens.find(token => token.address.toLowerCase() === lock.token.toLowerCase())!.symbol,
-            logoUri: tokens.find(token => token.address.toLowerCase() === lock.token.toLowerCase())!.logoURI,
+            tokenSymbol: tokens.tokens.find(token => token.address.toLowerCase() === lock.token.toLowerCase())!.symbol,
+            logoUri: tokens.tokens.find(token => token.address.toLowerCase() === lock.token.toLowerCase())!.logoURI,
             rebaseApr: `${calculateRebaseAPR(lock.rebase_amount, lock.amount, lock.decimals)}%`,
             rebaseAmount: String(parseFloat(lock.rebase_amount) / 10 ** parseInt(lock.decimals)),
             } as LockItem)
@@ -130,9 +130,10 @@ const Dashboard = () => {
         setDeposits(deposits_.map((deposit: Position) => {
             const pool = pools.find((pool: FormattedPool) => pool.lp === deposit.lp)!;
 
-            const token0 = [...tokens, ...stableTokens(chainId)].find(token => token.address.toLowerCase() === pool.token0.toLowerCase())!;
-            const token1 = [...tokens, ...stableTokens(chainId)].find(token => token.address.toLowerCase() === pool.token1.toLowerCase())!;
-            const rewardToken = [...tokens, ...stableTokens(chainId)].find(token => token.address.toLowerCase() === pool.emissions_token.toLowerCase());
+            const allTokensForChain = [...tokens.tokens, ...stableTokens(chainId)];
+            const token0 = allTokensForChain.find(token => token.address.toLowerCase() === pool.token0.toLowerCase())!;
+            const token1 = allTokensForChain.find(token => token.address.toLowerCase() === pool.token1.toLowerCase())!;
+            const rewardToken = allTokensForChain.find(token => token.address.toLowerCase() === pool.emissions_token.toLowerCase());
 
             const depositInfo = {
                 id: Number(deposit.id),

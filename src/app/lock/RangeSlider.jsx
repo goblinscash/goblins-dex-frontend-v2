@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import styled from "styled-components";
 
 // Define Maximum Expiry Constants
-const MAX_EXPIRY_SECONDS = Math.floor(new Date('2029-12-31T23:59:59Z').getTime() / 1000);
+// const MAX_EXPIRY_SECONDS = Math.floor(new Date('2029-12-31T23:59:59Z').getTime() / 1000); // Removed
 const FOUR_YEARS_IN_SECONDS = 4 * 365.25 * 24 * 3600; // Approx.
 const NOW_SECONDS = Math.floor(Date.now() / 1000);
 
@@ -34,7 +34,8 @@ const RangeSlider = ({ value, onChange, title, currentLockExpiresAt }) => {
             // However, the problem describes applying caps sequentially or finding the overall minimum
             // The most restrictive end date is min(MAX_EXPIRY_SECONDS, NOW_SECONDS + FOUR_YEARS_IN_SECONDS)
             // A simpler way to apply both caps to potentialNewExpiry:
-            const cappedNewExpiry = Math.min(potentialNewExpiry, MAX_EXPIRY_SECONDS, NOW_SECONDS + FOUR_YEARS_IN_SECONDS);
+            // const cappedNewExpiry = Math.min(potentialNewExpiry, MAX_EXPIRY_SECONDS, NOW_SECONDS + FOUR_YEARS_IN_SECONDS); // Old logic
+            const cappedNewExpiry = Math.min(potentialNewExpiry, NOW_SECONDS + FOUR_YEARS_IN_SECONDS); // New logic
 
             if (cappedNewExpiry > currentLockExpiresAt) {
                 localFilteredValues.push(durationDays);

@@ -17,7 +17,7 @@ import { Switch } from '@headlessui/react';
 import { LockKeyhole } from 'lucide-react';
 
 // Define Maximum Expiry Constants
-const MAX_EXPIRY_SECONDS = Math.floor(new Date('2029-12-31T23:59:59Z').getTime() / 1000);
+// const MAX_EXPIRY_SECONDS = Math.floor(new Date('2029-12-31T23:59:59Z').getTime() / 1000); // Removed
 const FOUR_YEARS_IN_SECONDS = 4 * 365.25 * 24 * 3600; // Approximation
 
 interface ExtendProps {
@@ -66,12 +66,9 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
             // Proposed new date based on current expiry + selected duration (in days)
             let proposed_new_expiry_ts = current_expiry_ts + (duration * 24 * 3600);
 
-            // Apply 2029 cap
-            let capped_expiry_ts = Math.min(proposed_new_expiry_ts, MAX_EXPIRY_SECONDS);
-
             // Apply 4-years-from-now cap
             const max_expiry_from_now_ts_calc = Math.floor(Date.now() / 1000) + FOUR_YEARS_IN_SECONDS;
-            capped_expiry_ts = Math.min(capped_expiry_ts, max_expiry_from_now_ts_calc);
+            let capped_expiry_ts = Math.min(proposed_new_expiry_ts, max_expiry_from_now_ts_calc);
 
             if (capped_expiry_ts <= current_expiry_ts && duration > 0) { // duration > 0 means an extension was intended
                 // This case implies the lock is already past all caps or extension is too small to overcome current date if current is past caps.
@@ -115,10 +112,8 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
             const current_expiry_ts = Number(lock.expires_at);
             const proposed_new_expiry_ts = current_expiry_ts + (duration * 24 * 3600);
 
-            let final_new_expiry_ts = Math.min(proposed_new_expiry_ts, MAX_EXPIRY_SECONDS);
-
             const max_expiry_from_now_ts = Math.floor(Date.now() / 1000) + FOUR_YEARS_IN_SECONDS;
-            final_new_expiry_ts = Math.min(final_new_expiry_ts, max_expiry_from_now_ts);
+            let final_new_expiry_ts = Math.min(proposed_new_expiry_ts, max_expiry_from_now_ts);
 
             if (final_new_expiry_ts <= current_expiry_ts) {
                 toast.warn("New expiry date must be after the current expiry date and within limits.");
