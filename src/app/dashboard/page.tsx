@@ -8,6 +8,7 @@ import { VeNFT, Relay, locksByAccount, allRelay, positions, all, Position, Forma
 import { useChainId, useAccount } from 'wagmi';
 import { calculateRebaseAPR, formatLockedFor, formatTimestamp } from '@/utils/math.utils';
 import { tokens } from "@myswap/token-list";
+import { stableTokens } from '@/utils/constant.utils';
 
 type LockItem = {
     id: string;
@@ -112,8 +113,8 @@ const Dashboard = () => {
             amount: String(parseFloat(lock.amount) / 10 ** parseInt(lock.decimals)),
             lockedFor: formatLockedFor(Number(lock.expires_at)),
             type: "locked",
-            tokenSymbol: tokens.find(token => token.address === lock.token.toLowerCase())!.symbol,
-            logoUri: tokens.find(token => token.address === lock.token.toLowerCase())!.logoURI,
+            tokenSymbol: tokens.find(token => token.address.toLowerCase() === lock.token.toLowerCase())!.symbol,
+            logoUri: tokens.find(token => token.address.toLowerCase() === lock.token.toLowerCase())!.logoURI,
             rebaseApr: `${calculateRebaseAPR(lock.rebase_amount, lock.amount, lock.decimals)}%`,
             rebaseAmount: String(parseFloat(lock.rebase_amount) / 10 ** parseInt(lock.decimals)),
             } as LockItem)
@@ -129,9 +130,9 @@ const Dashboard = () => {
         setDeposits(deposits_.map((deposit: Position) => {
             const pool = pools.find((pool: FormattedPool) => pool.lp === deposit.lp)!;
 
-            const token0 = tokens.find(token => token.address === pool.token0.toLowerCase())!;
-            const token1 = tokens.find(token => token.address === pool.token1.toLowerCase())!;
-            const rewardToken = tokens.find(token => token.address === pool.emissions_token.toLowerCase());
+            const token0 = [...tokens, ...stableTokens(chainId)].find(token => token.address.toLowerCase() === pool.token0.toLowerCase())!;
+            const token1 = [...tokens, ...stableTokens(chainId)].find(token => token.address.toLowerCase() === pool.token1.toLowerCase())!;
+            const rewardToken = [...tokens, ...stableTokens(chainId)].find(token => token.address.toLowerCase() === pool.emissions_token.toLowerCase());
 
             const depositInfo = {
                 id: Number(deposit.id),
