@@ -85,7 +85,7 @@ const LockInteraction = ({ item }: { item: VeNFT }) => {
           <li>
             <Link
               href={`/lock?increase=true&id=${item.id}`}
-              className="font-medium text-xs text-blue-500"
+              className="font-medium text-xs text-neon-green"
             >
               Increase
             </Link>
@@ -93,7 +93,7 @@ const LockInteraction = ({ item }: { item: VeNFT }) => {
           <li>
             <Link
               href={`/lock?extend=true&id=${item.id}`}
-              className="font-medium text-xs text-blue-500"
+              className="font-medium text-xs text-neon-green"
             >
               Extend
             </Link>
@@ -101,7 +101,7 @@ const LockInteraction = ({ item }: { item: VeNFT }) => {
           <li>
             <Link
               href={`/lock?merge=true&id=${item.id}`}
-              className="font-medium text-xs text-blue-500"
+              className="font-medium text-xs text-neon-green"
             >
               Merge
             </Link>

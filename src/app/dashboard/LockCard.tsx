@@ -119,7 +119,7 @@ const LockCard: React.FC<LockCardProps> = ({ lock }) => {
           </div>
 
           <button
-            className="px-3 py-1.5 bg-transparent text-blue-400 font-medium rounded-md hover:bg-[#1E1E1E] transition-colors text-xs sm:text-sm whitespace-nowrap mt-2 sm:mt-0"
+            className="px-3 py-1.5 bg-transparent text-neon-green font-medium rounded-md hover:bg-[#1E1E1E] transition-colors text-xs sm:text-sm whitespace-nowrap mt-2 sm:mt-0"
             onClick={() => claim()}
             disabled={load["Claim"]}
           >

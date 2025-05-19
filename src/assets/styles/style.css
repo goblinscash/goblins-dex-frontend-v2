@@ -70,3 +70,42 @@ input[type="number"] {
 .Toastify__toast-container {
   z-index: 99999;
 }
+
+/* Menu item styles */
+.cstmMenu ul li a { /* Default link color for items not specifically active/inactive */
+  color: #00ff4e; /* Green */
+  transition: color 0.3s ease; /* Smooth transition for hover effect */
+}
+
+.cstmMenu ul li a:hover {
+  color: #00cc3f; /* Slightly darker green for hover */
+}
+
+/* Applied to the LI or a parent of A for an inactive menu item */
+.cstmMenu ul li.menu-item-inactive a {
+  color: #00ff00; /* Neon Green */
+}
+
+.cstmMenu ul li.menu-item-inactive a:hover {
+  color: #00dd00; /* Slightly darker/dimmer Neon Green for hover */
+}
+
+/* Applied to the LI or a parent of A for an active menu item */
+.cstmMenu ul li.menu-item-active a {
+  color: #ffffff; /* White */
+  font-weight: bold; /* Optional: make active link bold */
+}
+
+/* Ensure active link hover doesn't change its color from white */
+.cstmMenu ul li.menu-item-active a:hover {
+  color: #ffffff; /* White */
+}
+
+/* Utility class for neon green text */
+.text-neon-green {
+  color: #00ff00 !important; /* Neon Green */
+}
+
+.text-neon-green:hover {
+  color: #00dd00 !important; /* Slightly darker neon green for hover */
+}
