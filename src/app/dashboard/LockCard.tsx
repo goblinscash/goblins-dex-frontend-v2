@@ -8,6 +8,7 @@ interface LockData {
   lockedFor: string;
   rebaseApr: string;
   rebaseAmount: string;
+  logoUri: string;
 }
 
 interface LockCardProps {
@@ -23,9 +24,11 @@ const LockCard: React.FC<LockCardProps> = ({ lock }) => {
           <div className="flex items-center">
             {/* Token Logo */}
             <div className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 mr-3">
-              <svg width="30" height="30" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M24 4L45.8923 40H2.10769L24 4Z" fill="#3461FF"/>
-              </svg>
+              <img
+                  src={lock.logoUri}
+                  alt={lock.tokenSymbol}
+                  className="w-7 h-7 mt-0.5 rounded-md object-cover"
+              />
             </div>
             
             <div>
@@ -35,7 +38,7 @@ const LockCard: React.FC<LockCardProps> = ({ lock }) => {
                   <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"></path>
                 </svg>
               </div>
-              <div className="text-gray-400 text-xs sm:text-sm">{lock.amount} {lock.tokenSymbol} locked for {lock.lockedFor}</div>
+              <div className="text-gray-400 text-xs sm:text-sm">{lock.amount} {lock.tokenSymbol} {lock.lockedFor}</div>
             </div>
           </div>
           

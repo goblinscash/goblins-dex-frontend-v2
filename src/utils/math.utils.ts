@@ -93,7 +93,43 @@ export const formatTimestamp = (timestamp: number) => {
   return diff > 0 ? `Unlocks in ${result}` : `Unlocked ${result} ago`;
 };
 
+export const formatLockedFor = (expiresAt: number) => {
+  if (expiresAt === 0) {
+    return "locked forever";
+  }
 
+  const now = Math.floor(Date.now() / 1000);
+  const diff = expiresAt - now; // Positive if in the future, negative if in the past
+  const secondsInMinute = 60;
+  const secondsInHour = 3600;
+  const secondsInDay = 86400;
+  const secondsInMonth = 2592000;
+  const secondsInYear = 31536000;
+
+  const getTimeString = (value: number, unit: string) =>
+    `${value} ${unit}${value !== 1 ? "s" : ""}`;
+
+  let result = "";
+
+  if (Math.abs(diff) < secondsInHour) {
+    const minutes = Math.floor(Math.abs(diff) / secondsInMinute);
+    result = getTimeString(minutes, "minute");
+  } else if (Math.abs(diff) < secondsInDay) {
+    const hours = Math.floor(Math.abs(diff) / secondsInHour);
+    result = getTimeString(hours, "hour");
+  } else if (Math.abs(diff) < secondsInMonth) {
+    const days = Math.floor(Math.abs(diff) / secondsInDay);
+    result = getTimeString(days, "day");
+  } else if (Math.abs(diff) < secondsInYear) {
+    const months = Math.floor(Math.abs(diff) / secondsInMonth);
+    result = getTimeString(months, "month");
+  } else {
+    const years = Math.floor(Math.abs(diff) / secondsInYear);
+    result = getTimeString(years, "year");
+  }
+
+  return diff > 0 ? `locked for ${result}` : `unlocked ${result} ago`;
+};
 
 export const getTimeSince = (timestamp: number): TimeResult => {
   const date = new Date(timestamp * 1000);

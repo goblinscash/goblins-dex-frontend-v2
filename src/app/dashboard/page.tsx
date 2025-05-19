@@ -1,21 +1,25 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import DepositCard from './DepositCard';
 import LockCard from './LockCard';
 import ClaimCard from './ClaimCard';
 import Link from 'next/link';
+import { VeNFT, Relay, locksByAccount, allRelay } from '@/utils/sugar.utils';
+import { useChainId, useAccount } from 'wagmi';
+import { calculateRebaseAPR, formatLockedFor, formatTimestamp } from '@/utils/math.utils';
+import { tokens } from "@myswap/token-list";
 
 type LockItem = {
-    id: number;
+    id: string;
     amount: string;
-    duration: string;
+    lockedFor: string;
     type: 'locked' | 'unlocked';
+    tokenSymbol: string;
+    rebaseApr: string;
+    rebaseAmount: string;
+    logoUri: string;
 };
 
-const locks: LockItem[] = [
-    { id: 68969, amount: '2.51561', duration: '4 years', type: 'locked' },
-    { id: 69020, amount: '2.63288', duration: '4 years', type: 'unlocked' },
-];
 // Mock data for demonstration
 const mockDeposits = [
     {
@@ -60,47 +64,37 @@ const mockDeposits = [
     }
 ];
 
-// Mock data for locks
-const mockLocks = [
-    {
-        id: "68969-1",
-        amount: "2.51561",
-        tokenSymbol: "AERO",
-        lockedFor: "4 years",
-        rebaseApr: "6.39677%",
-        rebaseAmount: "0.04772"
-    },
-    {
-        id: "68969-2",
-        amount: "2.51561",
-        tokenSymbol: "AERO",
-        lockedFor: "4 years",
-        rebaseApr: "6.39677%",
-        rebaseAmount: "0.04772"
-    },
-    {
-        id: "68969-3",
-        amount: "2.51561",
-        tokenSymbol: "AERO",
-        lockedFor: "4 years",
-        rebaseApr: "6.39677%",
-        rebaseAmount: "0.04772"
-    },
-    {
-        id: "68969-4",
-        amount: "2.51561",
-        tokenSymbol: "AERO",
-        lockedFor: "4 years",
-        rebaseApr: "6.39677%",
-        rebaseAmount: "0.04772"
-    }
-];
-
 const Dashboard = () => {
     const [allDepositsExpanded, setAllDepositsExpanded] = useState(false);
     const [expandedDepositStates, setExpandedDepositStates] = useState<{ [key: number]: boolean }>({});
     const [open, setOpen] = useState(false);
 
+    const chainId = useChainId();
+    const { address } = useAccount();
+    const [locks, setLocks] = useState<LockItem[] | null>(null);
+
+    useEffect(() => {
+        if (chainId && address) {
+            fetchLocksByAccount()
+        }
+    }, [chainId, address]);
+
+    const fetchLocksByAccount = async () => {
+        if (!address) return
+        const locks_ = await locksByAccount(chainId, address)
+        console.log("Locks by account: ", locks_)
+        setLocks(locks_.map((lock: VeNFT) => ({
+            id: lock.id,
+            amount: String(parseFloat(lock.amount) / 10 ** parseInt(lock.decimals)),
+            lockedFor: formatLockedFor(Number(lock.expires_at)),
+            type: "locked",
+            tokenSymbol: tokens.find(token => token.address === lock.token.toLowerCase())!.symbol,
+            logoUri: tokens.find(token => token.address === lock.token.toLowerCase())!.logoURI,
+            rebaseApr: `${calculateRebaseAPR(lock.rebase_amount, lock.amount, lock.decimals)}%`,
+            rebaseAmount: String(parseFloat(lock.rebase_amount) / 10 ** parseInt(lock.decimals)),
+            } as LockItem)
+        ))
+    }
 
     const toggleExpandAllDeposits = () => {
         const newExpandedState = !allDepositsExpanded;
@@ -176,7 +170,7 @@ const Dashboard = () => {
                 </div>
                 {/* Lock Cards */}
                 <div className="space-y-5">
-                    {mockLocks.map((lock, index) => (
+                    {locks?.map((lock, index) => (
                         <LockCard
                             key={`${lock.id}-${index}`}
                             lock={lock}
@@ -229,12 +223,12 @@ const Dashboard = () => {
                         {/* Dropdown */}
                         {open && (
                             <div className="absolute right-0 z-10 mt-2 w-72 bg-[#0B0D17] rounded-xl shadow-lg border border-[#1E2233]">
-                                {locks.map((lock, index) => (
+                                {locks?.map((lock, index) => (
                                     <div key={`${lock.id}-${index}`} className="px-4 py-3 border-b border-[#1E2233] last:border-0">
                                         <div className="flex items-start gap-3">
                                             <img
-                                                src="/aero-icon.png"
-                                                alt="AERO"
+                                                src={lock.logoUri}
+                                                alt={lock.tokenSymbol}
                                                 className="w-7 h-7 mt-0.5 rounded-md object-cover"
                                             />
                                             <div className="flex flex-col text-sm text-white">
@@ -247,7 +241,7 @@ const Dashboard = () => {
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-orbit"><circle cx="12" cy="12" r="3"></circle><circle cx="19" cy="5" r="2"></circle><circle cx="5" cy="19" r="2"></circle><path d="M10.4 21.9a10 10 0 0 0 9.941-15.416"></path><path d="M13.5 2.1a10 10 0 0 0-9.841 15.416"></path></svg>)}
                                                 </div>
                                                 <div className="text-xs text-gray-400">
-                                                    {lock.amount} AERO locked for {lock.duration}
+                                                    {lock.amount} {lock.tokenSymbol} {lock.lockedFor}
                                                 </div>
                                             </div>
                                         </div>
