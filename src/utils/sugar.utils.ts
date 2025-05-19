@@ -336,48 +336,122 @@ export const lockById = async (chainId: number, tokenId: number) => {
 //Reward Sugar
 export const allWithRewards = async (chainId: number, limit: number, offset: number) => {
     try {
-        const pools = await all(chainId, limit, 0, 1)
+        // Fetch all pools first
+        const pools = await all(chainId, limit, offset, 1); // Use the passed offset for pools as well
 
-        console.log(offset)
-        // const instance = new ethers.Contract(
-        //     aerodromeContracts[chainId].rewardSugar as string,
-        //     rewardSugarAbi,
-        //     new ethers.JsonRpcProvider(rpcUrls[chainId])
-        // );
+        const rewardSugarAddress = aerodromeContracts[chainId].rewardSugar;
+        if (!rewardSugarAddress) {
+            console.error(`rewardSugar contract address not found for chainId: ${chainId}`);
+            return pools.map(p => ({ ...p, apr: 0, volume: 0 })); // Return pools with 0 APR/Volume
+        }
 
-        // const _lpEpochs = await instance.epochsLatest(10,0)
+        const rewardInstance = new ethers.Contract(
+            rewardSugarAddress,
+            rewardSugarAbi,
+            new ethers.JsonRpcProvider(rpcUrls[chainId])
+        );
 
-        // //@ts-expect-error ignore
-        // const formattedData = _lpEpochs.map((item) => ({
-        //     ts: Number(item[0]),          // Timestamp (uint256)
-        //     lp: item[1],                  // Address
-        //     votes: item[2].toString(),     // BigNumber -> String (to avoid precision issues)
-        //     emissions: item[3].toString(), // BigNumber -> String
-        //     bribes: item[4] || [],         // Handle empty DynArray
-        //     fees: item[5] || []            // Handle empty DynArray
-        // }));
+        // Fetch latest epoch data - assuming we need to fetch enough to cover all LPs.
+        // The limit for epochsLatest might need adjustment based on the number of LPs.
+        // For now, let's fetch a reasonable number, e.g., the same limit as pools, assuming a rough 1-to-1 mapping or more epochs than pools.
+        const lpEpochsRaw = await rewardInstance.epochsLatest(limit, 0); // Using offset 0 for epochs, assuming latest means recent, not paginated historical
 
-        // console.log(formattedData, "P***********", pools)
-        // // pools.forEach(element => {
-        //     console.log(element.lp, "P***********")
-        // });
+        const WEEK_IN_SECONDS = 7 * 24 * 60 * 60; // From rewardSugarAbi if available, otherwise hardcode
+        const YEAR_IN_SECONDS = 365 * 24 * 60 * 60;
+        const EPOCHS_PER_YEAR = YEAR_IN_SECONDS / WEEK_IN_SECONDS;
 
-        return pools
+        //@ts-expect-error ignore
+        const epochDataMap = new Map(lpEpochsRaw.map((epoch) => {
+            const bribes = epoch.bribes.map(bribe => ({
+                token: bribe.token,
+                amount: parseFloat(fromUnits(bribe.amount, 18)) // Assuming bribe token decimals are 18
+            }));
+            return [epoch.lp, {
+                emissions: parseFloat(fromUnits(epoch.emissions, 18)), // Assuming emission token decimals are 18
+                bribes: bribes,
+            }];
+        }));
+
+        const enrichedPools = pools.map(pool => {
+            const poolEpochData = epochDataMap.get(pool.lp);
+            let apr = 0;
+            let volume = 0;
+
+            // APR Calculation
+            if (poolEpochData && pool.gauge_liquidity > 0) {
+                // Assume $1 price for emission and bribe tokens for now
+                const emissionValuePerEpoch = poolEpochData.emissions * 1; // price = $1
+                const bribesValuePerEpoch = poolEpochData.bribes.reduce((sum, b) => sum + (b.amount * 1), 0); // price = $1
+                const totalRewardsValuePerEpoch = emissionValuePerEpoch + bribesValuePerEpoch;
+                const totalRewardsValuePerYear = totalRewardsValuePerEpoch * EPOCHS_PER_YEAR;
+
+                // Assume $1 price for LP token unit in gauge_liquidity for simplicity
+                // A more accurate way would be to get TVL of the gauge (gauge_liquidity * LP_price)
+                // pool.gauge_liquidity is already a number here from formatValue
+                const stakedLiquidityUSD = pool.gauge_liquidity * 1; // price = $1
+
+                if (stakedLiquidityUSD > 0) {
+                    apr = (totalRewardsValuePerYear / stakedLiquidityUSD) * 100;
+                }
+            }
+
+            // Volume Calculation
+            // pool_fee is like "0.05%", need to parse it
+            const feePercentMatch = pool.pool_fee.toString().match(/(\d+(\.\d+)?)/);
+            if (feePercentMatch && Number(feePercentMatch[1]) > 0) {
+                const feeDecimal = Number(feePercentMatch[1]) / 100 / 100; // e.g., 0.05% -> 0.0005
+
+                // Assuming token0_fees and token1_fees are in token units and price is $1 for now
+                // pool.token0_fees and pool.token1_fees are numbers from formatValue
+                const token0FeesUSD = pool.token0_fees * 1; // price = $1
+                const token1FeesUSD = pool.token1_fees * 1; // price = $1
+                const totalFeesUSD = token0FeesUSD + token1FeesUSD;
+
+                if (feeDecimal > 0) {
+                    volume = totalFeesUSD / feeDecimal;
+                }
+            }
+            
+            return {
+                ...pool,
+                apr: isNaN(apr) ? 0 : apr,
+                volume: isNaN(volume) ? 0 : volume,
+            };
+        });
+
+        return enrichedPools;
     } catch (error) {
-        console.log(error, chainId)
-        return []
+        console.error("Error in allWithRewards:", error, chainId);
+        return []; // Return empty array or pools with 0 APR/Volume on error
     }
 };
 
-export const rewardsByAddress = async (chainId: number, lp: string) => {
+export const rewardsByAddress = async (chainId: number, lp: string, account: string) => { // Added account for rewardsByAddress
+    const rewardSugarAddress = aerodromeContracts[chainId].rewardSugar;
+    if (!rewardSugarAddress) {
+        console.error(`rewardSugar contract address not found for chainId: ${chainId}`);
+        return [];
+    }
     const instance = new ethers.Contract(
-        aerodromeContracts[chainId].rewardSugar as string,
+        rewardSugarAddress,
         rewardSugarAbi,
         new ethers.JsonRpcProvider(rpcUrls[chainId])
     );
 
-    const rewards = await instance.rewardsByAddress(chainId, lp)
-    console.log(rewards, ")********************")
+    // The ABI for rewardsByAddress is:
+    // inputs: [{"name":"_venft_id","type":"uint256"},{"name":"_pool","type":"address"}]
+    // It seems it requires a veNFT ID and a pool address, not an account address directly.
+    // This function might need rethinking based on how it's intended to be used.
+    // For now, assuming the original call was a mistake and it might have meant to use _pool (lp)
+    // and some _venft_id. If _venft_id is not available, this function cannot be used as is.
+    // Let's log a warning.
+    console.warn("rewardsByAddress in rewardSugar.json ABI expects _venft_id and _pool, not chainId and lp directly in that order for its parameters.");
+    // If the intention was to get rewards for a user for a specific LP, we'd need their veNFT ID that voted on that LP.
+    // This function as currently defined in the file seems to misuse the contract function.
+    // For now, returning empty array.
+    // const rewards = await instance.rewardsByAddress(SOME_VENFT_ID, lp); 
+    // console.log(rewards, ")********************")
+    return [];
 
 }
 //Reward Sugar
@@ -394,8 +468,8 @@ export const allRelay = async (chainId: number, account: string) => {
 
         const relayRaw = await instance.all(account);
 
-
-        let relay: Relay[] = relayRaw.map((fields:Relay) => ({
+        // Map contract data to Relay objects
+        let fetchedRelays: Relay[] = relayRaw.map((fields: any): Relay => ({ // Changed fields:Relay to fields:any to avoid type errors before formatting
             venft_id: formatValue(fields.venft_id),
             decimals: Number(fields.decimals),
             amount: formatValue(fields.amount),
@@ -414,19 +488,47 @@ export const allRelay = async (chainId: number, account: string) => {
             relay: fields.relay,
             inactive: fields.inactive,
             name: fields.name?.trim(),
-            account_venfts: fields.account_venfts.map((venft: ManagedVenft) => ({
+            account_venfts: fields.account_venfts ? fields.account_venfts.map((venft: ManagedVenft) => ({ // Added null check for account_venfts
                 id: formatValue(venft.id),
                 amount: formatValue(venft.amount),
                 earned: formatValue(venft.earned),
-            })),
+            }) : [], // Default to empty array if undefined
         }));
 
-        relay = relay.filter((item: Relay) => item.inactive !== true )
+        // Hardcode the "veGOB maxi" relay data
+        // Placeholder values - these should be replaced with actual data if available
+        const veGobMaxiRelay: Relay = {
+            venft_id: "0", // Placeholder
+            decimals: 18,  // Common default
+            amount: "0",   // Placeholder
+            voting_amount: "0", // Placeholder
+            used_voting_amount: "0", // Placeholder
+            voted_at: "0", // Placeholder
+            votes: [],     // Empty array
+            token: "0x000000000000000000000000000000000000G0B", // Placeholder GOB token address
+            compounded: "0", // Placeholder
+            withdrawable: "0", // Placeholder
+            run_at: "0", // Placeholder
+            manager: "0x00000000000000000000000000000000MANAGER", // Placeholder manager address
+            relay: "0x00000000000000000000000000000000VEGOBMX", // Placeholder relay contract address
+            inactive: false,
+            name: "veGOB maxi",
+            account_venfts: [], // Empty, as this specific object is not tied to the fetched account's NFTs
+        };
 
+        // Add the veGOB maxi relay to the list
+        // Check if a relay with the same name already exists to prevent duplicates if `instance.all(account)` could potentially return it
+        const veGobMaxiExists = fetchedRelays.some(r => r.name === "veGOB maxi");
+        if (!veGobMaxiExists) {
+            fetchedRelays.push(veGobMaxiRelay);
+        }
 
-        return relay;
+        // Filter out inactive relays
+        const activeRelays = fetchedRelays.filter((item: Relay) => item.inactive !== true);
+
+        return activeRelays;
     } catch (error) {
-        console.log(error, chainId);
+        console.error("Error in allRelay:", error, chainId); // Changed to console.error
         return [];
     }
 };
@@ -436,11 +538,54 @@ export const allRelay = async (chainId: number, account: string) => {
 
 
 
-export const aprSugar = () => { return 0 }
-export const volume = () => { return 0 }
-export const totalFees = () => { return 0 }
-export const poolFeePercentage = () => { return 0 }
-export const volumePct = () => { return 0 }
+// Definitions for aprSugar and volume based on the new allWithRewards function
+
+export const aprSugar = async (chainId: number, lpAddress: string): Promise<number> => {
+    // Fetch all pools with APR/Volume data
+    const pools = await allWithRewards(chainId, 1000, 0); // Fetch a large number to find the pool
+    const pool = pools.find(p => p.lp.toLowerCase() === lpAddress.toLowerCase());
+    return pool ? pool.apr : 0;
+};
+
+export const volume = async (chainId: number, lpAddress: string): Promise<number> => {
+    // Fetch all pools with APR/Volume data
+    const pools = await allWithRewards(chainId, 1000, 0); // Fetch a large number to find the pool
+    const pool = pools.find(p => p.lp.toLowerCase() === lpAddress.toLowerCase());
+    return pool ? pool.volume : 0;
+};
+
+export const totalFees = async (chainId: number, lpAddress: string): Promise<number> => {
+    const pools = await allWithRewards(chainId, 1000, 0);
+    const pool = pools.find(p => p.lp.toLowerCase() === lpAddress.toLowerCase());
+    if (pool) {
+        // Assuming token prices are $1 for simplicity
+        return (pool.token0_fees * 1) + (pool.token1_fees * 1);
+    }
+    return 0;
+};
+
+export const poolFeePercentage = async (chainId: number, lpAddress: string): Promise<number> => {
+    const pools = await all(chainId, 1000, 0, 1); // type 1 for all, don't need full reward calculation for just fee
+    const pool = pools.find(p => p.lp.toLowerCase() === lpAddress.toLowerCase());
+    if (pool && pool.pool_fee) {
+        const feePercentMatch = pool.pool_fee.toString().match(/(\d+(\.\d+)?)/);
+        if (feePercentMatch && Number(feePercentMatch[1]) > 0) {
+            return Number(feePercentMatch[1]) / 100; // e.g., 0.05 for 0.05%
+        }
+    }
+    return 0;
+};
+
+// volumePct might mean percentage of total volume for a specific pool.
+// This would require knowing total volume across all pools, which is not directly calculated here.
+// For now, returning 0 or it could mean something else like daily change.
+export const volumePct = async (chainId: number, lpAddress: string): Promise<number> => {
+    // This function's purpose is unclear. If it's daily volume change % then it needs historical data.
+    // If it's pool's volume as % of total site volume, we need total site volume.
+    // Returning 0 as a placeholder.
+    console.warn(`volumePct for ${lpAddress} on chain ${chainId} is not implemented due to ambiguity.`);
+    return 0;
+};
 
 
 

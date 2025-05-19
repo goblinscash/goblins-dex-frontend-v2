@@ -16,10 +16,11 @@ import Progress from "@/components/common/Progress";
 import Notify from "@/components/common/Notify";
 import Transfer from "@/components/lockInteraction/Transfer";
 import { useSearchParams } from "next/navigation";
-import { lockById, VeNFT } from "@/utils/sugar.utils";
+import { lockById, VeNFT, allRelay, Relay } from "@/utils/sugar.utils"; // Added allRelay and Relay
 import Increase from "@/components/lockInteraction/Increase";
 import Merge from "@/components/lockInteraction/Merge";
 import Extend from "@/components/lockInteraction/Extend";
+import Link from "next/link"; // Added Link import
 
 const Deposit = () => {
   const searchParams = useSearchParams();
@@ -38,6 +39,10 @@ const Deposit = () => {
   const [duration, setDuration] = useState(1);
   const [lock, setLock] = useState<VeNFT | null>(null);
 
+  // State for veGOB maxi relay
+  const [veGobMaxiRelay, setVeGobMaxiRelay] = useState<Relay | null>(null);
+  const [isLoadingVeGobMaxi, setIsLoadingVeGobMaxi] = useState<boolean>(false);
+
   const [status, setStatus] = useState<{ [key: string]: boolean }>({
     isAllowanceForToken: false,
     createLock: false,
@@ -46,17 +51,34 @@ const Deposit = () => {
 
   useEffect(() => {
     if (chainId && id_) {
-      fetchLocksById()
+      fetchLocksById();
     }
-  }, [chainId, id_]);
+    if (chainId && address) {
+      fetchVeGobMaxiRelay();
+    }
+  }, [chainId, id_, address]); // Added address dependency
 
   const fetchLocksById = async () => {
-    if (!id_) return
-    const locks_ = await lockById(chainId, Number(id_))
+    if (!id_) return;
+    const locks_ = await lockById(chainId, Number(id_));
     //@ts-expect-error ignore
-    setLock(locks_)
-  }
+    setLock(locks_);
+  };
 
+  const fetchVeGobMaxiRelay = async () => {
+    if (!chainId || !address) return;
+    setIsLoadingVeGobMaxi(true);
+    try {
+      const relays = await allRelay(chainId, address);
+      const veGobRelay = relays.find(relay => relay.name === "veGOB maxi");
+      setVeGobMaxiRelay(veGobRelay || null);
+    } catch (error) {
+      console.error("Error fetching veGOB maxi relay:", error);
+      setVeGobMaxiRelay(null);
+    } finally {
+      setIsLoadingVeGobMaxi(false);
+    }
+  };
 
   useEffect(() => {
     if (chainId && amount) {
@@ -138,6 +160,35 @@ const Deposit = () => {
                 className="mx-auto grid gap-3 md:gap-5 grid-cols-12"
                 style={{ maxWidth: 1000 }}
               >
+                {/* veGOB maxi Relay Section */}
+                {isLoadingVeGobMaxi && (
+                  <div className="col-span-12 text-center py-3">
+                    <p>Loading veGOB maxi relay information...</p>
+                  </div>
+                )}
+                {!isLoadingVeGobMaxi && veGobMaxiRelay && (
+                  <div className="col-span-12">
+                    <div className="cardCstm p-3 md:p-4 rounded-md bg-[var(--backgroundColor2)] opacity-70 relative">
+                      <h4 className="m-0 font-semibold text-xl mb-2">
+                        {veGobMaxiRelay.name}
+                      </h4>
+                      <p className="text-xs text-gray-400">
+                        veNFT ID: {veGobMaxiRelay.venft_id}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        Managed by: {veGobMaxiRelay.manager}
+                      </p>
+                      <p className="text-xs text-gray-400 mb-3">
+                        Relay Contract: {veGobMaxiRelay.relay}
+                      </p>
+                      <Link href={`/relay?id=${veGobMaxiRelay.venft_id}`}>
+                        <ActButton label="Manage Relay" />
+                      </Link>
+                    </div>
+                  </div>
+                )}
+                {/* End veGOB maxi Relay Section */}
+
                 <div className="md:col-span-5 col-span-12">
                   <div className="cardCstm p-3 md:p-4 rounded-md bg-[var(--backgroundColor2)] opacity-70 relative h-full flex justify-between flex-col">
                     <div className="top w-full">
