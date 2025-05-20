@@ -7,6 +7,7 @@ import { all, FormattedPool } from "@/utils/sugar.utils";
 import Link from "next/link";
 import Logo from "@/components/common/Logo";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { getToken } from "@/utils/token.utils";
 const Nav = styled.div`
   button {
     &:after {
@@ -101,7 +102,7 @@ const column: Column[] = [
             </li>
           </ul>
           <div className="content">
-            <p className="m-0 text-muted">{item?.symbol}</p>
+            <p className="m-0 text-muted">{item?.symbol || `cAMM-${getToken(item!.token0)!.symbol}/${getToken(item!.token1)!.symbol}`}</p>
           </div>
         </div>
       );
