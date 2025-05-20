@@ -1,12 +1,36 @@
 import React from 'react';
+import Image from 'next/image';
 
 interface ClaimCardProps {
-    fBOMBAmount: string;
-    wstETHAmount: string;
-    lockId?: string; // Optional prop for lock ID
+    positionId: number;
+    token0Symbol: string;
+    token1Symbol: string;
+    token0Logo: string;
+    token1Logo: string;
+    amount0: string;
+    amount1: string;
+    onClaim: () => void;
+    lpDisplayName: string; // e.g., "WETH / USDC"
+    poolFeeStr: string;    // e.g., "0.0405%"
+    poolTypeStr: string;   // e.g., "Concentrated Volatile 100" or "Basic Stable"
+    // poolManagementTag?: string; // e.g., "ALM", if available and needed from page.tsx
 }
 
-const ClaimCard: React.FC<ClaimCardProps> = ({ fBOMBAmount, wstETHAmount, lockId = "68969" }) => {
+const ClaimCard: React.FC<ClaimCardProps> = (props) => {
+    const { 
+        positionId, 
+        token0Symbol, 
+        token1Symbol, 
+        token0Logo, 
+        token1Logo, 
+        amount0, 
+        amount1, 
+        onClaim, 
+        lpDisplayName, 
+        poolFeeStr, 
+        poolTypeStr 
+    } = props;
+
     return (
         <div className="bg-[#000E0E] [align-items:normal] text-white p-4 sm:p-6 rounded-xl flex flex-col sm:flex-row justify-between align-top border border-[#1E2233]">
             {/* Left side */}
@@ -14,57 +38,59 @@ const ClaimCard: React.FC<ClaimCardProps> = ({ fBOMBAmount, wstETHAmount, lockId
                 <div className="flex items-start gap-4 w-full sm:w-auto">
                     <div className="flex-shrink-0">
                         <div className="flex -space-x-2">
-                            <img className="shrink-0 rounded-full transition size-10" src="https://raw.githubusercontent.com/SmolDapp/tokenAssets/main/tokens/8453/0x74ccbe53f77b08632ce0cb91d3a545bf6b8e0979/logo.svg" loading="lazy" alt="Token Image" />
-                            <img className="shrink-0 rounded-full transition size-10" src="https://raw.githubusercontent.com/SmolDapp/tokenAssets/main/tokens/8453/0xc1cba3fcea344f92d9239c08c0568f6f2f0ee452/logo.svg" loading="lazy" alt="Token Image" />
+                            <Image 
+                                className="shrink-0 rounded-full transition size-10" 
+                                src={token0Logo || "/placeholder-logo.svg"} 
+                                alt={`${token0Symbol || 'Token 0'} logo`}
+                                width={40}
+                                height={40}
+                            />
+                            <Image 
+                                className="shrink-0 rounded-full transition size-10" 
+                                src={token1Logo || "/placeholder-logo.svg"} 
+                                alt={`${token1Symbol || 'Token 1'} logo`}
+                                width={40}
+                                height={40}
+                            />
                         </div>
                     </div>
 
                     <div>
                         <div className="flex items-center gap-2 text-sm font-semibold">
-                            WETH / USDC
-                            <span className="text-xs bg-[#1E2233] text-gray-300 px-1.5 py-0.5 rounded">0.0405%</span>
-                            <span className="text-xs bg-[#1E2233] text-gray-400 px-1.5 py-0.5 rounded">ALM</span>
+                            {lpDisplayName}
+                            <span className="text-xs bg-[#1E2233] text-gray-300 px-1.5 py-0.5 rounded">{poolFeeStr}</span>
+                            {/* If poolManagementTag is available and needed, it can be added here */}
+                            {/* <span className="text-xs bg-[#1E2233] text-gray-400 px-1.5 py-0.5 rounded">ALM</span> */}
                         </div>
                         <div className="text-sm text-[#00ff4e] hover:underline cursor-pointer">
-                            Concentrated Volatile 100
+                            {poolTypeStr}
                         </div>
                     </div>
                 </div>
             </div>
-            {/* Center lock info */}
+            {/* Center info section */}
             <div className="text-sm text-gray-300 mt-4 sm:mt-0 sm:px-6">
                 <span className='flex items-center mb-1'>
-                    <span className="font-semibold text-white">Lock #{lockId}</span>
-                    <svg className="ml-2 w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                        <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"></path>
-                    </svg>
+                    <span className="font-semibold text-white">Position ID: {positionId}</span>
                 </span>
-                <div className="text-xs text-gray-400">2.51561 AERO locked</div>
             </div>
 
             {/* Right side values */}
             <div className="flex flex-col gap-1 text-xs text-right mt-4 sm:mt-0 sm:ml-auto">
                 <div className="flex sm:justify-end gap-2">
-                    <span className="text-gray-400">0.00002</span>
-                    <span className="text-white">WETH</span>
+                    <span className="text-gray-400">{amount0}</span>
+                    <span className="text-white">{token0Symbol}</span>
                     <span className="text-[10px] text-gray-500">FEE</span>
                 </div>
                 <div className="flex sm:justify-end gap-2">
-                    <span className="text-gray-400">0.05997</span>
-                    <span className="text-white">USDC</span>
+                    <span className="text-gray-400">{amount1}</span>
+                    <span className="text-white">{token1Symbol}</span>
                     <span className="text-[10px] text-gray-500">FEE</span>
                 </div>
-                <div className="flex sm:justify-end gap-2">
-                    <span className="text-gray-400">0.00001</span>
-                    <span className="text-white">AERO</span>
-                    <span className="text-[10px] text-blue-400">INCENTIVE</span>
-                </div>
-                <div className="flex sm:justify-end gap-2">
-                    <span className="text-gray-400">0.0</span>
-                    <span className="text-white">WELL</span>
-                    <span className="text-[10px] text-blue-400">INCENTIVE</span>
-                </div>
-                <button className="text-[#00ff4e] text-xs font-medium mt-1 text-end hover:underline">
+                <button 
+                    onClick={onClaim}
+                    className="text-[#00ff4e] text-xs font-medium mt-1 text-end hover:underline"
+                >
                     Claim
                 </button>
             </div>
@@ -72,4 +98,4 @@ const ClaimCard: React.FC<ClaimCardProps> = ({ fBOMBAmount, wstETHAmount, lockId
     );
 };
 
-export default ClaimCard; 
+export default ClaimCard;

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { tokenLogos } from "@myswap/token-list";
+import tokenListPackageData from "@myswap/token-list";
 
 const SUPPORTED_CHAINS: number[] = [10000, 8453, 56];
 
@@ -12,7 +12,7 @@ const useTokenLogoUrl = (chainId: number, checksummedAddress: string | null): st
     if (!checksummedAddress || !SUPPORTED_CHAINS.includes(chainId)) {
       return null;
     }
-    const logos = tokenLogos as TokenLogos;
+    const logos = tokenListPackageData.tokenLogos as TokenLogos;
     return logos[checksummedAddress.toLowerCase()] ?? null;
   }, [chainId, checksummedAddress]);
 };

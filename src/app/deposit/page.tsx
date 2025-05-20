@@ -23,7 +23,7 @@ import { byIndex, FormattedPool, PoolTypeMap } from "@/utils/sugar.utils";
 import Progress from "@/components/common/Progress";
 import SelectTokenPopup, { Token } from "@/components/modals/SelectTokenPopup";
 import { createPortal } from "react-dom";
-import { tokens } from "@myswap/token-list";
+import tokenListPackageData from "@myswap/token-list";
 import { stableTokens } from "@/utils/constant.utils";
 import nfpmAbi from "@/abi/aerodrome/nfpm.json"
 import { TickMath } from "@uniswap/v3-sdk";
@@ -99,7 +99,7 @@ const Deposit = () => {
   }
 
   const setInitialToken = () => {
-    let tokens_ = tokens.filter((item) => item.chainId == chainId);
+    let tokens_ = tokenListPackageData.tokens.filter((item) => item.chainId == chainId);
     tokens_ = [...tokens_, ...stableTokens(chainId)];
     //@ts-expect-error ignore warning
     setFilteredTokenList(tokens_);
