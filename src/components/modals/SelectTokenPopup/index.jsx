@@ -53,7 +53,7 @@ const SelectTokenPopup = ({ tokenBeingSelected, onSelectToken, onClose, chainId,
 
   return (
     <div className="fixed z-[9999] inset-0 flex items-center justify-center cstmModal">
-      <div className="absolute inset-0 bg-black z-[9] opacity-70"></div>
+      <div className="absolute inset-0 bg-black z-[9] opacity-70" onClick={onClose}></div>
       <div className="modalDialog relative p-4 px-lg-5 mx-auto rounded-lg z-[9999] bg-[#272625] w-full max-w-[500px] overflow-scroll">
         <button onClick={onClose} className="border-0 p-0 absolute top-2 right-2">
           {cross}
