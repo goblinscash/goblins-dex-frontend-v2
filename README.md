@@ -128,6 +128,4 @@ We welcome contributions to enhance Goblins DEX Frontend v2! Please follow these
 
 ## License
 
-No `LICENSE` file was found in the root of this project.
-
-It is highly recommended to add a license file to clarify how others can use, modify, and distribute the codebase. Common open-source licenses include the MIT License, Apache License 2.0, or GPLv3.
+This project is licensed under the MIT License. See the [LICENSE.md](LICENSE.md) file for details.
