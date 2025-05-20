@@ -17,7 +17,7 @@ export type AerodromeContract = {
     rewardSugar: string;
     relaySugar: string;
     rewardDistributor: string;
-
+    nfpm: string;
 }
 
 type AerodromeContracts = Record<number, AerodromeContract>;
@@ -70,7 +70,8 @@ export const aerodromeContracts: AerodromeContracts = {
         universalRouter: "0xb73C095FE9818B0a75715E5959716faf29d27296",
         voter: "0xc84C4ebbC5671795D4DBf1d8A369897CB471B230",
         votingEscrow: '0xe015feb0B3cDDb683d450Cf698B34E0BeF714B65',  
-        rewardDistributor: ""      
+        rewardDistributor: "",
+        nfpm:""
     },
     8453: {
         router: "0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43",
@@ -82,7 +83,8 @@ export const aerodromeContracts: AerodromeContracts = {
         universalRouter: "0x6Cb442acF35158D5eDa88fe602221b67B400Be3E",
         voter: "0x16613524e02ad97eDfeF371bC883F2F5d6C480A5",
         votingEscrow: "0xeBf418Fe2512e7E6bd9b87a8F0f294aCDC67e6B4",
-        rewardDistributor: "0x227f65131A261548b057215bB1D5Ab2997964C7d"
+        rewardDistributor: "0x227f65131A261548b057215bB1D5Ab2997964C7d",
+        nfpm: "0x827922686190790b37229fd06084350E74485b72"
     },
     56: {
         router: "0xe70642eCD92bB57F785d6185Dfe0a55f06c4318F",
@@ -94,7 +96,8 @@ export const aerodromeContracts: AerodromeContracts = {
         universalRouter: "0xf6E51745910027CC14E422Edf964E11646f4bD34",
         voter: "0xd3F575500E06C52070DD0a3b53d22024d3644787",
         votingEscrow: "0x933BAaa7c74D81FA07701F19f1d53CBBaA69640D",
-        rewardDistributor: ""
+        rewardDistributor: "0xd06654970a8e792B68f66B0fCE5A5Cff4A2E63Aa",
+        nfpm: "0xd1a63C19190D3B48d760E2A5AD8462FdCC0dfd3a"
     }
 };
 
