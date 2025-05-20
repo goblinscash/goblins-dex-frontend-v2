@@ -1,6 +1,6 @@
 import { formatTimestamp, fromUnits } from '@/utils/math.utils';
 import { lockById, VeNFT } from '@/utils/sugar.utils';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 import ActButton from '../common/ActButton';
 import { useEthersSigner } from '@/hooks/useEthersSigner';
@@ -15,6 +15,11 @@ import RangeSlider from '@/app/lock/RangeSlider';
 
 import { Switch } from '@headlessui/react';
 import { LockKeyhole } from 'lucide-react';
+
+// Define Maximum Expiry Constants
+// const MAX_EXPIRY_SECONDS = Math.floor(new Date('2029-12-31T23:59:59Z').getTime() / 1000); // Removed
+const FOUR_YEARS_IN_SECONDS = 4 * 365.25 * 24 * 3600; // Approximation
+
 interface ExtendProps {
     tokenId: number;
 }
@@ -22,8 +27,9 @@ interface ExtendProps {
 const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
     const [enabled, setEnabled] = useState(false);
     const [lock, setLock] = useState<VeNFT | null>(null);
+    const [displayableNewExpiry, setDisplayableNewExpiry] = useState("");
     const [load, setLoad] = useState<{ [key: string]: boolean }>({});
-    const [duration, setDuration] = useState(1);
+    const [duration, setDuration] = useState(1); // Initial duration set to 1 day
     const [status, setStatus] = useState<{ [key: string]: boolean }>({
         extendCompleted: false,
     });
@@ -54,11 +60,65 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
         }
     }, [chainId, tokenId]);
 
+    useEffect(() => {
+        if (lock && lock.expires_at && typeof duration === 'number' && duration >= 0) { // ensure duration is valid
+            const current_expiry_ts = Number(lock.expires_at);
+            // Proposed new date based on current expiry + selected duration (in days)
+            let proposed_new_expiry_ts = current_expiry_ts + (duration * 24 * 3600);
+
+            // Apply 4-years-from-now cap
+            const max_expiry_from_now_ts_calc = Math.floor(Date.now() / 1000) + FOUR_YEARS_IN_SECONDS;
+            let capped_expiry_ts = Math.min(proposed_new_expiry_ts, max_expiry_from_now_ts_calc);
+
+            if (capped_expiry_ts <= current_expiry_ts && duration > 0) { // duration > 0 means an extension was intended
+                // This case implies the lock is already past all caps or extension is too small to overcome current date if current is past caps.
+                // Or, the chosen duration makes it hit a cap that's <= current_expiry_ts.
+                // Display the most restrictive cap that is still a valid extension, or current if no valid extension.
+                // For simplicity, if it doesn't extend, show current, or a message.
+                // If current_expiry_ts is already > MAX_EXPIRY_SECONDS, it will show current_expiry_ts.
+                const effective_display_ts = Math.max(current_expiry_ts, capped_expiry_ts); // Show the later of the two if capped is somehow less.
+                if (effective_display_ts <= current_expiry_ts && duration > 0) {
+                   setDisplayableNewExpiry(new Date(current_expiry_ts * 1000).toUTCString() + " (Cannot extend further/Max limit reached)");
+                } else {
+                   setDisplayableNewExpiry(new Date(effective_display_ts * 1000).toUTCString());
+                }
+
+            } else if (duration === 0 && current_expiry_ts) { // No duration selected yet, or duration is 0
+                setDisplayableNewExpiry(new Date(current_expiry_ts * 1000).toUTCString() + " (Current expiry)");
+            }
+             else if (current_expiry_ts) { // Valid extension
+               setDisplayableNewExpiry(new Date(capped_expiry_ts * 1000).toUTCString());
+            } else {
+               setDisplayableNewExpiry("N/A"); // Should not happen if lock is loaded
+            }
+        } else if (lock && lock.expires_at) {
+            // Initial state or invalid duration, show current expiry
+            setDisplayableNewExpiry(new Date(Number(lock.expires_at) * 1000).toUTCString() + " (Select duration)");
+        } else {
+            setDisplayableNewExpiry(""); // Or some placeholder like "Calculating..."
+        }
+    }, [lock, duration]); // MAX_EXPIRY_SECONDS and FOUR_YEARS_IN_SECONDS are constants, no need in dep array
+
+
     const extend = async () => {
         try {
             if (!address) return toast.warn("Please connect your wallet");
+            if (!lock || !lock.expires_at) return toast.warn("Lock details not loaded yet.");
+            if (typeof duration !== 'number' || duration <= 0) return toast.warn("Please select a valid extension duration.");
 
             handleLoad("extendLock", true);
+
+            const current_expiry_ts = Number(lock.expires_at);
+            const proposed_new_expiry_ts = current_expiry_ts + (duration * 24 * 3600);
+
+            const max_expiry_from_now_ts = Math.floor(Date.now() / 1000) + FOUR_YEARS_IN_SECONDS;
+            let final_new_expiry_ts = Math.min(proposed_new_expiry_ts, max_expiry_from_now_ts);
+
+            if (final_new_expiry_ts <= current_expiry_ts) {
+                toast.warn("New expiry date must be after the current expiry date and within limits.");
+                handleLoad("extendLock", false);
+                return;
+            }
 
             const votingEscrow = new ethers.Contract(
                 aerodromeContracts[chainId].votingEscrow,
@@ -66,11 +126,9 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
                 await signer
             );
 
-            const _duration = Number(lock?.expires_at) - Math.floor(Date.now() / 1000)
-
             const tx = await votingEscrow.increaseUnlockTime(
                 tokenId,
-                _duration + duration * 24 * 3600,
+                final_new_expiry_ts, // This is the new absolute target timestamp
                 { gasLimit: 5000000 }
             );
 
@@ -86,9 +144,7 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
     };
 
     const formattedDate = lock?.expires_at === "0" ? "-" : formatTimestamp(Number(lock?.expires_at));
-    const date = duration && lock?.expires_at ? new Date(Number(lock.expires_at) * 1000 + duration * 24 * 3600000).toUTCString() : ""
 
-    console.log(duration)
     return (
         <>
             <section className="py-8 relative">
@@ -231,7 +287,12 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
 
 
                                     <div className="py-2">
-                                        <RangeSlider value={duration} onChange={setDuration} title="Extending to" />
+                                        <RangeSlider
+                                            value={duration}
+                                            onChange={setDuration}
+                                            title="Extending to"
+                                            currentLockExpiresAt={lock ? Number(lock.expires_at) : 0} // Pass current lock expiry, or 0 if lock is null
+                                        />
                                     </div>
                                     <div className="py-2">
                                         <div className="flex p-4 rounded-xl itmes-center gap-2 bg-[#1c1d2a] text-[#a55e10]">
@@ -258,7 +319,7 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
                                                         </span>
                                                         <div className="content text-xs text-gray-400">
                                                             <p className="m-0">
-                                                                New lock time  {date}
+                                                                New lock time  {displayableNewExpiry}
                                                             </p>
                                                         </div>
                                                     </li>
@@ -280,7 +341,7 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
                                         <ActButton
                                             label="Extend"
                                             onClick={() => extend()}
-                                            load={load["extendLock"]}
+                                            load={load["extendLock"] || duration === 0} // Disable if loading OR if duration is 0
                                         />
                                     </div>
                                 </div>

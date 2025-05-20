@@ -130,9 +130,10 @@ const Dashboard = () => {
         setDeposits(deposits_.map((deposit: Position) => {
             const pool = pools.find((pool: FormattedPool) => pool.lp === deposit.lp)!;
 
-            const token0 = [...tokens, ...stableTokens(chainId)].find(token => token.address.toLowerCase() === pool.token0.toLowerCase())!;
-            const token1 = [...tokens, ...stableTokens(chainId)].find(token => token.address.toLowerCase() === pool.token1.toLowerCase())!;
-            const rewardToken = [...tokens, ...stableTokens(chainId)].find(token => token.address.toLowerCase() === pool.emissions_token.toLowerCase());
+            const allTokensForChain = [...tokens, ...stableTokens(chainId)];
+            const token0 = allTokensForChain.find(token => token.address.toLowerCase() === pool.token0.toLowerCase())!;
+            const token1 = allTokensForChain.find(token => token.address.toLowerCase() === pool.token1.toLowerCase())!;
+            const rewardToken = allTokensForChain.find(token => token.address.toLowerCase() === pool.emissions_token.toLowerCase());
 
             const depositInfo = {
                 id: Number(deposit.id),
@@ -278,7 +279,7 @@ const Dashboard = () => {
                         {/* Button */}
                         <button
                             onClick={() => setOpen(!open)}
-                            className="bg-[#0B0D17] border border-[#1E2233] text-white px-4 py-1.5 rounded-md text-sm flex items-center gap-1 hover:bg-[#12172A] transition"
+                            className="bg-[#0B0D17] border border-[#1E2233] text-neon-green px-4 py-1.5 rounded-md text-sm flex items-center gap-1 hover:bg-[#12172A] transition"
                         >
                             Claim All
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6"></path></svg>
@@ -309,7 +310,7 @@ const Dashboard = () => {
                                                 </div>
                                             </div>
                                         </div>
-                                        <button className="mt-2 text-blue-400 text-xs font-medium hover:underline">
+                                        <button className="mt-2 text-neon-green text-xs font-medium hover:underline">
                                             Claim
                                         </button>
                                     </div>

@@ -137,12 +137,12 @@ const DepositCard: React.FC<DepositCardProps> = ({
               </div>
               <div className="flex gap-2 mt-4">
                 <Link href={'/stake'}>
-                  <span className="px-2 sm:px-3 py-1 text-blue-400 text-xs sm:text-sm font-medium rounded-md hover:bg-[#3A3A3A] transition-colors whitespace-nowrap">
+                  <span className="px-2 sm:px-3 py-1 text-neon-green text-xs sm:text-sm font-medium rounded-md hover:bg-[#3A3A3A] transition-colors whitespace-nowrap">
                     Stake
                   </span>
                 </Link>
                 <Link href={'/withdraw'}>
-                  <span className="px-2 sm:px-3 py-1 text-blue-400 text-xs sm:text-sm font-medium rounded-md hover:bg-[#3A3A3A] transition-colors whitespace-nowrap">
+                  <span className="px-2 sm:px-3 py-1 text-neon-green text-xs sm:text-sm font-medium rounded-md hover:bg-[#3A3A3A] transition-colors whitespace-nowrap">
                     Withdraw
                   </span>
                 </Link>
