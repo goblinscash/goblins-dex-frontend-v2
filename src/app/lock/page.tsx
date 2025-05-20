@@ -4,7 +4,7 @@ import { useEthersSigner } from "@/hooks/useEthersSigner";
 import { useAccount, useChainId } from "wagmi";
 import ActButton from "@/components/common/ActButton";
 import { toUnits } from "@/utils/math.utils";
-import { allowance, approve } from "@/utils/web3.utils";
+import { allowance, approve, erc20Balance } from "@/utils/web3.utils";
 import { aerodromeContracts } from "@/utils/config.utils";
 import votingEscrowAbi from "../../abi/aerodrome/votingEscrow.json";
 import { ethers } from "ethers";
@@ -37,6 +37,7 @@ const Deposit = () => {
   const [amount, setAmount] = useState("");
   const [duration, setDuration] = useState(1);
   const [lock, setLock] = useState<VeNFT | null>(null);
+  const [userBalance, setUserBalance]= useState("0");
 
   const [status, setStatus] = useState<{ [key: string]: boolean }>({
     isAllowanceForToken: false,
@@ -50,13 +51,18 @@ const Deposit = () => {
     }
   }, [chainId, id_]);
 
+  useEffect(() => {
+    if (chainId) {
+      checkUserBalance(chainId);
+    }
+  }, [chainId]);
+
   const fetchLocksById = async () => {
     if (!id_) return
     const locks_ = await lockById(chainId, Number(id_))
     //@ts-expect-error ignore
     setLock(locks_)
   }
-
 
   useEffect(() => {
     if (chainId && amount) {
@@ -72,6 +78,16 @@ const Deposit = () => {
     setLoad((prev) => ({ ...prev, [action]: status }));
   };
 
+  const checkUserBalance = async (chainId:number)=>{
+    if (!address) return;
+    const balance_ = await erc20Balance(
+      chainId,
+      gobV2[chainId]?.address,
+      gobV2[chainId]?.decimals,
+      address
+    );
+    setUserBalance(balance_);
+  }
 
   const checkAllownceStatus = async (chainId: number) => {
     if (!address) return;
@@ -119,6 +135,7 @@ const Deposit = () => {
       );
 
       await tx.wait();
+      checkUserBalance(chainId);
       Notify({ chainId, txhash: tx.hash });
       handProgress("tokenLocked", true);
       handleLoad("createLock", false);
@@ -225,7 +242,7 @@ const Deposit = () => {
                               Amount to lock
                             </span>
                             <span className="opacity-60 font-light text-xs">
-                              Available 0.0 {gobV2[chainId || 8453]?.symbol}
+                              Balance : {userBalance} {gobV2[chainId || 8453]?.symbol}
                             </span>
                           </div>
                           <div className="py-2">
