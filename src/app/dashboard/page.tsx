@@ -247,7 +247,7 @@ const Dashboard = () => {
 
             <div className='static-card mt-3'>
                 <Link href="/locks">
-                    <div className="bg-[#0E1122] text-white p-4 sm:p-5 rounded-lg flex items-start sm:items-center justify-between hover:shadow-lg w-full">
+                    <div className="bg-[#000E0E] text-white p-4 sm:p-5 rounded-lg flex items-start sm:items-center justify-between hover:shadow-lg w-full">
                         <div className="flex items-start sm:items-center gap-4">
                             <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-accent-10"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-ratio"><rect width="12" height="20" x="6" y="2" rx="2"></rect><rect width="20" height="12" x="2" y="6" rx="2"></rect></svg></div>
                             <div>
@@ -280,7 +280,7 @@ const Dashboard = () => {
                         {/* Button */}
                         <button
                             onClick={() => setOpen(!open)}
-                            className="bg-[#0B0D17] border border-[#1E2233] text-neon-green px-4 py-1.5 rounded-md text-sm flex items-center gap-1 hover:bg-[#12172A] transition"
+                            className="bg-[#000E0E] border border-[#1E2233] text-neon-green px-4 py-1.5 rounded-md text-sm flex items-center gap-1 hover:bg-[#12172A] transition"
                         >
                             Claim All
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6"></path></svg>
@@ -288,7 +288,7 @@ const Dashboard = () => {
 
                         {/* Dropdown */}
                         {open && (
-                            <div className="absolute right-0 z-10 mt-2 w-72 bg-[#0B0D17] rounded-xl shadow-lg border border-[#1E2233]">
+                            <div className="absolute right-0 z-10 mt-2 w-72 bg-[#000E0E] rounded-xl shadow-lg border border-[#1E2233]">
                                 {locks?.map((lock, index) => (
                                     <div key={`${lock.id}-${index}`} className="px-4 py-3 border-b border-[#1E2233] last:border-0">
                                         <div className="flex items-start gap-3">

@@ -8,7 +8,7 @@ interface ClaimCardProps {
 
 const ClaimCard: React.FC<ClaimCardProps> = ({ fBOMBAmount, wstETHAmount, lockId = "68969" }) => {
     return (
-        <div className="bg-[#0B0D17] [align-items:normal] text-white p-4 sm:p-6 rounded-xl flex flex-col sm:flex-row justify-between align-top border border-[#1E2233]">
+        <div className="bg-[#000E0E] [align-items:normal] text-white p-4 sm:p-6 rounded-xl flex flex-col sm:flex-row justify-between align-top border border-[#1E2233]">
             {/* Left side */}
             <div className='border-accent-10 border-b flex flex-col gap-5 lg:border-b-0 lg:border-r lg:mb-0 lg:pb-0 lg:w-80 mb-4 mr-5 pb-4 w-full'>
                 <div className="flex items-start gap-4 w-full sm:w-auto">
