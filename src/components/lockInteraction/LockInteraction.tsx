@@ -109,7 +109,7 @@ const LockInteraction = ({ item }: { item: VeNFT }) => {
           <li>
             <Link
               href={`/lock?transfer=true&id=${item.id}`}
-              className="font-medium text-xs text-blue-500"
+              className="font-medium text-xs text-neon-green"
             >
               Transfer
             </Link>
@@ -118,7 +118,7 @@ const LockInteraction = ({ item }: { item: VeNFT }) => {
         <ul className="list-none pl-0 mb-0 flex items-center justify-start gap-2 mt-2">
           <li className="">
             <button
-              className="font-medium text-xs text-blue-500"
+              className="font-medium text-xs text-neon-green"
               onClick={() => reset(parseInt(item.id))}
               disabled={load["Reset"]}
             >
@@ -128,7 +128,7 @@ const LockInteraction = ({ item }: { item: VeNFT }) => {
           <li className="">
 
             <button
-              className="font-medium text-xs text-blue-500"
+              className="font-medium text-xs text-neon-green"
               onClick={() => withdraw(parseInt(item.id))}
               disabled={load["WithdrawLock"]}
             >

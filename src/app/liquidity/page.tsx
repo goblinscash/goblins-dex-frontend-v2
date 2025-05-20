@@ -65,6 +65,10 @@ const tabs: Tab[] = [
     title: "Stable",
     content: <></>,
   },
+  {
+    title: "Concentrated",
+    content: <></>,
+  },
 ];
 
 const column: Column[] = [
@@ -154,16 +158,17 @@ const column: Column[] = [
 ];
 
 const tabFilter = {
-  0: 1,
+  0: undefined,
   1: -1,
   2: 0,
+  3: 1,
 } as const;
 
 const Liquidity = () => {
   const [activeTab, setActiveTab] = useState<number>(0);
   // const [pools, setPools] = useState([]);
   const [pools, setPools] = useState<FormattedPool[]>([]);
-  const [type, setType] = useState(1);
+  const [type, setType] = useState<number | undefined>(undefined);
   const [pagination, setPagination] = useState({
     count: 10,
     current_page: 1

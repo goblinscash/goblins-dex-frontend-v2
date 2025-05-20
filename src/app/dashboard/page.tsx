@@ -21,6 +21,12 @@ type LockItem = {
     logoUri: string;
 };
 
+const PoolTypeMap: Record<string, string> = {
+    "-1": "Basic Volatile",
+    "0": "Basic Volatile",
+    "1": "Basic Stable",
+}
+
 type DepositItem = {
     id: number;
     tokenPair: {
@@ -124,7 +130,7 @@ const Dashboard = () => {
     const fetchDepositsByAccount = async () => {
         if (!address) return
         const deposits_ = await positions(chainId, 100, 0, address)
-        const pools = await all(chainId, 100, 0, 1);
+        const pools = await all(chainId, 100, 0, undefined);
         console.log("Deposits by account: ", deposits_)
 
         setDeposits(deposits_.map((deposit: Position) => {
@@ -141,7 +147,7 @@ const Dashboard = () => {
                     token0Name: token0.name,
                     token1Name: token1.name,
                     fee: pool.pool_fee || "",
-                    type: pool.type === 0 ? "Basic Volatile" : "Basic Stable",
+                    type: PoolTypeMap[String(pool.type)],
                     token0Amount: String(Number(deposit.amount0) / 10 ** token0.decimals),
                     token1Amount: String(Number(deposit.amount1) / 10 ** token1.decimals),
                     unstaked0Amount: String(Number(deposit.staked0) / 10 ** token0.decimals),
@@ -200,7 +206,7 @@ const Dashboard = () => {
                         </button>
 
                         <Link href="/pools" className="w-1/2 sm:w-auto">
-                            <button className="px-3 py-2 bg-[#3E63DD] text-white font-medium rounded-md hover:bg-[#3555BE] whitespace-nowrap w-full">
+                            <button className="btn flex items-center justify-center commonBtn rounded text-xs font-medium">
                                 <span className="sm:hidden">New</span>
                                 <span className="hidden sm:inline">New Deposit</span>
                             </button>

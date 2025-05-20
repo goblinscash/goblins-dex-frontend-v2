@@ -109,3 +109,12 @@ input[type="number"] {
 .text-neon-green:hover {
   color: #00dd00 !important; /* Slightly darker neon green for hover */
 }
+
+/* Utility class for neon green bg */
+.bg-neon-green {
+  background: #00ff00 !important; /* Neon Green */
+}
+
+.bg-neon-green:hover {
+  background: #00dd00 !important; /* Slightly darker neon green for hover */
+}

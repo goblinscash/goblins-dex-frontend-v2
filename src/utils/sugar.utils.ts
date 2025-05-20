@@ -92,7 +92,7 @@ export type Relay = {
 
 
 //LP Sugar//
-export const all = async (chainId: number, limit: number, offset: number, type: number): Promise<FormattedPool[]> => {
+export const all = async (chainId: number, limit: number, offset: number, type?: number): Promise<FormattedPool[]> => {
     try {
         const instance = new ethers.Contract(
             aerodromeContracts[chainId].lpSugar as string,
@@ -141,7 +141,7 @@ export const all = async (chainId: number, limit: number, offset: number, type: 
             url: `/deposit?id=${index}&token0=${pool[7]}&token1=${pool[10]}&stable=${Number(pool.type) == -1 ? false : true}`
         }));
         //@ts-expect-error ignore warning
-        const pool = type === 1 ? formattedPools : formattedPools.filter((pool) => Number(pool.type) == type)
+        const pool = type === undefined ? formattedPools : formattedPools.filter((pool) => Number(pool.type) == type)
 
         return pool;
     } catch (error) {
@@ -336,7 +336,7 @@ export const lockById = async (chainId: number, tokenId: number) => {
 //Reward Sugar
 export const allWithRewards = async (chainId: number, limit: number, offset: number) => {
     try {
-        const pools = await all(chainId, limit, 0, 1)
+        const pools = await all(chainId, limit, 0, undefined)
 
         console.log(offset)
         // const instance = new ethers.Contract(

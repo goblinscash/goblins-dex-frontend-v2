@@ -28,8 +28,8 @@ const RangeSlider = ({ value, onChange, title, currentLockExpiresAt }) => {
         baseValues.forEach((durationDays, index) => {
             const potentialNewExpiry = currentLockExpiresAt + (durationDays * 24 * 3600);
             // Apply both caps: MAX_EXPIRY_SECONDS and (NOW_SECONDS + FOUR_YEARS_IN_SECONDS)
-            const cappedByMaxExpiry = Math.min(potentialNewExpiry, MAX_EXPIRY_SECONDS);
-            const cappedByFourYears = Math.min(potentialNewExpiry, NOW_SECONDS + FOUR_YEARS_IN_SECONDS);
+            // const cappedByMaxExpiry = Math.min(potentialNewExpiry, MAX_EXPIRY_SECONDS);
+            // const cappedByFourYears = Math.min(potentialNewExpiry, NOW_SECONDS + FOUR_YEARS_IN_SECONDS);
             // The effective cap is the stricter of the two individual caps relative to the potentialNewExpiry
             // However, the problem describes applying caps sequentially or finding the overall minimum
             // The most restrictive end date is min(MAX_EXPIRY_SECONDS, NOW_SECONDS + FOUR_YEARS_IN_SECONDS)

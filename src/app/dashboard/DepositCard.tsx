@@ -73,7 +73,7 @@ const DepositCard: React.FC<DepositCardProps> = ({
                 <span className="text-white text-sm sm:text-base font-medium">{tokenPair.token0Name} / {tokenPair.token1Name}</span>
                 <span className="ml-2 text-gray-400 text-xs sm:text-sm">{tokenPair.fee}</span>
               </div>
-              <div className="text-blue-400 text-xs sm:text-sm">{tokenPair.type}</div>
+              <div className="text-neon-green text-xs sm:text-sm">{tokenPair.type}</div>
             </div>
           </div>
           
@@ -106,7 +106,7 @@ const DepositCard: React.FC<DepositCardProps> = ({
           </div>
           <div className="flex items-center gap-2">
             <span className="text-white opacity-60 text-xs sm:text-sm hidden sm:inline">{isExpanded ? 'Hide' : 'Show'} Details</span>
-            <button className="px-2 sm:px-3 py-1 sm:py-1.5 text-white text-xs sm:text-sm font-medium rounded-md hover:bg-[#3555BE] whitespace-nowrap">
+            <button className="px-2 sm:px-3 py-1 sm:py-1.5 text-neon-green text-xs sm:text-sm font-medium rounded-md whitespace-nowrap">
               Deposit
             </button>
           </div>
@@ -173,7 +173,7 @@ const DepositCard: React.FC<DepositCardProps> = ({
                 {tokenPair.tradingFees1} {tokenPair.token1Name}
               </div>
               <div className="flex mt-4">
-                <button className="px-2 sm:px-3 py-1 text-blue-400 text-xs sm:text-sm font-medium rounded-md hover:bg-[#3A3A3A] transition-colors whitespace-nowrap">
+                <button className="px-2 sm:px-3 py-1 text-neon-green text-xs sm:text-sm font-medium rounded-md transition-colors whitespace-nowrap">
                   Claim
                 </button>
               </div>
