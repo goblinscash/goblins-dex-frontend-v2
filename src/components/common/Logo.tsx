@@ -5,7 +5,7 @@ interface LogoProps {
   chainId: number;
   token?: string;
   margin: number;
-  height: number;
+  height?: number;
 }
 
 const Logo: React.FC<LogoProps> = ({ chainId, token, margin= -10, height= 30 }) => {

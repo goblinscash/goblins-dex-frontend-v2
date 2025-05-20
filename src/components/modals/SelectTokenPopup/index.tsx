@@ -4,26 +4,52 @@ import React, { useState, useEffect, useCallback } from "react";
 import debounce from "lodash.debounce";
 import { shortenPubkey } from "@/utils/math.utils";
 import Logo from "@/components/common/Logo";
+import { tokens } from "@myswap/token-list";
 
-const SelectTokenPopup = ({ tokenBeingSelected, onSelectToken, onClose, chainId, tokens }) => {
-  const [tokenList, setTokenList] = useState([...tokens]);
+type Token = typeof tokens[0];
+
+interface SelectTokenPopupProps {
+  tokenBeingSelected: "token0" | "token1";
+  onSelectToken: (token: Token) => void;
+  onClose: () => void;
+  chainId: number;
+  tokens: Token[];
+}
+
+const SelectTokenPopup: React.FC<SelectTokenPopupProps> = ({ tokenBeingSelected, onSelectToken, onClose, chainId, tokens }) => {
+  const [tokenList, setTokenList] = useState<Token[]>([...tokens]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
 
   // Function to fetch token details with debouncing
   const fetchToken = useCallback(
     debounce(async (query) => {
-      if (!query) return; // Prevent unnecessary calls
-
       setLoading(true);
       setError(null);
 
+      if (!query) {
+        setLoading(false);
+        setTokenList([...tokens]); // Reset to original token list
+        return;
+      };
+
       try {
+        const filtered = tokenList.filter((token) =>
+          token.symbol.toLowerCase().includes(query.toLowerCase()) ||
+          token.name.toLowerCase().includes(query.toLowerCase()) ||
+          token.address.toLowerCase().includes(query.toLowerCase())
+        );
+
+        if (filtered.length > 0) {
+          setTokenList(filtered);
+          return;
+        }
+
         const token = await fetchTokenDetails(chainId, query);
         if (token) {
-          setTokenList([token]); // Store token in state
+          setTokenList([token as unknown as Token]); // Store token in state
         } else {
           setTokenList([]);
           setError("Token not found");
@@ -45,7 +71,7 @@ const SelectTokenPopup = ({ tokenBeingSelected, onSelectToken, onClose, chainId,
   }, [chainId])
 
   // Handle input change
-  const handleChange = (e) => {
+  const handleChange = (e: { target: { value: string; }; }) => {
     const value = e.target.value.trim();
     setSearchQuery(value);
     fetchToken(value);
