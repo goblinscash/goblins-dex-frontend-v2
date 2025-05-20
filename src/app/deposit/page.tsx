@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import ReactConfetti from "react-confetti";
 import { useEthersSigner } from "@/hooks/useEthersSigner";
 import { useAccount, useChainId } from "wagmi";
 import ActButton from "@/components/common/ActButton";
@@ -51,6 +52,7 @@ const Deposit = () => {
     "token0" | "token1" | null
   >(null);
   const [filteredTokenList, setFilteredTokenList] = useState([]);
+  const [showConfetti, setShowConfetti] = useState(false);
 
   const [status, setStatus] = useState<{ [key: string]: boolean }>({
     isTokenSelected: false,
@@ -350,6 +352,7 @@ const Deposit = () => {
       await tx.wait();
       await fetchPoolByIndex(chainId, Number(id));
       handProgress("isCompleted", true);
+      setShowConfetti(true);
 
       handleLoad("addLiquidity", false);
     } catch (error) {
@@ -430,6 +433,15 @@ const Deposit = () => {
 
   return (
     <>
+      {showConfetti && (
+        <ReactConfetti
+          numberOfPieces={200}
+          recycle={false}
+          onConfettiComplete={() => {
+            setShowConfetti(false);
+          }}
+        />
+      )}
       {tokenBeingSelected &&
         createPortal(
           <SelectTokenPopup
