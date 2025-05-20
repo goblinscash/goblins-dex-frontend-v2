@@ -8,6 +8,14 @@ import { VeNFT, Relay, locksByAccount, allRelay, positions, all, Position, Forma
 import { useChainId, useAccount } from 'wagmi';
 import { calculateRebaseAPR, formatLockedFor } from '@/utils/math.utils';
 import { getToken } from '@/utils/token.utils';
+import { ethers } from 'ethers';
+import nfpmAbi from '../../abi/aerodrome/nfpm.json';
+import poolAbi from '../../abi/aerodrome/pool.json';
+import { useEthersSigner } from '@/hooks/useEthersSigner';
+
+const gaugeAbiMinimal = [
+    "function getReward(address lpTokenAddress) external"
+];
 
 type LockItem = {
     id: string;
@@ -22,6 +30,12 @@ type LockItem = {
 
 type DepositItem = {
     id: number;
+    nfpmAddress: string;
+    lpAddress: string;
+    token0Decimals: number;
+    token1Decimals: number;
+    poolType: string;
+    gaugeAddress?: string;
     tokenPair: {
         token0: string;
         token1: string;
@@ -95,6 +109,7 @@ const Dashboard = () => {
 
     const chainId = useChainId();
     const { address } = useAccount();
+    const signer = useEthersSigner();
     const [locks, setLocks] = useState<LockItem[] | null>(null);
     const [deposits, setDeposits] = useState<DepositItem[]>([]);
 
@@ -135,7 +150,13 @@ const Dashboard = () => {
             const rewardToken = getToken(pool.emissions_token);
 
             const depositInfo = {
-                id: pool.type > 0 ? Number(deposit.id) : index + 1,
+                id: Number(deposit.id),
+                nfpmAddress: pool.nfpm,
+                lpAddress: pool.lp,
+                token0Decimals: token0.decimals,
+                token1Decimals: token1.decimals,
+                poolType: PoolTypeMap[String(pool.type)],
+                gaugeAddress: pool.gauge,
                 tokenPair: {
                     token0: pool.token0,
                     token1: pool.token1,
@@ -173,6 +194,48 @@ const Dashboard = () => {
             [id]: expanded
         }));
     };
+
+    async function handleClaimFees(positionId: number, nfpmContractAddress: string, lpAddress: string, poolType: string, expectedAmount0: string, expectedAmount1: string, token0Decimals: number, token1Decimals: number, gaugeAddress?: string) {
+        if (!signer || !address) {
+            console.error("Signer or address not available");
+            alert('Failed to claim fees: Signer or address not available.');
+            return;
+        }
+
+        let tx;
+
+        try {
+            if (poolType === PoolTypeMap["1"]) { // Concentrated Liquidity
+                const nfpmContract = new ethers.Contract(nfpmContractAddress, nfpmAbi, signer);
+                const params = {
+                    tokenId: positionId,
+                    recipient: address,
+                    amount0Max: ethers.utils.parseUnits(expectedAmount0, token0Decimals),
+                    amount1Max: ethers.utils.parseUnits(expectedAmount1, token1Decimals),
+                };
+                tx = await nfpmContract.collect(params);
+            } else if (poolType === PoolTypeMap["0"]) { // Basic Stable (sAMM)
+                if (!gaugeAddress) {
+                    console.error("Gauge address is missing for sAMM pool fee claim.");
+                    alert("Failed to claim fees: Gauge address not found for this pool.");
+                    return;
+                }
+                const gaugeContract = new ethers.Contract(gaugeAddress, gaugeAbiMinimal, signer);
+                tx = await gaugeContract.getReward(lpAddress);
+            } else {
+                console.error("Unsupported pool type for claiming fees:", poolType);
+                alert("Fee claiming for this pool type is not supported yet.");
+                return;
+            }
+
+            await tx.wait();
+            alert('Fees claimed successfully!');
+            fetchDepositsByAccount(); // Refresh data
+        } catch (error) {
+            console.error("Fee claim failed:", error);
+            alert('Fee claim failed.');
+        }
+    }
 
     return (
         <div className='container px-3 py-5'>
@@ -269,64 +332,27 @@ const Dashboard = () => {
             <div className='claim-section mt-8'>
                 <div className="w-full flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-5">
                     <div className="flex items-center gap-2">
-                        <h1 className="text-xl sm:text-2xl font-bold text-white whitespace-nowrap">Voting Rewards</h1>
+                        <h1 className="text-xl sm:text-2xl font-bold text-white whitespace-nowrap">Claimable LP Fees</h1>
                         <button className="w-5 h-5 rounded-full bg-[#2A2A2A] flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#3A3A3A]">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-3 h-3">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         </button>
                     </div>
-                    <div className="relative inline-block text-left">
-                        {/* Button */}
-                        <button
-                            onClick={() => setOpen(!open)}
-                            className="bg-[#000E0E] border border-[#1E2233] text-neon-green px-4 py-1.5 rounded-md text-sm flex items-center gap-1 hover:bg-[#12172A] transition"
-                        >
-                            Claim All
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6"></path></svg>
-                        </button>
-
-                        {/* Dropdown */}
-                        {open && (
-                            <div className="absolute right-0 z-10 mt-2 w-72 bg-[#000E0E] rounded-xl shadow-lg border border-[#1E2233]">
-                                {locks?.map((lock, index) => (
-                                    <div key={`${lock.id}-${index}`} className="px-4 py-3 border-b border-[#1E2233] last:border-0">
-                                        <div className="flex items-start gap-3">
-                                            <img
-                                                src={lock.logoUri}
-                                                alt={lock.tokenSymbol}
-                                                className="w-7 h-7 mt-0.5 rounded-md object-cover"
-                                            />
-                                            <div className="flex flex-col text-sm text-white">
-                                                <div className="flex items-center gap-1 font-semibold">
-                                                    Lock #{lock.id}
-                                                    {lock.type === 'locked' ? (
-                                                        <svg className="ml-2 w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                                            <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"></path>
-                                                        </svg>) : (
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-orbit"><circle cx="12" cy="12" r="3"></circle><circle cx="19" cy="5" r="2"></circle><circle cx="5" cy="19" r="2"></circle><path d="M10.4 21.9a10 10 0 0 0 9.941-15.416"></path><path d="M13.5 2.1a10 10 0 0 0-9.841 15.416"></path></svg>)}
-                                                </div>
-                                                <div className="text-xs text-gray-400">
-                                                    {lock.amount} {lock.tokenSymbol} {lock.lockedFor}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <button className="mt-2 text-neon-green text-xs font-medium hover:underline">
-                                            Claim
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
                 </div>
                 <div className="space-y-5 mt-3">
-                    {[1, 2, 3, 4].map((index) => (
-                        <ClaimCard 
-                            key={`claim-${index}`}
-                            lockId={`68969-${index}`}
-                            fBOMBAmount="0.03499" 
-                            wstETHAmount="0.0" 
+                    {deposits.filter(d => parseFloat(d.tokenPair.tradingFees0) > 0 || parseFloat(d.tokenPair.tradingFees1) > 0).map((deposit) => (
+                        <ClaimCard
+                            key={deposit.id}
+                            positionId={deposit.id}
+                            nfpmAddress={deposit.nfpmAddress}
+                            token0Symbol={deposit.tokenPair.token0Name}
+                            token1Symbol={deposit.tokenPair.token1Name}
+                            amount0={deposit.tokenPair.tradingFees0}
+                            amount1={deposit.tokenPair.tradingFees1}
+                            onClaim={() => handleClaimFees(deposit.id, deposit.nfpmAddress, deposit.lpAddress, deposit.poolType, deposit.tokenPair.tradingFees0, deposit.tokenPair.tradingFees1, deposit.token0Decimals, deposit.token1Decimals, deposit.gaugeAddress)}
+                            token0Logo={getToken(deposit.tokenPair.token0)?.logoURI || ""}
+                            token1Logo={getToken(deposit.tokenPair.token1)?.logoURI || ""}
                         />
                     ))}
                 </div>
