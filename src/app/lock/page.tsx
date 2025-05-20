@@ -267,7 +267,7 @@ const Deposit = () => {
                             </div>
                           </div>
                           <div className="py-2">
-                            <RangeSlider value={duration} onChange={setDuration} title="Locking for" />
+                            <RangeSlider currentLockExpiresAt={lock?.expires_at} value={duration} onChange={setDuration} title="Locking for" />
                           </div>
                           <div className="py-2">
                             <div className="flex p-4 rounded-xl itmes-center gap-2 bg-[#1c1d2a] text-[#a55e10]">

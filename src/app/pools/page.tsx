@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import SelectTokenPopup from "@/components/modals/SelectTokenPopup";
+import SelectTokenPopup, { Token } from "@/components/modals/SelectTokenPopup";
 import Logo from "@/components/common/Logo";
 import { useChainId } from "wagmi";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -10,13 +10,6 @@ import { stableTokens } from "@/utils/constant.utils";
 import ListLayout from "@/components/lockRow";
 import { fetchV2Pools } from "@/utils/web3.utils";
 import Link from "next/link";
-
-export interface Token {
-  address: string;
-  symbol: string;
-  decimals: number;
-  balance: number;
-}
 
 type Column = {
   accessor: string;

@@ -64,11 +64,11 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
         if (lock && lock.expires_at && typeof duration === 'number' && duration >= 0) { // ensure duration is valid
             const current_expiry_ts = Number(lock.expires_at);
             // Proposed new date based on current expiry + selected duration (in days)
-            let proposed_new_expiry_ts = current_expiry_ts + (duration * 24 * 3600);
+            const proposed_new_expiry_ts = current_expiry_ts + (duration * 24 * 3600);
 
             // Apply 4-years-from-now cap
             const max_expiry_from_now_ts_calc = Math.floor(Date.now() / 1000) + FOUR_YEARS_IN_SECONDS;
-            let capped_expiry_ts = Math.min(proposed_new_expiry_ts, max_expiry_from_now_ts_calc);
+            const capped_expiry_ts = Math.min(proposed_new_expiry_ts, max_expiry_from_now_ts_calc);
 
             if (capped_expiry_ts <= current_expiry_ts && duration > 0) { // duration > 0 means an extension was intended
                 // This case implies the lock is already past all caps or extension is too small to overcome current date if current is past caps.
@@ -112,7 +112,7 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
             const proposed_new_expiry_ts = current_expiry_ts + (duration * 24 * 3600);
 
             const max_expiry_from_now_ts = Math.floor(Date.now() / 1000) + FOUR_YEARS_IN_SECONDS;
-            let final_new_expiry_ts = Math.min(proposed_new_expiry_ts, max_expiry_from_now_ts);
+            const final_new_expiry_ts = Math.min(proposed_new_expiry_ts, max_expiry_from_now_ts);
 
             if (final_new_expiry_ts <= current_expiry_ts) {
                 toast.warn("New expiry date must be after the current expiry date and within limits.");

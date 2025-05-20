@@ -6,10 +6,10 @@ import { shortenPubkey } from "@/utils/math.utils";
 import Logo from "@/components/common/Logo";
 import { tokens } from "@myswap/token-list";
 
-type Token = typeof tokens[0];
+export type Token = typeof tokens[0] & { balance?: number };
 
 interface SelectTokenPopupProps {
-  tokenBeingSelected: "token0" | "token1";
+  tokenBeingSelected: "token0" | "token1" | "token";
   onSelectToken: (token: Token) => void;
   onClose: () => void;
   chainId: number;

@@ -4,7 +4,7 @@ import DepositCard from './DepositCard';
 import LockCard from './LockCard';
 import ClaimCard from './ClaimCard';
 import Link from 'next/link';
-import { VeNFT, Relay, locksByAccount, allRelay, positions, all, Position, FormattedPool } from '@/utils/sugar.utils';
+import { VeNFT, Relay, locksByAccount, allRelay, positions, all, Position, FormattedPool, PoolTypeMap } from '@/utils/sugar.utils';
 import { useChainId, useAccount } from 'wagmi';
 import { calculateRebaseAPR, formatLockedFor, formatTimestamp } from '@/utils/math.utils';
 import { tokens } from "@myswap/token-list";
@@ -20,12 +20,6 @@ type LockItem = {
     rebaseAmount: string;
     logoUri: string;
 };
-
-const PoolTypeMap: Record<string, string> = {
-    "-1": "Basic Volatile",
-    "0": "Basic Volatile",
-    "1": "Basic Stable",
-}
 
 type DepositItem = {
     id: number;
