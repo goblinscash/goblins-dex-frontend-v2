@@ -24,6 +24,8 @@ type LockItem = {
 type DepositItem = {
     id: number;
     tokenPair: {
+        token0: string;
+        token1: string;
         token0Name: string;
         token1Name: string;
         fee: string;
@@ -123,11 +125,10 @@ const Dashboard = () => {
 
     const fetchDepositsByAccount = async () => {
         if (!address) return
-        const deposits_ = await positions(chainId, 100, 0, address)
-        const pools = await all(chainId, 100, 0, undefined);
+        const [deposits_, pools] = await Promise.all([positions(chainId, 100, 0, address), all(chainId, 100, 0, undefined)]);
         console.log("Deposits by account: ", deposits_)
 
-        setDeposits(deposits_.map((deposit: Position) => {
+        setDeposits(deposits_.map((deposit: Position, index: number) => {
             const pool = pools.find((pool: FormattedPool) => pool.lp === deposit.lp)!;
 
             const allTokensForChain = [...tokens, ...stableTokens(chainId)];
@@ -136,8 +137,10 @@ const Dashboard = () => {
             const rewardToken = allTokensForChain.find(token => token.address.toLowerCase() === pool.emissions_token.toLowerCase());
 
             const depositInfo = {
-                id: Number(deposit.id),
+                id: pool.type > 0 ? Number(deposit.id) : index + 1,
                 tokenPair: {
+                    token0: pool.token0,
+                    token1: pool.token1,
                     token0Name: token0.name,
                     token1Name: token1.name,
                     fee: pool.pool_fee || "",

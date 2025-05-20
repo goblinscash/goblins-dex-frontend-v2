@@ -1,7 +1,11 @@
+import Logo from '@/components/common/Logo';
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
+import { useChainId } from 'wagmi';
 
 interface TokenPair {
+  token0: string;
+  token1: string;
   token0Name: string;
   token1Name: string;
   fee: string;
@@ -32,6 +36,7 @@ const DepositCard: React.FC<DepositCardProps> = ({
   forceExpanded = false,
   onExpandChange
 }) => {
+  const chainId = useChainId();
   const [isExpanded, setIsExpanded] = useState(false);
 
   // Update local expanded state when forceExpanded changes
@@ -54,17 +59,29 @@ const DepositCard: React.FC<DepositCardProps> = ({
         <div className="flex flex-col sm:flex-row justify-between gap-2">
           <div className="flex items-center">
             {/* Token Icons */}
-            <div className="flex items-center">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-purple-600 flex items-center justify-center z-10">
-                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2Z" />
-                </svg>
-              </div>
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-yellow-500 flex items-center justify-center -ml-3 sm:-ml-4">
-                <svg className="w-5 h-5 sm:w-6 sm:h-6 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2Z" />
-                </svg>
-              </div>
+            <div className="flex items-center gap-3">
+              <ul className="list-none pl-3 mb-0 flex-shrink-0 flex items-center">
+                <li className="" style={{ marginLeft: -10 }}>
+                  <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
+                    <Logo
+                      chainId={chainId}
+                      token={tokenPair.token0}
+                      margin={0}
+                      height={28}
+                    />{" "}
+                  </div>
+                </li>
+                <li className="" style={{ marginLeft: -10 }}>
+                  <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
+                    <Logo
+                      chainId={chainId}
+                      token={tokenPair.token1}
+                      margin={0}
+                      height={28}
+                    />{" "}
+                  </div>
+                </li>
+              </ul>
             </div>
             
             {/* Token info */}

@@ -94,8 +94,8 @@ export type Relay = {
 //LP Sugar//
 export const PoolTypeMap: Record<string, string> = {
     "-1": "Basic Volatile",
-    "0": "Basic Volatile",
-    "1": "Basic Stable",
+    "0": "Basic Stable",
+    "1": "Concentrated",
 }
 
 export const all = async (chainId: number, limit: number, offset: number, type?: number): Promise<FormattedPool[]> => {
