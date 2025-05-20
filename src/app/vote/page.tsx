@@ -155,7 +155,7 @@ const Vote = () => {
               <div className="content">
                 <p className="m-0 text-muted">{item.symbol}</p>
                 <div className="flex items-center gap-2 mt-2 ">
-                  <p className="m-0 text-xs text-yellow-500">
+                  <p className="m-0 text-xs text-[#00ff4e]">
                     <span className="me-2"> (x)</span> Basic{" "}
                     {Number(item.type) == 0 ? "Stable" : "Volatile"}
                   </p>

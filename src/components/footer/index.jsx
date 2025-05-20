@@ -17,7 +17,7 @@ const Footer = () => {
                   <li className="">
                     <Link
                       href={"/tokenlist"}
-                      className="font-medium text-sm transition duration-400 text-gray-500 hover:text-[#00ff4e]"
+                      className="font-medium text-sm transition duration-400  text-[#00ff4e] hover:text-white-500"
                     >
                       Tokens
                     </Link>

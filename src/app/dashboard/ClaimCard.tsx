@@ -25,7 +25,7 @@ const ClaimCard: React.FC<ClaimCardProps> = ({ fBOMBAmount, wstETHAmount, lockId
                             <span className="text-xs bg-[#1E2233] text-gray-300 px-1.5 py-0.5 rounded">0.0405%</span>
                             <span className="text-xs bg-[#1E2233] text-gray-400 px-1.5 py-0.5 rounded">ALM</span>
                         </div>
-                        <div className="text-sm text-blue-400 hover:underline cursor-pointer">
+                        <div className="text-sm text-[#00ff4e] hover:underline cursor-pointer">
                             Concentrated Volatile 100
                         </div>
                     </div>
@@ -64,7 +64,7 @@ const ClaimCard: React.FC<ClaimCardProps> = ({ fBOMBAmount, wstETHAmount, lockId
                     <span className="text-white">WELL</span>
                     <span className="text-[10px] text-blue-400">INCENTIVE</span>
                 </div>
-                <button className="text-blue-400 text-xs font-medium mt-1 text-end hover:underline">
+                <button className="text-[#00ff4e] text-xs font-medium mt-1 text-end hover:underline">
                     Claim
                 </button>
             </div>

@@ -28,7 +28,7 @@ interface FilterButtonProps {
 
 const FilterButton = styled.button<FilterButtonProps>`
 	background-color: ${props => props.active ? 'rgba(255, 255, 255, 0.1)' : 'transparent'};
-	color: ${props => props.active ? '#fff' : '#888'};
+	color: ${props => props.active ? '#fff' : '#00ff4e'};
 	border: 1px solid ${props => props.active ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.1)'};
 	
 	&:hover {

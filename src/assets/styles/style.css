@@ -83,7 +83,7 @@ input[type="number"] {
 
 /* Applied to the LI or a parent of A for an inactive menu item */
 .cstmMenu ul li.menu-item-inactive a {
-  color: #00ff00; /* Neon Green */
+  color: #00ff4e; /* Neon Green */
 }
 
 .cstmMenu ul li.menu-item-inactive a:hover {
@@ -103,7 +103,7 @@ input[type="number"] {
 
 /* Utility class for neon green text */
 .text-neon-green {
-  color: #00ff00 !important; /* Neon Green */
+  color: #00ff4e !important; /* Neon Green */
 }
 
 .text-neon-green:hover {
@@ -112,7 +112,7 @@ input[type="number"] {
 
 /* Utility class for neon green bg */
 .bg-neon-green {
-  background: #00ff00 !important; /* Neon Green */
+  background: #00ff4e !important; /* Neon Green */
 }
 
 .bg-neon-green:hover {

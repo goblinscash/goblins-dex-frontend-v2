@@ -255,7 +255,7 @@ const Liquidity = () => {
                       key={key}
                       onClick={() => showTab(key)}
                       className={`${activeTab === key && "active"
-                        } tab-button font-medium relative py-2 flex-shrink-0  text-xs text-gray-400`}
+                        } tab-button font-medium relative py-2 flex-shrink-0  text-xs text-[#00ff4e]`}
                     >
                       {item.title}
                     </button>
