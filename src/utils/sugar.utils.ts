@@ -92,7 +92,13 @@ export type Relay = {
 
 
 //LP Sugar//
-export const all = async (chainId: number, limit: number, offset: number, type: number): Promise<FormattedPool[]> => {
+export const PoolTypeMap: Record<string, string> = {
+    "-1": "Basic Volatile",
+    "0": "Basic Stable",
+    "1": "Concentrated",
+}
+
+export const all = async (chainId: number, limit: number, offset: number, type?: number): Promise<FormattedPool[]> => {
     try {
         const instance = new ethers.Contract(
             aerodromeContracts[chainId].lpSugar as string,
@@ -100,12 +106,12 @@ export const all = async (chainId: number, limit: number, offset: number, type: 
             new ethers.JsonRpcProvider(rpcUrls[chainId])
         );
 
-        const poolsRaw = await instance.all(limit, offset);
+        const poolsRaw = await instance.all(500, 0);
 
         //@ts-expect-error ignore warning
         const formattedPools = poolsRaw.map((pool, index) => ({
             chainId: chainId,
-            id: index,
+            id: offset+index,
             lp: pool[0],
             symbol: pool[1],
             decimals: formatValue(pool[2]),
@@ -139,11 +145,12 @@ export const all = async (chainId: number, limit: number, offset: number, type: 
             apr: 0,
             volume: 0,
             url: `/deposit?id=${index}&token0=${pool[7]}&token1=${pool[10]}&stable=${Number(pool.type) == -1 ? false : true}`
-        }));
-        //@ts-expect-error ignore warning
-        const pool = type === 1 ? formattedPools : formattedPools.filter((pool) => Number(pool.type) == type)
+        })) as FormattedPool[];
 
-        return pool;
+        const filteredPools = type === undefined ? formattedPools : formattedPools.filter((pool) => Number(pool.type) == type)
+        const pools = filteredPools.filter((pool, index) => index >= offset && index < offset + limit);
+
+        return pools;
     } catch (error) {
         console.log(error, chainId)
         return []
@@ -336,7 +343,7 @@ export const lockById = async (chainId: number, tokenId: number) => {
 //Reward Sugar
 export const allWithRewards = async (chainId: number, limit: number, offset: number) => {
     try {
-        const pools = await all(chainId, limit, 0, 1)
+        const pools = await all(chainId, limit, 0, undefined)
 
         console.log(offset)
         // const instance = new ethers.Contract(

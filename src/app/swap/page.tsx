@@ -14,15 +14,13 @@ import { tokens } from "@myswap/token-list";
 import universalRouterAbi from "../../abi/aerodrome/universalRouter.json";
 import { aerodromeContracts } from "@/utils/config.utils";
 import { useCallback, useEffect, useState } from "react";
-import { Token } from "../pools/page";
 import { useSearchParams } from "next/navigation";
 import { createPortal } from "react-dom";
-import SelectTokenPopup from "@/components/modals/SelectTokenPopup";
+import SelectTokenPopup, { Token } from "@/components/modals/SelectTokenPopup";
 import Logo from "@/components/common/Logo";
 import { CommandType, RoutePlanner } from "@/utils/planner";
 import { fromUnits, toUnits } from "@/utils/math.utils";
 // import axios from "axios";
-//@ts-expect-error ignore
 import debounce from "lodash.debounce";
 import BtnLoader from "@/components/common/BtnLoader";
 import { stableTokens } from "@/utils/constant.utils";
@@ -86,13 +84,13 @@ const Swap = () => {
       symbol: tokens_[0].symbol,
       decimals: tokens_[0].decimals,
       balance: 0
-    });
+    } as Token);
     setToken1({
       address: tokens_[1].address,
       symbol: tokens_[1].symbol,
       decimals: tokens_[1].decimals,
       balance: 0
-    });
+    } as Token);
   };
 
   const swapTokens = () => {

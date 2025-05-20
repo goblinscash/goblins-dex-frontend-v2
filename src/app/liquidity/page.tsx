@@ -7,6 +7,7 @@ import { all, FormattedPool } from "@/utils/sugar.utils";
 import Link from "next/link";
 import Logo from "@/components/common/Logo";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { getToken } from "@/utils/token.utils";
 const Nav = styled.div`
   button {
     &:after {
@@ -65,6 +66,10 @@ const tabs: Tab[] = [
     title: "Stable",
     content: <></>,
   },
+  {
+    title: "Concentrated",
+    content: <></>,
+  },
 ];
 
 const column: Column[] = [
@@ -97,7 +102,7 @@ const column: Column[] = [
             </li>
           </ul>
           <div className="content">
-            <p className="m-0 text-muted">{item?.symbol}</p>
+            <p className="m-0 text-muted">{item?.symbol || `cAMM-${getToken(item!.token0)!.symbol}/${getToken(item!.token1)!.symbol}`}</p>
           </div>
         </div>
       );
@@ -154,16 +159,17 @@ const column: Column[] = [
 ];
 
 const tabFilter = {
-  0: 1,
+  0: undefined,
   1: -1,
   2: 0,
+  3: 1,
 } as const;
 
 const Liquidity = () => {
   const [activeTab, setActiveTab] = useState<number>(0);
   // const [pools, setPools] = useState([]);
   const [pools, setPools] = useState<FormattedPool[]>([]);
-  const [type, setType] = useState(1);
+  const [type, setType] = useState<number | undefined>(undefined);
   const [pagination, setPagination] = useState({
     count: 10,
     current_page: 1

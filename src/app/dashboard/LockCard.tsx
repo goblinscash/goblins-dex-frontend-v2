@@ -100,26 +100,26 @@ const LockCard: React.FC<LockCardProps> = ({ lock }) => {
           <div className="flex flex-wrap gap-2">
             <Link
               href={`/lock?increase=true&id=${lock.id}`}
-              className="px-3 py-1.5 bg-transparent text-blue-400 font-medium rounded-md hover:bg-[#1E1E1E] transition-colors text-xs sm:text-sm whitespace-nowrap"
+              className="px-3 py-1.5 bg-transparent text-neon-green font-medium rounded-md transition-colors text-xs sm:text-sm whitespace-nowrap"
             >
               Increase
             </Link>
             <Link
               href={`/lock?extend=true&id=${lock.id}`}
-              className="px-3 py-1.5 bg-transparent text-gray-400 font-medium rounded-md hover:bg-[#1E1E1E] transition-colors text-xs sm:text-sm whitespace-nowrap"
+              className="px-3 py-1.5 bg-transparent text-neon-green font-medium rounded-md transition-colors text-xs sm:text-sm whitespace-nowrap"
             >
               Extend
             </Link>
             <Link
               href={`/lock?merge=true&id=${lock.id}`}
-              className="px-3 py-1.5 bg-transparent text-gray-400 font-medium rounded-md hover:bg-[#1E1E1E] transition-colors text-xs sm:text-sm whitespace-nowrap"
+              className="px-3 py-1.5 bg-transparent text-neon-green font-medium rounded-md transition-colors text-xs sm:text-sm whitespace-nowrap"
             >
               Merge
             </Link>
           </div>
 
           <button
-            className="px-3 py-1.5 bg-transparent text-blue-400 font-medium rounded-md hover:bg-[#1E1E1E] transition-colors text-xs sm:text-sm whitespace-nowrap mt-2 sm:mt-0"
+            className="px-3 py-1.5 bg-transparent text-neon-green font-medium rounded-md transition-colors text-xs sm:text-sm whitespace-nowrap mt-2 sm:mt-0"
             onClick={() => claim()}
             disabled={load["Claim"]}
           >

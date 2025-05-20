@@ -4,10 +4,10 @@ import DepositCard from './DepositCard';
 import LockCard from './LockCard';
 import ClaimCard from './ClaimCard';
 import Link from 'next/link';
-import { VeNFT, Relay, locksByAccount, allRelay, positions, all, Position, FormattedPool } from '@/utils/sugar.utils';
+import { VeNFT, Relay, locksByAccount, allRelay, positions, all, Position, FormattedPool, PoolTypeMap } from '@/utils/sugar.utils';
 import { useChainId, useAccount } from 'wagmi';
-import { calculateRebaseAPR, formatLockedFor, formatTimestamp } from '@/utils/math.utils';
-import { tokens } from "@myswap/token-list";
+import { calculateRebaseAPR, formatLockedFor } from '@/utils/math.utils';
+import { getToken } from '@/utils/token.utils';
 
 type LockItem = {
     id: string;
@@ -23,6 +23,8 @@ type LockItem = {
 type DepositItem = {
     id: number;
     tokenPair: {
+        token0: string;
+        token1: string;
         token0Name: string;
         token1Name: string;
         fee: string;
@@ -112,8 +114,8 @@ const Dashboard = () => {
             amount: String(parseFloat(lock.amount) / 10 ** parseInt(lock.decimals)),
             lockedFor: formatLockedFor(Number(lock.expires_at)),
             type: "locked",
-            tokenSymbol: tokens.find(token => token.address === lock.token.toLowerCase())!.symbol,
-            logoUri: tokens.find(token => token.address === lock.token.toLowerCase())!.logoURI,
+            tokenSymbol: getToken(lock.token)!.symbol,
+            logoUri: getToken(lock.token)!.logoURI,
             rebaseApr: `${calculateRebaseAPR(lock.rebase_amount, lock.amount, lock.decimals)}%`,
             rebaseAmount: String(parseFloat(lock.rebase_amount) / 10 ** parseInt(lock.decimals)),
             } as LockItem)
@@ -122,24 +124,25 @@ const Dashboard = () => {
 
     const fetchDepositsByAccount = async () => {
         if (!address) return
-        const deposits_ = await positions(chainId, 100, 0, address)
-        const pools = await all(chainId, 100, 0, 1);
+        const [deposits_, pools] = await Promise.all([positions(chainId, 100, 0, address), all(chainId, 100, 0, undefined)]);
         console.log("Deposits by account: ", deposits_)
 
-        setDeposits(deposits_.map((deposit: Position) => {
+        setDeposits(deposits_.map((deposit: Position, index: number) => {
             const pool = pools.find((pool: FormattedPool) => pool.lp === deposit.lp)!;
 
-            const token0 = tokens.find(token => token.address === pool.token0.toLowerCase())!;
-            const token1 = tokens.find(token => token.address === pool.token1.toLowerCase())!;
-            const rewardToken = tokens.find(token => token.address === pool.emissions_token.toLowerCase());
+            const token0 = getToken(pool.token0)!;
+            const token1 = getToken(pool.token1)!;
+            const rewardToken = getToken(pool.emissions_token);
 
             const depositInfo = {
-                id: Number(deposit.id),
+                id: pool.type > 0 ? Number(deposit.id) : index + 1,
                 tokenPair: {
+                    token0: pool.token0,
+                    token1: pool.token1,
                     token0Name: token0.name,
                     token1Name: token1.name,
                     fee: pool.pool_fee || "",
-                    type: pool.type === 0 ? "Basic Volatile" : "Basic Stable",
+                    type: PoolTypeMap[String(pool.type)],
                     token0Amount: String(Number(deposit.amount0) / 10 ** token0.decimals),
                     token1Amount: String(Number(deposit.amount1) / 10 ** token1.decimals),
                     unstaked0Amount: String(Number(deposit.staked0) / 10 ** token0.decimals),
@@ -198,7 +201,7 @@ const Dashboard = () => {
                         </button>
 
                         <Link href="/pools" className="w-1/2 sm:w-auto">
-                            <button className="px-3 py-2 bg-[#3E63DD] text-white font-medium rounded-md hover:bg-[#3555BE] whitespace-nowrap w-full">
+                            <button className="btn flex items-center justify-center commonBtn rounded text-xs font-medium">
                                 <span className="sm:hidden">New</span>
                                 <span className="hidden sm:inline">New Deposit</span>
                             </button>
@@ -277,7 +280,7 @@ const Dashboard = () => {
                         {/* Button */}
                         <button
                             onClick={() => setOpen(!open)}
-                            className="bg-[#0B0D17] border border-[#1E2233] text-white px-4 py-1.5 rounded-md text-sm flex items-center gap-1 hover:bg-[#12172A] transition"
+                            className="bg-[#0B0D17] border border-[#1E2233] text-neon-green px-4 py-1.5 rounded-md text-sm flex items-center gap-1 hover:bg-[#12172A] transition"
                         >
                             Claim All
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down"><path d="m6 9 6 6 6-6"></path></svg>
@@ -308,7 +311,7 @@ const Dashboard = () => {
                                                 </div>
                                             </div>
                                         </div>
-                                        <button className="mt-2 text-blue-400 text-xs font-medium hover:underline">
+                                        <button className="mt-2 text-neon-green text-xs font-medium hover:underline">
                                             Claim
                                         </button>
                                     </div>

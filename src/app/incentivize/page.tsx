@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import SelectTokenPopup from "@/components/modals/SelectTokenPopup";
+import SelectTokenPopup, { Token } from "@/components/modals/SelectTokenPopup";
 import Logo from "@/components/common/Logo";
 import { useAccount, useChainId } from "wagmi";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -21,14 +21,6 @@ import { useEthersSigner } from "@/hooks/useEthersSigner";
 import voterAbi from "../../abi/aerodrome/voter.json";
 import bribeVotingRewardAbi from "../../abi/aerodrome/bribeVotingReward.json";
 import Notify from "@/components/common/Notify";
-
-
-export interface Token {
-  address: string;
-  symbol: string;
-  decimals: number;
-  balance: number;
-}
 
 type Column = {
   accessor: string;

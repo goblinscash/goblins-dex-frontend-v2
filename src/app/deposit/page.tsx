@@ -18,11 +18,10 @@ import voterAbi from "../../abi/aerodrome/voter.json";
 import { ethers, ZeroAddress } from "ethers";
 import styled, { keyframes } from "styled-components";
 import { useSearchParams } from "next/navigation";
-import { Token } from "../pools/page";
 import Logo from "@/components/common/Logo";
-import { byIndex, FormattedPool } from "@/utils/sugar.utils";
+import { byIndex, FormattedPool, PoolTypeMap } from "@/utils/sugar.utils";
 import Progress from "@/components/common/Progress";
-import SelectTokenPopup from "@/components/modals/SelectTokenPopup";
+import SelectTokenPopup, { Token } from "@/components/modals/SelectTokenPopup";
 import { createPortal } from "react-dom";
 import { tokens } from "@myswap/token-list";
 import { stableTokens } from "@/utils/constant.utils";
@@ -113,7 +112,7 @@ const Deposit = () => {
       symbol: tokens_[0].symbol,
       decimals: tokens_[0].decimals,
       balance: 0,
-    });
+    } as Token);
   };
 
   useEffect(() => {
@@ -171,9 +170,9 @@ const Deposit = () => {
     token1: string
   ) => {
     const token_ = await fetchTokenDetails(chainId, token0);
-    setToken0(token_);
+    setToken0(token_ as Token);
     const _token = await fetchTokenDetails(chainId, token1);
-    setToken1(_token);
+    setToken1(_token as Token);
   };
 
   const handProgress = (action: string, status: boolean) => {
@@ -783,7 +782,7 @@ const Deposit = () => {
                               </p>
                               <ul className="list-none pl-0 mb-0 flex items-center gap-2">
                                 <li className="text-yellow-500 text-xs">
-                                  (x) Basic Volatile
+                                  (x) {PoolTypeMap[String(pool?.type)]}
                                 </li>
                                 <li className="text-xs flex items-center gap-2">
                                   {Number(pool?.pool_fee) / 100}% {infoIcn}
