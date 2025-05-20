@@ -6,9 +6,8 @@ import ClaimCard from './ClaimCard';
 import Link from 'next/link';
 import { VeNFT, Relay, locksByAccount, allRelay, positions, all, Position, FormattedPool, PoolTypeMap } from '@/utils/sugar.utils';
 import { useChainId, useAccount } from 'wagmi';
-import { calculateRebaseAPR, formatLockedFor, formatTimestamp } from '@/utils/math.utils';
-import { tokens } from "@myswap/token-list";
-import { stableTokens } from '@/utils/constant.utils';
+import { calculateRebaseAPR, formatLockedFor } from '@/utils/math.utils';
+import { getToken } from '@/utils/token.utils';
 
 type LockItem = {
     id: string;
@@ -115,8 +114,8 @@ const Dashboard = () => {
             amount: String(parseFloat(lock.amount) / 10 ** parseInt(lock.decimals)),
             lockedFor: formatLockedFor(Number(lock.expires_at)),
             type: "locked",
-            tokenSymbol: tokens.find(token => token.address.toLowerCase() === lock.token.toLowerCase())!.symbol,
-            logoUri: tokens.find(token => token.address.toLowerCase() === lock.token.toLowerCase())!.logoURI,
+            tokenSymbol: getToken(lock.token)!.symbol,
+            logoUri: getToken(lock.token)!.logoURI,
             rebaseApr: `${calculateRebaseAPR(lock.rebase_amount, lock.amount, lock.decimals)}%`,
             rebaseAmount: String(parseFloat(lock.rebase_amount) / 10 ** parseInt(lock.decimals)),
             } as LockItem)
@@ -131,10 +130,9 @@ const Dashboard = () => {
         setDeposits(deposits_.map((deposit: Position, index: number) => {
             const pool = pools.find((pool: FormattedPool) => pool.lp === deposit.lp)!;
 
-            const allTokensForChain = [...tokens, ...stableTokens(chainId)];
-            const token0 = allTokensForChain.find(token => token.address.toLowerCase() === pool.token0.toLowerCase())!;
-            const token1 = allTokensForChain.find(token => token.address.toLowerCase() === pool.token1.toLowerCase())!;
-            const rewardToken = allTokensForChain.find(token => token.address.toLowerCase() === pool.emissions_token.toLowerCase());
+            const token0 = getToken(pool.token0)!;
+            const token1 = getToken(pool.token1)!;
+            const rewardToken = getToken(pool.emissions_token);
 
             const depositInfo = {
                 id: pool.type > 0 ? Number(deposit.id) : index + 1,
