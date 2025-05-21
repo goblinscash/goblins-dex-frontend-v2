@@ -87,17 +87,17 @@ export const aerodromeContracts: AerodromeContracts = {
         nfpm: "0x827922686190790b37229fd06084350E74485b72"
     },
     56: {
-        router: "0xe70642eCD92bB57F785d6185Dfe0a55f06c4318F",
-        factory: "0x756a2162B3289e45441E97807cba806e03e5F6c8",
-        lpSugar: "0xe70b7376dfEA62Ef5bE77f5b48F4ffCc2CBbDB48",
-        veSugar: "0xBD8aFF5a24F5f946C1aFb8A824b13aCAaFD10349",
-        rewardSugar: "0x52A722c29aD70E5979A55C65928437F13E8fa892",
-        relaySugar: "0xfECB8E35dd70300B1e00030fFA93DC7E3bA4189F",
-        universalRouter: "0xf6E51745910027CC14E422Edf964E11646f4bD34",
-        voter: "0xd3F575500E06C52070DD0a3b53d22024d3644787",
-        votingEscrow: "0x933BAaa7c74D81FA07701F19f1d53CBBaA69640D",
-        rewardDistributor: "0xd06654970a8e792B68f66B0fCE5A5Cff4A2E63Aa",
-        nfpm: "0xd1a63C19190D3B48d760E2A5AD8462FdCC0dfd3a"
+        router: "0x38a6c73B953D836eF862293b6B672bAf656E96c5",
+        factory: "0xA8815fcC143AA93aD8e9Eab987970bB2DBfE2CCa",
+        lpSugar: "0x5F365287B7435a6EdCc92E49F3bc287e3466CbFA",
+        veSugar: "0x54B1e7dc89bB9B485ee3fD31E2EDAd20c36Da991",
+        rewardSugar: "0xC7651E6Da481e27a80d97A15eD628BcdA9Fb3a50",
+        relaySugar: "0x76cd4FCd93932E847dE5451F5F94C567cE2fb2b4",
+        universalRouter: "0x3457d8c4C9c8977a66EAEF4cdE8AB7157dbfdFDC",
+        voter: "0xeA5BAB4AdCe8cfEf9BAFDca2cDdBBD0BFF169855",
+        votingEscrow: "0xA34A761E5FA06A8bB30B7747172352815bcEDDdd",
+        rewardDistributor: "0xD1dab2be6C3f7faE8490D8095367D5f44bE8351D",
+        nfpm: "0xd84eD0B2EBeC09efC23Cdd3975de21D7D6B7D515"
     }
 };
 

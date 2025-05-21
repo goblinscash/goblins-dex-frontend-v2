@@ -1,5 +1,5 @@
 diff --git a/node_modules/@myswap/token-list/build/goblinscash-default.tokenlist.json b/node_modules/@myswap/token-list/build/goblinscash-default.tokenlist.json
-index cd78386..7b9f417 100644
+index cd78386..dca22d6 100644
 --- a/node_modules/@myswap/token-list/build/goblinscash-default.tokenlist.json
 +++ b/node_modules/@myswap/token-list/build/goblinscash-default.tokenlist.json
 @@ -14,121 +14,65 @@
@@ -11,7 +11,7 @@ index cd78386..7b9f417 100644
 -      "address": "0x3EE2200Efb3400fAbB9AacF31297cBdD1d435D47",
 +      "name": "Goblin V2",
 +      "symbol": "GOBV2",
-+      "address": "0xf69b558bfb2215e26c001d30f80e9926168e6880",
++      "address": "0x75331507c3e54bb3a8e23890b94a4ce10b7be4c7",
        "chainId": 56,
        "decimals": 18,
 -      "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/cardano.png"
@@ -366,6 +366,6 @@ index cd78386..7b9f417 100644
 +    "0x767dc7981a5d58539814110dea8dd88857164fa1": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/bcbch.png",
 +    "0x4fad9b2458634b1e5d679732ca3f6c203e565b13": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/ether.png",
 +    "0x205f59c72385c82b2328fc1c7776640c8d10f836": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/gob.png",
-+    "0xf69b558bfb2215e26c001d30f80e9926168e6880": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/gob.png"
++    "0x75331507c3e54bb3a8e23890b94a4ce10b7be4c7": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/gob.png"
    }
  }
