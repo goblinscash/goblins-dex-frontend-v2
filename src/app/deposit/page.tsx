@@ -23,7 +23,7 @@ import { byIndex, FormattedPool, PoolTypeMap } from "@/utils/sugar.utils";
 import Progress from "@/components/common/Progress";
 import SelectTokenPopup, { Token } from "@/components/modals/SelectTokenPopup";
 import { createPortal } from "react-dom";
-import { tokens } from "@myswap/token-list";
+import tokenListRaw from "@myswap/token-list"; // Changed import
 import { stableTokens } from "@/utils/constant.utils";
 import nfpmAbi from "@/abi/aerodrome/nfpm.json"
 import clFactoryAbi from "@/abi/aerodrome/clFactory.json"
@@ -100,7 +100,8 @@ const Deposit = () => {
   }
 
   const setInitialToken = () => {
-    let tokens_ = tokens.filter((item) => item.chainId == chainId);
+    // Access the .tokens property of the imported object
+    let tokens_ = tokenListRaw.tokens.filter((item) => item.chainId == chainId); 
     tokens_ = [...tokens_, ...stableTokens(chainId)];
     //@ts-expect-error ignore warning
     setFilteredTokenList(tokens_);

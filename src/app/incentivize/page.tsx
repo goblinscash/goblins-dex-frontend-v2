@@ -5,7 +5,7 @@ import SelectTokenPopup, { Token } from "@/components/modals/SelectTokenPopup";
 import Logo from "@/components/common/Logo";
 import { useAccount, useChainId } from "wagmi";
 import { useRouter, useSearchParams } from "next/navigation";
-import { tokens } from "@myswap/token-list";
+import tokenListRaw from "@myswap/token-list"; // Changed import
 import { gobV2, stableTokens } from "@/utils/constant.utils";
 import ListLayout from "@/components/lockRow";
 import { approve, erc20Balance, fetchV2Pools, findIndex } from "@/utils/web3.utils";
@@ -204,7 +204,8 @@ const Incentivize = () => {
   }, [chainId, token?.address, address]);
 
   const setInitialToken = () => {
-    let tokens_ = tokens.filter((item) => item.chainId == chainId);
+    // Access the .tokens property of the imported object
+    let tokens_ = tokenListRaw.tokens.filter((item) => item.chainId == chainId);
     tokens_ = [...tokens_, ...stableTokens(chainId)];
     //@ts-expect-error ignore
     setFilteredTokenList(tokens_);

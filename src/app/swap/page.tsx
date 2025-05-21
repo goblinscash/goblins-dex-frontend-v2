@@ -10,7 +10,7 @@ import {
 import { ethers } from "ethers";
 import styled, { keyframes } from "styled-components";
 import { useAccount, useChainId } from "wagmi";
-import { tokens } from "@myswap/token-list";
+import tokenListRaw from "@myswap/token-list"; // Changed import
 import universalRouterAbi from "../../abi/aerodrome/universalRouter.json";
 import { aerodromeContracts } from "@/utils/config.utils";
 import { useCallback, useEffect, useState } from "react";
@@ -70,7 +70,8 @@ const Swap = () => {
   };
 
   const setInitialToken = () => {
-    let tokens_ = tokens.filter((item) => item.chainId == chainId);
+    // Access the .tokens property of the imported object
+    let tokens_ = tokenListRaw.tokens.filter((item) => item.chainId == chainId);
     tokens_ = [...tokens_, ...stableTokens(chainId)];
     //@ts-expect-error ignore
     setFilteredTokenList(tokens_);

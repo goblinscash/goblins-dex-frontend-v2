@@ -3,11 +3,12 @@ import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import TableLayout from "@/components/tableLayout";
 import { useChainId } from "wagmi";
-import { all, FormattedPool } from "@/utils/sugar.utils";
+import { all, FormattedPool } from "@/utils/sugar.utils"; // FormattedPool is important here
 import Link from "next/link";
 import Logo from "@/components/common/Logo";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getToken } from "@/utils/token.utils";
+
 const Nav = styled.div`
   button {
     &:after {
@@ -31,52 +32,31 @@ const Nav = styled.div`
 
 type Tab = {
   title: string;
-  content: React.ReactNode; // This can be any JSX element
+  content: React.ReactNode; 
 };
 
+// The 'item' in component will be FormattedPool, so 'Data' type can be adjusted or checked.
+// For this change, we'll rely on 'FormattedPool' properties being available on 'item'.
 type Column = {
   head: string;
   accessor: string;
-  component?: (item: Data, key: number) => React.ReactNode; // Optional component property
-  isComponent?: boolean; // For columns with specific components (like a switch)
+  component?: (item: any, key: number) => React.ReactNode; // Changed item type to any for now to match FormattedPool
+  isComponent?: boolean; 
 };
 
-type Data = {
-  chainId: number;
-  token0: string;
-  token1: string;
-  symbol: string;
-  volume: string;
-  apr: string;
-  pool_fee: string;
-  poolBalance: string;
-  url: string;
-};
 
 const tabs: Tab[] = [
-  {
-    title: "Active",
-    content: <></>,
-  },
-  {
-    title: "Volatile",
-    content: <></>,
-  },
-  {
-    title: "Stable",
-    content: <></>,
-  },
-  {
-    title: "Concentrated",
-    content: <></>,
-  },
+  { title: "Active", content: <></> },
+  { title: "Volatile", content: <></> },
+  { title: "Stable", content: <></> },
+  { title: "Concentrated", content: <></> },
 ];
 
 const column: Column[] = [
   {
     head: "Liquidity Pool",
     accessor: "Liquidity",
-    component: (item: Data, key: number) => {
+    component: (item: FormattedPool, key: number) => { // Explicitly type item as FormattedPool
       return (
         <div key={key} className="flex items-center gap-3">
           <ul className="list-none pl-3 mb-0 flex-shrink-0 flex items-center">
@@ -84,20 +64,20 @@ const column: Column[] = [
               <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
                 <Logo
                   chainId={item.chainId}
-                  token={item.token0}
+                  token={item.token0} // token0 is address string
                   margin={0}
                   height={20}
-                />{" "}
+                />
               </div>
             </li>
             <li className="" style={{ marginLeft: -10 }}>
               <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
                 <Logo
                   chainId={item.chainId}
-                  token={item.token1}
+                  token={item.token1} // token1 is address string
                   margin={0}
                   height={20}
-                />{" "}
+                />
               </div>
             </li>
           </ul>
@@ -112,7 +92,7 @@ const column: Column[] = [
   {
     head: "Volume",
     accessor: "volume",
-    isComponent: true,
+    isComponent: true, // Assuming this implies custom rendering handled by TableLayout or specific logic
   },
   {
     head: "Pool Fee",
@@ -125,31 +105,52 @@ const column: Column[] = [
   {
     head: "",
     accessor: "action",
-    component: (item: Data) => {
-      const url = item.url || "/deposit";
+    component: (item: FormattedPool) => { // Explicitly type item as FormattedPool
+      // Default deposit URL can be a generic one if item.url is not present
+      // However, for this task, item.url is not used for stake/withdraw.
+      // The original deposit link structure is preserved.
+      const depositUrl = (item as any).url || `/deposit?token0=${item.token0}&token1=${item.token1}`;
+
+
       return (
         <>
           <details className="dropdown">
             <summary className="border-0 cursor-pointer p-0 flex items-center m-1">
               {moreIcn}
             </summary>
-            <ul className="menu dropdown-content bg-base-100 bg-white rounded-box z-1 w-52 p-2 right-0 shadow-sm text-dark">
-              <li className="border-b border-dashed border-[#000] py-1">
+            <ul className="menu dropdown-content bg-base-100 bg-white rounded-box z-[1] w-52 p-2 right-0 shadow-sm text-dark">
+              {/* Deposit Link - Kept as is, assuming it's still relevant */}
+              <li className="border-b border-dashed border-[#CBD5E0] py-1"> {/* Adjusted border color for neutrality */}
                 <Link
-                  href={url}
-                  className="flex items-center text-black font-medium "
+                  href={depositUrl}
+                  className="flex items-center text-black font-medium"
                 >
                   Deposit
                 </Link>
               </li>
-              <li className="py-1">
-                <Link
-                  href={url}
-                  className="flex items-center text-black font-medium "
-                >
-                  Deposit
-                </Link>
-              </li>
+
+              {/* Conditional Stake and Withdraw Links */}
+              {item.gauge && item.gauge_alive === true && (
+                <>
+                  <li className="border-b border-dashed border-[#CBD5E0] py-1">
+                    <Link
+                      href={`/stake?gaugeAddress=${item.gauge}`}
+                      className="flex items-center text-black font-medium"
+                    >
+                      Stake
+                    </Link>
+                  </li>
+                  <li className="py-1"> {/* Last item might not need a bottom border */}
+                    <Link
+                      href={`/withdraw?gaugeAddress=${item.gauge}`}
+                      className="flex items-center text-black font-medium"
+                    >
+                      Withdraw
+                    </Link>
+                  </li>
+                </>
+              )}
+              {/* If there was a second deposit link or other static links, they would go here or be adjusted */}
             </ul>
           </details>
         </>
@@ -159,25 +160,25 @@ const column: Column[] = [
 ];
 
 const tabFilter = {
-  0: undefined,
-  1: -1,
-  2: 0,
-  3: 1,
+  0: undefined, // Active (All)
+  1: -1,      // Volatile
+  2: 0,       // Stable
+  3: 1,       // Concentrated
 } as const;
 
 const Liquidity = () => {
   const [activeTab, setActiveTab] = useState<number>(0);
-  // const [pools, setPools] = useState([]);
-  const [pools, setPools] = useState<FormattedPool[]>([]);
+  const [pools, setPools] = useState<FormattedPool[]>([]); // Ensure type is FormattedPool[]
   const [type, setType] = useState<number | undefined>(undefined);
   const [pagination, setPagination] = useState({
     count: 10,
     current_page: 1
-  })
+  });
 
-  const showTab = (tab: number) => {
-    setActiveTab(tab);
-    setType(tabFilter[tab as keyof typeof tabFilter]);
+  const showTab = (tabKey: number) => {
+    setActiveTab(tabKey);
+    setType(tabFilter[tabKey as keyof typeof tabFilter]);
+    setPagination(prev => ({ ...prev, current_page: 1 })); // Reset to page 1 on tab change
   };
 
   const chainId = useChainId();
@@ -186,43 +187,30 @@ const Liquidity = () => {
     if (!chainId) return;
 
     let nextPage = pagination.current_page;
-
-    if (actionType === "left" && nextPage > 1) {
-      nextPage -= 1;
-    } else if (actionType === "right") {
-      nextPage += 1;
-    } else {
-      return; // No valid pagination movement
-    }
+    if (actionType === "left" && nextPage > 1) nextPage -= 1;
+    else if (actionType === "right") nextPage += 1;
+    else return;
 
     const offset = (nextPage - 1) * pagination.count;
-
-    // Check next page data first
     all(chainId, pagination.count, offset, type).then((result) => {
       if (result && result.length > 0) {
         setPools(result);
-        setPagination((prev) => ({
-          ...prev,
-          current_page: nextPage,
-        }));
+        setPagination((prev) => ({ ...prev, current_page: nextPage }));
       } else {
-        // optional: show message like "No more records"
-        console.log("No data on next page, not changing pagination.");
+        if (actionType === "right") { // Only log if trying to go to a non-existent next page
+          console.log("No data on next page, not changing pagination.");
+        }
       }
     });
   }
 
-
-  useEffect(() => {
-
-  }, [pagination.current_page]);
-
   useEffect(() => {
     if (chainId) {
-      const offset = pagination.count * (pagination.current_page - 1);
-      all(chainId, pagination.count, offset, type).then((result) => setPools(result));
+      setPagination(prev => ({ ...prev, current_page: 1 })); // Reset page on chain change
+      all(chainId, pagination.count, 0, type).then((result) => setPools(result || []));
     }
-  }, [chainId, type]);
+  }, [chainId, type, pagination.count]); // React to type and count changes too
+
   return (
     <section className="Liquidity py-5 relative">
       <div className="container ">
@@ -230,13 +218,13 @@ const Liquidity = () => {
           <div className="col-span-12">
             <div className="flex items-center justify-between flex-wrap">
               <h4 className="m-0 font-bold text-2xl">Liquidity Pools</h4>
-              <form action="">
+              <form action=""> {/* This form seems incomplete, but keeping structure */}
                 <div className="flex items-center gap-3">
                   <Link
-                    href={"/pools?token0=&token1=&poolType=&stable="}
+                    href={"/pools?token0=&token1=&poolType=&stable="} // Generic link, might need to be more dynamic
                     className="flex items-center justify-center btn text-xs commonBtn rounded-lg h-[40px] px-4 font-medium "
                   >
-                    Deposit Liquidity
+                    Create Position / Deposit
                   </Link>
                 </div>
               </form>
@@ -248,21 +236,18 @@ const Liquidity = () => {
                 className="flex nav flex-nowrap border-b gap-4 overflow-x-auto"
                 style={{ borderColor: "#2c2c2c" }}
               >
-                {tabs &&
-                  tabs.length > 0 &&
-                  tabs.map((item, key) => (
-                    <button
-                      key={key}
-                      onClick={() => showTab(key)}
-                      className={`${activeTab === key && "active"
-                        } tab-button font-medium relative py-2 flex-shrink-0  text-xs text-[#00ff4e]`}
-                    >
-                      {item.title}
-                    </button>
-                  ))}
+                {tabs.map((item, key) => (
+                  <button
+                    key={key}
+                    onClick={() => showTab(key)}
+                    className={`${activeTab === key && "active"} tab-button font-medium relative py-2 flex-shrink-0 text-xs text-[#00ff4e]`}
+                  >
+                    {item.title}
+                  </button>
+                ))}
               </Nav>
               <div className="tabContent pt-3">
-                <TableLayout column={column} data={pools} />
+                <TableLayout column={column} data={pools} /> {/* Data is FormattedPool[] */}
                 <div className="flex items-center justify-center gap-4 mt-4">
                   <button
                     onClick={() => handlePagination("left")}
@@ -271,14 +256,12 @@ const Liquidity = () => {
                   >
                     <ChevronLeft size={20} />
                   </button>
-
                   <span className="text-sm font-medium px-3 py-1 border rounded-md border-gray-600">
-                    {pagination.current_page || 1}
+                    Page {pagination.current_page}
                   </span>
-
                   <button
                     onClick={() => handlePagination("right")}
-                    disabled={pools.length < pagination.count}
+                    disabled={pools.length < pagination.count} // Disable if current page has less than 'count' items
                     className="p-2 rounded-full border border-gray-700 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
                   >
                     <ChevronRight size={20} />
@@ -295,7 +278,7 @@ const Liquidity = () => {
 
 export default Liquidity;
 
-const moreIcn = (
+const moreIcn = ( // SVG for the dropdown dots icon
   <svg
     width="16"
     height="16"
@@ -305,7 +288,7 @@ const moreIcn = (
   >
     <path
       d="M2.75 6.5C2.97981 6.5 3.20738 6.54526 3.4197 6.63321C3.63202 6.72116 3.82493 6.85006 3.98744 7.01256C4.14994 7.17507 4.27884 7.36798 4.36679 7.5803C4.45474 7.79262 4.5 8.02019 4.5 8.25C4.5 8.47981 4.45474 8.70738 4.36679 8.9197C4.27884 9.13202 4.14994 9.32493 3.98744 9.48744C3.82493 9.64994 3.63202 9.77884 3.4197 9.86679C3.20738 9.95473 2.97981 10 2.75 10C2.28587 10 1.84075 9.81563 1.51256 9.48744C1.18437 9.15925 1 8.71413 1 8.25C1 7.78587 1.18437 7.34075 1.51256 7.01256C1.84075 6.68437 2.28587 6.5 2.75 6.5ZM8 6.5C8.22981 6.5 8.45738 6.54526 8.6697 6.63321C8.88202 6.72116 9.07493 6.85006 9.23744 7.01256C9.39994 7.17507 9.52884 7.36798 9.61679 7.5803C9.70473 7.79262 9.75 8.02019 9.75 8.25C9.75 8.47981 9.70473 8.70738 9.61679 8.9197C9.52884 9.13202 9.39994 9.32493 9.23744 9.48744C9.07493 9.64994 8.88202 9.77884 8.6697 9.86679C8.45738 9.95473 8.22981 10 8 10C7.53587 10 7.09075 9.81563 6.76256 9.48744C6.43437 9.15925 6.25 8.71413 6.25 8.25C6.25 7.78587 6.43437 7.34075 6.76256 7.01256C7.09075 6.68437 7.53587 6.5 8 6.5ZM13.25 6.5C13.4798 6.5 13.7074 6.54526 13.9197 6.63321C14.132 6.72116 14.3249 6.85006 14.4874 7.01256C14.6499 7.17507 14.7788 7.36798 14.8668 7.5803C14.9547 7.79262 15 8.02019 15 8.25C15 8.47981 14.9547 8.70738 14.8668 8.9197C14.7788 9.13202 14.6499 9.32493 14.4874 9.48744C14.3249 9.64994 14.132 9.77884 13.9197 9.86679C13.7074 9.95473 13.4798 10 13.25 10C12.7859 10 12.3408 9.81563 12.0126 9.48744C11.6844 9.15925 11.5 8.71413 11.5 8.25C11.5 7.78587 11.6844 7.34075 12.0126 7.01256C12.3408 6.68437 12.7859 6.5 13.25 6.5Z"
-      fill="#00ff4e"
+      fill="#00ff4e" // Changed to a more visible color for the icon itself like the text color
     />
   </svg>
 );

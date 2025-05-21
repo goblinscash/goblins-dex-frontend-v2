@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { tokens } from "@myswap/token-list";
+import tokenListRaw from "@myswap/token-list"; // Changed import
 import { useAccount, useChainId } from "wagmi";
 import Logo from '@/components/common/Logo';
 import TableLayout from '@/components/tableLayout';
@@ -51,7 +51,8 @@ const TokenListPage = () => {
 		const getTokens = async () => {
 			setLoading(true);
 			try {
-				const filteredTokens = tokens.filter((token: Token) => token.chainId === chainId);
+				// Access the .tokens property of the imported object
+				const filteredTokens = tokenListRaw.tokens.filter((token: Token) => token.chainId === chainId);
 				
 				// Add placeholders for TVL and price data
 				const tokensWithData = await Promise.all(

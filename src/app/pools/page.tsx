@@ -5,7 +5,7 @@ import SelectTokenPopup, { Token } from "@/components/modals/SelectTokenPopup";
 import Logo from "@/components/common/Logo";
 import { useChainId } from "wagmi";
 import { useRouter, useSearchParams } from "next/navigation";
-import { tokens } from "@myswap/token-list";
+import tokenListRaw from "@myswap/token-list"; // Changed import
 import { stableTokens } from "@/utils/constant.utils";
 import ListLayout from "@/components/lockRow";
 import { fetchV2Pools } from "@/utils/web3.utils";
@@ -136,7 +136,8 @@ const Pools = () => {
   }, [chainId]);
 
   const setInitialToken = () => {
-    let tokens_ = tokens.filter((item) => item.chainId == chainId);
+    // Access the .tokens property of the imported object
+    let tokens_ = tokenListRaw.tokens.filter((item) => item.chainId == chainId);
     tokens_ = [...tokens_, ...stableTokens(chainId)];
     //@ts-expect-error ignore
     setFilteredTokenList(tokens_);
