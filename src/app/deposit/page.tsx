@@ -11,7 +11,7 @@ import {
   fetchTokenDetails,
   quoteV2AddLiquidity,
 } from "@/utils/web3.utils";
-import { aerodromeContracts } from "@/utils/config.utils";
+import { aerodromeContracts, zeroAddr } from "@/utils/config.utils";
 import aerodromeRouterAbi from "../../abi/aerodromeRouter.json";
 import bribeVotingRewardAbi from "../../abi/aerodrome/bribeVotingReward.json";
 import voterAbi from "../../abi/aerodrome/voter.json";
@@ -26,7 +26,8 @@ import { createPortal } from "react-dom";
 import { tokens } from "@myswap/token-list";
 import { stableTokens } from "@/utils/constant.utils";
 import nfpmAbi from "@/abi/aerodrome/nfpm.json"
-import { TickMath } from "@uniswap/v3-sdk";
+import clFactoryAbi from "@/abi/aerodrome/clFactory.json"
+import { encodeSqrtRatioX96 } from "@uniswap/v3-sdk"
 
 const Deposit = () => {
   const [load, setLoad] = useState<{ [key: string]: boolean }>({});
@@ -430,75 +431,99 @@ const Deposit = () => {
     }
   };
 
-  const mint = async() => {
-  try {
-    if (!address) return alert("Please connect your wallet");
-    if (!amount0 || !amount1 || !token0 || !token1) return;
-    handleLoad("mint", true);
-    const tickSpacing = 200
-    const tickLower = 2000
-    const tickUpper = 2000
-    const amount0Desired = toUnits(amount0, token0?.decimals);
-    const amount1Desired = toUnits(amount1, token1?.decimals);
-    const amount0Min = 0;
-    const amount1Min = 0;
-    const recipient = address;
-    const deadline = Math.floor(Date.now() / 1000) + 600;
-    const sqrtPriceX96 = TickMath.getSqrtRatioAtTick(2);
+  const mint = async () => {
+    try {
+      if (!address) return alert("Please connect your wallet");
+      if (!amount0 || !amount1 || !token0 || !token1) return;
+      handleLoad("mint", true);
+      const tickSpacing = 100
+      const tickLower = -2000
+      const tickUpper = 2000
+      const amount0Desired = toUnits(amount0, token0?.decimals);
+      const amount1Desired = toUnits(amount1, token1?.decimals);
+      const amount0Min = 0;
+      const amount1Min = 0;
+      const deadline = Math.floor(Date.now() / 1000) + 600;
+      const sqrtPriceX96 = encodeSqrtRatioX96(1,1)
 
-    const tx0Approve = await approve(
-      token0.address,
-      await signer,
-      aerodromeContracts[chainId].nfpm,
-      Number(amount0),
-      token0.decimals
-    );
-    if (tx0Approve) {
-      await tx0Approve.wait();
-      handProgress("isAllowanceForToken0", true);
+      const tx0Approve = await approve(
+        token0.address,
+        await signer,
+        aerodromeContracts[chainId].nfpm,
+        Number(amount0),
+        token0.decimals
+      );
+      if (tx0Approve) {
+        await tx0Approve.wait();
+        handProgress("isAllowanceForToken0", true);
+      }
+
+      const tx1Approve = await approve(
+        token1.address,
+        await signer,
+        aerodromeContracts[chainId].nfpm,
+        Number(amount1),
+        token1.decimals
+      );
+      if (tx1Approve) {
+        await tx1Approve.wait();
+        handProgress("isAllowanceForToken1", true);
+      }
+
+      const clFactoryInstance = new ethers.Contract(
+        aerodromeContracts[chainId].clFactory,
+        clFactoryAbi,
+        await signer
+      )
+
+      const pool = await clFactoryInstance.getPool(token0.address, token1.address, tickSpacing)
+      console.log(pool, "poolpool")
+      if (pool == zeroAddr) {
+        const tx = await clFactoryInstance.createPool(
+          token0.address,
+          token1.address,
+          tickSpacing,
+          sqrtPriceX96.toString(),
+          {
+            gasLimit: 5000000
+          }
+        )
+
+        await tx.wait()
+      }
+
+      const aerodromeNfpm = new ethers.Contract(
+        aerodromeContracts[chainId].nfpm,
+        nfpmAbi,
+        await signer
+      );
+
+      const tx = await aerodromeNfpm.mint(
+        {
+          token0: token0.address,
+          token1: token1.address,
+          tickSpacing,
+          tickLower,
+          tickUpper,
+          amount0Desired,
+          amount1Desired,
+          amount0Min,
+          amount1Min,
+          recipient: address,
+          deadline
+        },
+        {
+          gasLimit: 5000000
+        }
+      );
+
+      await tx.wait();
+      handProgress("isCompleted", true);
+      handleLoad("mint", false);
+    } catch (error) {
+      console.log(error);
+      handleLoad("mint", false);
     }
-
-    const tx1Approve = await approve(
-      token1.address,
-      await signer,
-      aerodromeContracts[chainId].nfpm,
-      Number(amount1),
-      token1.decimals
-    );
-    if (tx1Approve) {
-      await tx1Approve.wait();
-      handProgress("isAllowanceForToken1", true);
-    }
-
-    const aerodromeNfpm = new ethers.Contract(
-      aerodromeContracts[chainId].nfpm,
-      nfpmAbi,
-      await signer
-    );
-
-    const tx = await aerodromeNfpm.mint(
-      token0.address,
-      token1.address,
-      tickSpacing,
-      tickLower,
-      tickUpper,
-      amount0Desired,
-      amount1Desired,
-      amount0Min,
-      amount1Min,
-      recipient,
-      deadline,
-      sqrtPriceX96,
-      { gasLimit: 5000000, value: 0 }
-    );
-
-    await tx.wait();
-    handProgress("isCompleted", true);
-    handleLoad("mint", false);
-  } catch (error) {
-    console.log(error);
-    handleLoad("mint", false);
-  }
 
   }
 
@@ -560,11 +585,11 @@ const Deposit = () => {
                           onClick={() => addLiquidity()}
                           load={load["addLiquidity"]}
                         />
-                         {/* <ActButton
-                          label="addLiquidity"
+                        <ActButton
+                          label="concentrated addLiquidity"
                           onClick={() => mint()}
                           load={load["mint"]}
-                        /> */}
+                        />
                       </div>
                     </div>
 
