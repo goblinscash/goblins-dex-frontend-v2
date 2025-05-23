@@ -1,5 +1,5 @@
 diff --git a/node_modules/@myswap/token-list/build/goblinscash-default.tokenlist.json b/node_modules/@myswap/token-list/build/goblinscash-default.tokenlist.json
-index cd78386..dca22d6 100644
+index cd78386..f3655fe 100644
 --- a/node_modules/@myswap/token-list/build/goblinscash-default.tokenlist.json
 +++ b/node_modules/@myswap/token-list/build/goblinscash-default.tokenlist.json
 @@ -14,121 +14,65 @@
@@ -199,7 +199,7 @@ index cd78386..dca22d6 100644
        "chainId": 8453,
        "decimals": 8,
        "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/spx.png"
-@@ -176,154 +120,10 @@
+@@ -176,171 +120,13 @@
      {
        "name": "Virtual Protocol",
        "symbol": "VIRTUAL",
@@ -355,7 +355,24 @@ index cd78386..dca22d6 100644
      }
    ],
    "tokenLogos": {
-@@ -380,6 +180,12 @@
+-    "0x1af3f329e8be154074d8769d1ffa4ee058b1dbc3": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/dia.png",
+-    "0x76d7062a70f5c129b6180baab2607c788a962b1b": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/aero.png",
+-    "0xa697e272a73744b343528c3bc4702f2565b2f422": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/bonk.png",
+-    "0x2859e4544c4bb03966803b044a93563bd2d0dd4d": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/shib.png",
+-    "0x25d887ce7a35172c62febfd67a1856f20faebb00": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/pepe.png",
+-    "0xfb5b838b6cfeedc2873ab27866079ac55363d37e": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/floki.png",
+-    "0xba2ae424d960c26247dd6c32edc70b295c744c43": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/doge.png",
+-    "0xf2c88757f8d03634671208935974b60a2a28bdb3": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/shell.png",
+-    "0x4338665cbb7b2485a8855a139b75d5e34ab0db94": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/litecoin.png",
+-    "0x3ee2200efb3400fabb9aacf31297cbdd1d435d47": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/cardano.png",
+-    "0x1d2f0da169ceb9fc7b3144628db156f3f6c60dbe": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/xrp.png",
+-    "0x2170ed0880ac9a755fd29b2688956bd959f933f8": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/ether.png",
+-    "0x570a5d26f7765ecb712c0924e4de545b89fd43df": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/sol.png",
+-    "0x7130d2a12b9bcbfae4f2634d864a1ee1ce3ead9c": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/btcb.png",
+     "0x5ca35ebc4f25b042d2cae75914c7e882e631fa9a": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/neiro.png",
+     "0x2da56acb9ea78330f947bd57c54119debda7af71": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/mog.png",
+     "0x2a06a17cbc6d0032cac2c6696da90f29d39a1a29": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/bitcoin.png",
+@@ -380,6 +166,12 @@
      "0x4200000000000000000000000000000000000006": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/weth.png",
      "0x7be0cc2cadcd4a8f9901b4a66244dcdd9bd02e0f": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/ubch.png",
      "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/usdc.png",
