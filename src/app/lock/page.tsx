@@ -184,7 +184,7 @@ const Deposit = () => {
                                 </span>
                                 <div className="content text-xs text-gray-400">
                                   <p className="m-0">
-                                    Select the amount of AERO you want to lock.
+                                    Select the amount of GOBV2 you want to lock.
                                   </p>
                                 </div>
                               </li>

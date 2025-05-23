@@ -111,7 +111,7 @@ const RangeSlider = ({ value, onChange, title, currentLockExpiresAt }) => {
   return (
     <div className="flex flex-col items-center p-4 w-full rounded-xl px-4 pb-4 bg-[#0b120d] border-[#2a2a2a] pt-6 border">
       <div className="mt-3 pb-8 text-xs text-start">
-        {title} <span className="themeClr">{currentLabel}</span> for 0.0 veAERO voting power
+        {title} <span className="themeClr">{currentLabel}</span> for 0.0 veGOBV2 voting power
       </div>
       <Slider
         type="range"
