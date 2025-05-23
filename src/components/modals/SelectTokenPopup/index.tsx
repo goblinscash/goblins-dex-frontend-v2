@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import debounce from "lodash.debounce";
 import { shortenPubkey } from "@/utils/math.utils";
 import Logo from "@/components/common/Logo";
-import { tokens } from "@myswap/token-list";
+import { tokens } from "@/utils/token.utils";
 
 export type Token = typeof tokens[0] & { balance?: number };
 

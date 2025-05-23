@@ -5,7 +5,7 @@ import SelectTokenPopup, { Token } from "@/components/modals/SelectTokenPopup";
 import Logo from "@/components/common/Logo";
 import { useChainId } from "wagmi";
 import { useRouter, useSearchParams } from "next/navigation";
-import { tokens } from "@myswap/token-list";
+import { tokens } from "@/utils/token.utils";
 import { stableTokens } from "@/utils/constant.utils";
 import ListLayout from "@/components/lockRow";
 import { fetchV2Pools } from "@/utils/web3.utils";

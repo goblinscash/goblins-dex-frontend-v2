@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { tokens } from "@myswap/token-list";
+import { tokens } from "@/utils/token.utils";
 import { useAccount, useChainId } from "wagmi";
 import Logo from '@/components/common/Logo';
 import TableLayout from '@/components/tableLayout';

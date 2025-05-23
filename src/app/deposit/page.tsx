@@ -23,7 +23,7 @@ import { byIndex, FormattedPool, PoolTypeMap } from "@/utils/sugar.utils";
 import Progress from "@/components/common/Progress";
 import SelectTokenPopup, { Token } from "@/components/modals/SelectTokenPopup";
 import { createPortal } from "react-dom";
-import { tokens } from "@myswap/token-list";
+import { tokens } from "@/utils/token.utils";
 import { stableTokens } from "@/utils/constant.utils";
 import nfpmAbi from "@/abi/aerodrome/nfpm.json"
 import clFactoryAbi from "@/abi/aerodrome/clFactory.json"

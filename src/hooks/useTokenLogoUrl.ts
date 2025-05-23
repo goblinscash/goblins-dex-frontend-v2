@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { tokenLogos } from "@myswap/token-list";
+import { tokenLogos } from "../utils/token.utils";
 
 const SUPPORTED_CHAINS: number[] = [10000, 8453, 56];
 
