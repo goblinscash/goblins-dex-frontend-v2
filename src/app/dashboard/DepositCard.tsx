@@ -1,7 +1,12 @@
 import Logo from '@/components/common/Logo';
 import React, { useState, useEffect } from 'react';
-import { useChainId } from 'wagmi';
+import { useAccount, useChainId } from 'wagmi';
 import { useRouter } from 'next/navigation'
+import { useEthersSigner } from '@/hooks/useEthersSigner';
+import { toast } from 'react-toastify';
+import { ethers } from 'ethers';
+import poolAbi from "@/abi/aerodrome/pool.json"
+import Notify from '@/components/common/Notify';
 
 interface TokenPair {
   index: number;
@@ -38,7 +43,11 @@ const DepositCard: React.FC<DepositCardProps> = ({
   forceExpanded = false,
   onExpandChange
 }) => {
+  const [load, setLoad] = useState<{ [key: string]: boolean }>({});
+  const signer = useEthersSigner();
   const chainId = useChainId();
+  const { address } = useAccount();
+
   const [isExpanded, setIsExpanded] = useState(false);
   const router = useRouter()
 
@@ -58,11 +67,45 @@ const DepositCard: React.FC<DepositCardProps> = ({
   const navigate = (type: string) => {
     if (type == "deposit") {
       router.push(`/deposit?token0=${tokenPair.token0}&token1=${tokenPair.token1}&type=${tokenPair.type}`)
-    } else if(type == "stake"){
+    } else if (type == "stake") {
       router.push(`/stake?pool=${tokenPair.lp}&type=${tokenPair.type}&id=${tokenPair.index}`)
-    } else if(type == "withdraw"){
+    } else if (type == "withdraw") {
       router.push(`/withdraw?token0=${tokenPair.token0}&token1=${tokenPair.token1}&type=${tokenPair.type}`)
     }
+  }
+
+  const handleLoad = (action: string, status: boolean) => {
+    setLoad((prev) => ({ ...prev, [action]: status }));
+  };
+
+  const claim = async () => {
+    try {
+      if (!address) return toast.warn("Please connect your wallet");
+      if (!tokenPair.lp) return;
+
+      handleLoad("Claim", true);
+
+      const poolInstance = new ethers.Contract(
+        tokenPair.lp,
+        poolAbi,
+        await signer
+      );
+
+      const tx = await poolInstance.claimFees(
+        {
+          gasLimit: 5000000
+        }
+      );
+
+
+      await tx.wait()
+      Notify({ chainId, txhash: tx.hash });
+      handleLoad("Claim", false);
+    } catch (error) {
+      console.log(error);
+      handleLoad("Claim", false);
+    }
+
   }
 
   return (
@@ -206,8 +249,11 @@ const DepositCard: React.FC<DepositCardProps> = ({
                 {tokenPair.tradingFees1} {tokenPair.token1Name}
               </div>
               <div className="flex mt-4">
-                <button className="px-2 sm:px-3 py-1 text-neon-green text-xs sm:text-sm font-medium rounded-md transition-colors whitespace-nowrap">
-                  Claim
+                <button
+                  onClick={claim}
+                  className="px-2 sm:px-3 py-1 text-neon-green text-xs sm:text-sm font-medium rounded-md transition-colors whitespace-nowrap"
+                >
+                  {load["Claim"] ? "Processing..." : "Claim"}
                 </button>
               </div>
             </div>
