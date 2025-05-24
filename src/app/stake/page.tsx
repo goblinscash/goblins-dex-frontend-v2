@@ -15,7 +15,7 @@ import { zeroAddr } from '@/utils/config.utils';
 import { toast } from 'react-toastify';
 import { ethers } from 'ethers';
 import guageAbi from "@/abi/aerodrome/gauge.json"
-import { fromUnits, toUnits } from '@/utils/math.utils';
+import { toUnits } from '@/utils/math.utils';
 import ActButton from '@/components/common/ActButton';
 import Notify from '@/components/common/Notify';
 

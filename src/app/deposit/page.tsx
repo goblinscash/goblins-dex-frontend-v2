@@ -13,9 +13,7 @@ import {
 } from "@/utils/web3.utils";
 import { aerodromeContracts, zeroAddr } from "@/utils/config.utils";
 import aerodromeRouterAbi from "../../abi/aerodromeRouter.json";
-import bribeVotingRewardAbi from "../../abi/aerodrome/bribeVotingReward.json";
-import voterAbi from "../../abi/aerodrome/voter.json";
-import { ethers, ZeroAddress } from "ethers";
+import { ethers } from "ethers";
 import styled, { keyframes } from "styled-components";
 import { useSearchParams } from "next/navigation";
 import Logo from "@/components/common/Logo";

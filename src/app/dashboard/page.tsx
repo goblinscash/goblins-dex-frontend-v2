@@ -4,7 +4,7 @@ import DepositCard from './DepositCard';
 import LockCard from './LockCard';
 import ClaimCard from './ClaimCard';
 import Link from 'next/link';
-import { VeNFT, Relay, locksByAccount, allRelay, positions, all, Position, FormattedPool, PoolTypeMap } from '@/utils/sugar.utils';
+import { VeNFT, locksByAccount, positions, all, Position, FormattedPool, PoolTypeMap } from '@/utils/sugar.utils';
 import { useChainId, useAccount } from 'wagmi';
 import { calculateRebaseAPR, formatLockedFor } from '@/utils/math.utils';
 import { getToken } from '@/utils/token.utils';
@@ -160,7 +160,6 @@ const Dashboard = () => {
                 }
             } as DepositItem;
 
-            console.log("Deposit Info: ", depositInfo)
             return depositInfo;
         }));
     }
@@ -177,7 +176,7 @@ const Dashboard = () => {
         }));
     };
 
-    console.log(deposits, "deposits++")
+    console.log(deposits, "deposits++", expandedDepositStates)
     return (
         <div className='container px-3 py-5'>
             {/* Liquidity Rewards Section */}

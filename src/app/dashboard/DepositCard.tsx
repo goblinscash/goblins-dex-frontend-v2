@@ -1,5 +1,4 @@
 import Logo from '@/components/common/Logo';
-import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import { useChainId } from 'wagmi';
 import { useRouter } from 'next/navigation'
