@@ -9,47 +9,23 @@ import { byIndex, FormattedPool, PoolTypeMap, Position, positions } from '@/util
 import { useEthersSigner } from '@/hooks/useEthersSigner';
 import { useAccount, useChainId } from 'wagmi';
 import { useSearchParams } from 'next/navigation';
-import { add } from 'lodash';
-import { getToken } from '@/utils/token.utils';
+import { getToken, Token } from '@/utils/token.utils';
+import { approve } from '@/utils/web3.utils';
+import { zeroAddr } from '@/utils/config.utils';
+import { toast } from 'react-toastify';
+import { ethers } from 'ethers';
+import guageAbi from "@/abi/aerodrome/gauge.json"
+import { fromUnits, toUnits } from '@/utils/math.utils';
+import ActButton from '@/components/common/ActButton';
+import Notify from '@/components/common/Notify';
 
-// Pool data
-const poolData = {
-  token0: {
-    symbol: "DEGEN",
-    iconColor: "purple-600"
-  },
-  token1: {
-    symbol: "Bonk",
-    iconColor: "yellow-500"
-  },
-  fee: "0.3%",
-  type: "Basic Volatile",
-  labelName: 'Stake'
-};
-
-// Initial token data
-const depositTokens = {
-  token0: {
-    symbol: "DEGEN",
-    amount: "13.53",
-    usdValue: "~$0.07565",
-    iconColor: "purple-600"
-  },
-  token1: {
-    symbol: "Bonk",
-    amount: "2,957.35",
-    usdValue: "~$0.0",
-    iconColor: "yellow-500"
-  }
-};
-
+const feeNoticeMessage = "10% of fees generated from unstaked deposits is distributed to pool voters.";
 
 type StakeDetails = {
   lp: string;
-  token0: string;
-  token1: string;
-  token0Name: string;
-  token1Name: string;
+  liquidity: number;
+  token0: Token;
+  token1: Token;
   fee: string;
   type: string;
   token0Amount: string;
@@ -63,12 +39,13 @@ type StakeDetails = {
   tradingFees1: string;
   depositedUsd: string;
   poolTotalUsd: string;
+  gauge: string;
+  gauge_alive: boolean;
+  gauge_liquidity: number;
 };
 
 const StakePage = () => {
   const [stakePercentage, setStakePercentage] = useState(100);
-  const [pool, setPool] = useState<FormattedPool | null>(null);
-
   const [load, setLoad] = useState<{ [key: string]: boolean }>({});
   const signer = useEthersSigner();
   const chainId = useChainId();
@@ -84,8 +61,6 @@ const StakePage = () => {
     //@ts-expect-error ignore
     const [pool, position]: [FormattedPool, Position[]] = await Promise.all([byIndex(chainId, index), positions(chainId, 100, 0, address)]);
 
-    console.log("Deposits by account: ", pool, position)
-
     //@ts-expect-error ignore
     const position_: Position = position.find((position_: Position) => position_.lp === pool.lp)
 
@@ -93,12 +68,13 @@ const StakePage = () => {
     const token1 = getToken(pool.token1)!;
     const rewardToken = getToken(pool.emissions_token);
 
+    console.log(token0, "Deposits by account: ", pool)
+
     const stakeInfo = {
       lp: pool.lp,
-      token0: pool.token0,
-      token1: pool.token1,
-      token0Name: token0.name,
-      token1Name: token1?.name,
+      liquidity: Number(position_.liquidity) / 10 ** 18,
+      token0: token0,
+      token1: token1,
       fee: pool.pool_fee || "",
       type: PoolTypeMap[String(pool.type)],
       token0Amount: String(Number(position_.amount0) / 10 ** token0.decimals),
@@ -112,6 +88,9 @@ const StakePage = () => {
       tradingFees1: String(Number(position_.unstaked_earned1) / 10 ** token1.decimals),
       depositedUsd: `$${(parseFloat(String(pool.poolBalance).replace("$", "")) * Number(position_.liquidity) / pool.liquidity).toFixed(2)}`,
       poolTotalUsd: `${pool.poolBalance}`,
+      gauge: pool.gauge,
+      gauge_alive: pool.gauge_alive,
+      gauge_liquidity: pool.gauge_liquidity
     } as StakeDetails;
 
     setStakeDetails(stakeInfo)
@@ -124,10 +103,89 @@ const StakePage = () => {
     }
   }, [searchParams, chainId, id, address]);
 
-  console.log("pool+++++>>>>>>>>>>>", stakeDetails)
 
-  // Fee notice message
-  const feeNoticeMessage = "10% of fees generated from unstaked deposits is distributed to pool voters.";
+  const handleLoad = (action: string, status: boolean) => {
+    setLoad((prev) => ({ ...prev, [action]: status }));
+  };
+
+  const stake = async () => {
+    try {
+      if (!address) return toast.warn("Please connect your wallet");
+      if (stakeDetails?.gauge == zeroAddr) return toast.warn("Gauge is not available for this pool")
+      if (stakeDetails?.liquidity == 0) return toast.warn("You dont have lp token to stake");
+      if (!stakeDetails?.lp) return;
+
+      handleLoad("Stake", true);
+
+      const tx0Approve = await approve(
+        stakeDetails?.lp,
+        await signer,
+        stakeDetails?.gauge,
+        stakeDetails.liquidity,
+        18
+      );
+      if (tx0Approve) {
+        await tx0Approve.wait();
+      }
+
+
+      const gaugeInstance = new ethers.Contract(
+        stakeDetails.gauge,
+        guageAbi,
+        await signer
+      );
+
+      const tx = await gaugeInstance["deposit(uint256)"](
+        toUnits(stakeDetails.liquidity, 18),
+        {
+          gasLimit: 5000000
+        }
+      );
+
+
+      await tx.wait()
+      Notify({ chainId, txhash: tx.hash });
+      handleLoad("Stake", false);
+    } catch (error) {
+      console.log(error);
+      handleLoad("Stake", false);
+    }
+
+  }
+
+  const unstake = async () => {
+    try {
+      if (!address) return toast.warn("Please connect your wallet");
+      if (stakeDetails?.gauge == zeroAddr) return toast.warn("Gauge is not available for this pool")
+      if (stakeDetails?.liquidity != 0 || !stakeDetails?.gauge_liquidity) return;
+
+      handleLoad("Unstake", true);
+
+      const gaugeInstance = new ethers.Contract(
+        stakeDetails.gauge,
+        guageAbi,
+        await signer
+      );
+
+      const tx = await gaugeInstance.withdraw(
+        stakeDetails.gauge_liquidity,
+        {
+          gasLimit: 5000000
+        }
+      );
+
+
+      await tx.wait()
+      Notify({ chainId, txhash: tx.hash });
+      handleLoad("Unstake", false);
+    } catch (error) {
+      console.log(error);
+      handleLoad("Unstake", false);
+    }
+
+  }
+
+  console.log("pool+++++>>>>>>>>>>>", stakeDetails)
 
   return (
     <div className='container px-3 py-5 flex flex-col grow h-full min-h-[55vh]'>
@@ -135,13 +193,18 @@ const StakePage = () => {
         {/* Stake Header */}
         <div className="">
           {/* Pool Info Card Component */}
-          <PoolInfoCard
-            token0={poolData.token0}
-            token1={poolData.token1}
-            fee={poolData.fee}
-            type={poolData.type}
-            labelName={poolData.labelName}
-          />
+          {
+            stakeDetails && <PoolInfoCard
+              chainId={chainId}
+              token0={stakeDetails.token0.address}
+              token0Name={stakeDetails.token0.symbol}
+              token1={stakeDetails.token1.address}
+              token1Name={stakeDetails.token1.symbol}
+              fee={`${Number(stakeDetails.fee) / 100}%`}
+              type={stakeDetails.type}
+              labelName="Stake"
+            />
+          }
 
           {/* Deposit Info Card Component */}
           <DepositInfoCard
@@ -164,29 +227,42 @@ const StakePage = () => {
 
           {/* Token Amounts */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <TokenAmountCard
-              tokenSymbol={depositTokens.token0.symbol}
-              amount={depositTokens.token0.amount}
-              usdValue={depositTokens.token0.usdValue}
-              iconColor={depositTokens.token0.iconColor}
-            />
+            {stakeDetails && <TokenAmountCard
+              chainId={chainId}
+              token={stakeDetails.token0.address}
+              tokenSymbol={stakeDetails?.token0.name}
+              amount={stakeDetails.token0Amount}
+              // usdValue={'0'}
+              iconColor="purple-600"
+            />}
 
-            <TokenAmountCard
-              tokenSymbol={depositTokens.token1.symbol}
-              amount={depositTokens.token1.amount}
-              usdValue={depositTokens.token1.usdValue}
-              iconColor={depositTokens.token1.iconColor}
-            />
+            {stakeDetails && <TokenAmountCard
+              chainId={chainId}
+              token={stakeDetails.token1.address}
+              tokenSymbol={stakeDetails?.token1.name}
+              amount={stakeDetails.token1Amount}
+              // usdValue={'0'}
+              iconColor="yellow-500"
+            />}
           </div>
 
           {/* Fee Notice Component */}
           <FeeNotice message={feeNoticeMessage} />
 
-          {/* Stake Button */}
-          <button className="w-full py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 transition-colors">
-            Stake
-          </button>
+          <ActButton
+            label="stake"
+            onClick={() => stake()}
+            load={load["Stake"]}
+          />
+          <ActButton
+            label="Unstake"
+            onClick={() => unstake()}
+            load={load["Unstake"]}
+          />
+
+
         </div>
+
       </div>
     </div>
   );

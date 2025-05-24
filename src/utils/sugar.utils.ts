@@ -238,7 +238,6 @@ export const positions = async (chainId: number, limit: number, offset: number, 
         );
 
         const positionsRaw = await instance.positions(limit, offset, account)
-        // const positionsRaw = await instance.positionsByFactory(limit, offset, account, aerodromeContracts[chainId].factory)
 
         return positionsRaw as Position[]
 

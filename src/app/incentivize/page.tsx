@@ -182,7 +182,7 @@ const Incentivize = () => {
       fetchPoolByIndex(chainId, volatilePool[0]?.pool)
       // setPool(volatilePool[0])
     }
-  }, [chainId, isStable]);
+  }, [chainId, isStable, volatilePool, stablePool]);
 
 
   useEffect(() => {
@@ -219,6 +219,7 @@ const Incentivize = () => {
   const fetchPools = async () => {
     if (!token0 || !token1) return;
     const volatile = await fetchV2Pools(chainId, token0.address, token1.address, false);
+
     //@ts-expect-error ignore
     setVolatilePool(volatile);
     const stable = await fetchV2Pools(chainId, token0.address, token1.address, true);
