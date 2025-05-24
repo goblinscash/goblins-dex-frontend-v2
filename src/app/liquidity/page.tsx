@@ -8,6 +8,7 @@ import Link from "next/link";
 import Logo from "@/components/common/Logo";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getToken } from "@/utils/token.utils";
+import { CircularLoader } from "@/components/common";
 const Nav = styled.div`
   button {
     &:after {
@@ -39,6 +40,7 @@ type Column = {
   accessor: string;
   component?: (item: Data, key: number) => React.ReactNode; // Optional component property
   isComponent?: boolean; // For columns with specific components (like a switch)
+  hasFixedHeight?: boolean; // Optional fixed height constraint
 };
 
 type Data = {
@@ -129,11 +131,11 @@ const column: Column[] = [
       const url = item.url || "/deposit";
       return (
         <>
-          <details className="dropdown">
+          <details className="dropdown dropdown-end relative">
             <summary className="border-0 cursor-pointer p-0 flex items-center m-1">
               {moreIcn}
             </summary>
-            <ul className="menu dropdown-content bg-base-100 bg-white rounded-box z-1 w-52 p-2 right-0 shadow-sm text-dark">
+            <ul className="menu dropdown-content z-[1] bg-base-100 bg-white rounded-box w-52 p-2 shadow-md text-dark absolute right-0 mt-2">
               <li className="border-b border-dashed border-[#000] py-1">
                 <Link
                   href={url}
@@ -147,7 +149,7 @@ const column: Column[] = [
                   href={url}
                   className="flex items-center text-black font-medium "
                 >
-                  Deposit
+                  Withdraw
                 </Link>
               </li>
             </ul>
@@ -155,6 +157,7 @@ const column: Column[] = [
         </>
       );
     },
+    hasFixedHeight: false
   },
 ];
 
@@ -173,7 +176,8 @@ const Liquidity = () => {
   const [pagination, setPagination] = useState({
     count: 10,
     current_page: 1
-  })
+  });
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const showTab = (tab: number) => {
     setActiveTab(tab);
@@ -197,6 +201,9 @@ const Liquidity = () => {
 
     const offset = (nextPage - 1) * pagination.count;
 
+    // Show loading while fetching next page data
+    setIsLoading(true);
+    
     // Check next page data first
     all(chainId, pagination.count, offset, type).then((result) => {
       if (result && result.length > 0) {
@@ -209,6 +216,7 @@ const Liquidity = () => {
         // optional: show message like "No more records"
         console.log("No data on next page, not changing pagination.");
       }
+      setIsLoading(false);
     });
   }
 
@@ -219,10 +227,20 @@ const Liquidity = () => {
 
   useEffect(() => {
     if (chainId) {
+      setIsLoading(true);
       const offset = pagination.count * (pagination.current_page - 1);
-      all(chainId, pagination.count, offset, type).then((result) => setPools(result));
+      all(chainId, pagination.count, offset, type)
+        .then((result) => {
+          setPools(result);
+          setIsLoading(false);
+        })
+        .catch(error => {
+          console.error("Error fetching pool data:", error);
+          setIsLoading(false);
+        });
     }
   }, [chainId, type]);
+  
   return (
     <section className="Liquidity py-5 relative">
       <div className="container ">
@@ -262,28 +280,36 @@ const Liquidity = () => {
                   ))}
               </Nav>
               <div className="tabContent pt-3">
-                <TableLayout column={column} data={pools} />
-                <div className="flex items-center justify-center gap-4 mt-4">
-                  <button
-                    onClick={() => handlePagination("left")}
-                    disabled={pagination.current_page === 1}
-                    className="p-2 rounded-full border border-gray-700 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                  >
-                    <ChevronLeft size={20} />
-                  </button>
+                {isLoading ? (
+                  <div className="py-20">
+                    <CircularLoader size={50} />
+                  </div>
+                ) : (
+                  <>
+                    <TableLayout column={column} data={pools} />
+                    <div className="flex items-center justify-center gap-4 mt-4">
+                      <button
+                        onClick={() => handlePagination("left")}
+                        disabled={pagination.current_page === 1}
+                        className="p-2 rounded-full border border-gray-700 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                      >
+                        <ChevronLeft size={20} />
+                      </button>
 
-                  <span className="text-sm font-medium px-3 py-1 border rounded-md border-gray-600">
-                    {pagination.current_page || 1}
-                  </span>
+                      <span className="text-sm font-medium px-3 py-1 border rounded-md border-gray-600">
+                        {pagination.current_page || 1}
+                      </span>
 
-                  <button
-                    onClick={() => handlePagination("right")}
-                    disabled={pools.length < pagination.count}
-                    className="p-2 rounded-full border border-gray-700 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                  >
-                    <ChevronRight size={20} />
-                  </button>
-                </div>
+                      <button
+                        onClick={() => handlePagination("right")}
+                        disabled={pools.length < pagination.count}
+                        className="p-2 rounded-full border border-gray-700 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                      >
+                        <ChevronRight size={20} />
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>

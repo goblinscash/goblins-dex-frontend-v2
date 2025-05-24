@@ -48,6 +48,8 @@ const Deposit = () => {
   const [amount0, setAmount0] = useState("");
   const [amount1, setAmount1] = useState("");
   const [amount, setAmount] = useState("");
+  const [lowValue, setLowValue] = useState("2470.0953938521");
+  const [highValue, setHighValue] = useState("2622.8296946691");
   const [pool, setPool] = useState<FormattedPool | null>(null);
   const [ratio, setRatio] = useState<number | null>(null)
   const [tokenBeingSelected, setTokenBeingSelected] = useState<
@@ -686,6 +688,96 @@ const Deposit = () => {
                   </div>
                 </div>
                 <div className="md:col-span-7 col-span-12 md:sticky top-0">
+                  <div className="py-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="p-4 rounded-xl bg-[#111] border border-[#333333]">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="font-medium text-base">Low</span>
+                          <div className="flex">
+                            <button 
+                              className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600 mr-1"
+                              onClick={() => {
+                                const currentValue = parseFloat(lowValue);
+                                if (!isNaN(currentValue)) {
+                                  const newVal = currentValue - 1;
+                                  if (newVal >= 0) setLowValue(newVal.toFixed(10));
+                                }
+                              }}
+                            >
+                              <span>−</span>
+                            </button>
+                            <button 
+                              className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600 mr-1"
+                              onClick={() => {
+                                const currentValue = parseFloat(lowValue);
+                                if (!isNaN(currentValue)) {
+                                  const newVal = currentValue + 1;
+                                  setLowValue(newVal.toFixed(10));
+                                }
+                              }}
+                            >
+                              <span>+</span>
+                            </button>
+                            <button 
+                              className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600"
+                              onClick={() => setLowValue("0")}
+                            >
+                              <span>0</span>
+                            </button>
+                          </div>
+                        </div>
+                        <div className="text-xl md:text-2xl font-bold mb-1 break-all">
+                          {lowValue}
+                        </div>
+                        <div className="text-right">
+                          <span className="text-red-400 text-xs md:text-sm">~$2,475.81</span>
+                        </div>
+                      </div>
+                      <div className="p-4 rounded-xl bg-[#111] border border-[#333333]">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="font-medium text-base">High</span>
+                          <div className="flex">
+                            <button 
+                              className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600 mr-1"
+                              onClick={() => {
+                                const currentValue = parseFloat(highValue);
+                                if (!isNaN(currentValue)) {
+                                  const newVal = currentValue - 1;
+                                  if (newVal >= 0) setHighValue(newVal.toFixed(10));
+                                }
+                              }}
+                            >
+                              <span>−</span>
+                            </button>
+                            <button 
+                              className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600 mr-1"
+                              onClick={() => {
+                                const currentValue = parseFloat(highValue);
+                                if (!isNaN(currentValue)) {
+                                  const newVal = currentValue + 1;
+                                  setHighValue(newVal.toFixed(10));
+                                }
+                              }}
+                            >
+                              <span>+</span>
+                            </button>
+                            <button 
+                              className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600"
+                              onClick={() => setHighValue("∞")}
+                            >
+                              <span>∞</span>
+                            </button>
+                          </div>
+                        </div>
+                        <div className="text-xl md:text-2xl font-bold mb-1 break-all">
+                          {highValue}
+                        </div>
+                        <div className="text-right">
+                          <span className="text-red-400 text-xs md:text-sm">~$2,628.9</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                   <div className="py-2">
                     <div className="cardCstm p-3 md:p-10 rounded-2xl bg-[#0b120d] relative border border-[#2a2a2a]">
                       <form action="">

@@ -18,6 +18,7 @@ import Link from "next/link";
 import { formatTimestamp, fromUnits } from "@/utils/math.utils";
 import { gobV2 } from "@/utils/constant.utils";
 import { createPortal } from "react-dom";
+import { CircularLoader } from "@/components/common";
 
 type ExtendedVeNFT = VeNFT & { pool: FormattedPool[] };
 
@@ -57,6 +58,10 @@ const Vote = () => {
   const [pool, setPool] = useState<FormattedPool[]>([]);
   const [locks, setLocks] = useState<ExtendedVeNFT[]>([]);
   const sliderRef = useRef<Slider | null>(null);
+  const footerObserverRef = useRef<HTMLDivElement>(null);
+  const [showFixedSection, setShowFixedSection] = useState<boolean>(true);
+  const [isPoolLoading, setIsPoolLoading] = useState<boolean>(true);
+  const [isLocksLoading, setIsLocksLoading] = useState<boolean>(false);
 
   const nextSlide = () => {
     sliderRef.current?.slickNext();
@@ -95,17 +100,31 @@ const Vote = () => {
 
 
   const fetchPool = async () => {
-    const pool = await allWithRewards(chainId, 10, 0);
-    setPool(pool);
+    setIsPoolLoading(true);
+    try {
+      const pool = await allWithRewards(chainId, 10, 0);
+      setPool(pool);
+    } catch (error) {
+      console.error("Error fetching pool data:", error);
+    } finally {
+      setIsPoolLoading(false);
+    }
   };
 
   const fetchLocksByAccount = async () => {
     if (!chainId && !address) return;
-    const locks_ = await locksByAccount(chainId, address as string);
-    locks_.forEach((item: ExtendedVeNFT) => {
-      item.pool = []
-    })
-    setLocks(locks_);
+    setIsLocksLoading(true);
+    try {
+      const locks_ = await locksByAccount(chainId, address as string);
+      locks_.forEach((item: ExtendedVeNFT) => {
+        item.pool = []
+      });
+      setLocks(locks_);
+    } catch (error) {
+      console.error("Error fetching locks data:", error);
+    } finally {
+      setIsLocksLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -119,6 +138,29 @@ const Vote = () => {
       fetchPool();
     }
   }, [chainId]);
+
+  // Setup intersection observer to detect when footer is visible
+  useEffect(() => {
+    if (!footerObserverRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          // When the footer marker is visible, hide the fixed section
+          setShowFixedSection(!entry.isIntersecting);
+        });
+      },
+      { threshold: 0.1 } // Trigger when 10% of the element is visible
+    );
+
+    observer.observe(footerObserverRef.current);
+
+    return () => {
+      if (footerObserverRef.current) {
+        observer.unobserve(footerObserverRef.current);
+      }
+    };
+  }, []);
 
   console.log("pooldujihdsaf", locks);
 
@@ -378,80 +420,103 @@ const Vote = () => {
 
             <div className="col-span-12">
               <div className="tabContent pt-3">
-                <TableLayout column={column} data={pool} />
+                {isPoolLoading ? (
+                  <div className="py-20">
+                    <CircularLoader size={50} />
+                  </div>
+                ) : (
+                  <TableLayout column={column} data={pool} />
+                )}
               </div>
             </div>
           </div>
         </div>
 
-        <div className="fixed p-5 bottom-0 z-[9999] left-0 w-full bg-[#131313] ">
-          <div className="grid gap-3 grid-cols-12 w-full">
-            <div className="col-span-1">
-              <div className="flex gap-2 h-full">
+        {/* Footer Observer - this is an invisible element that will be used to detect when footer is visible */}
+        <div 
+          ref={footerObserverRef} 
+          className="footer-observer"
+          style={{ height: '1px', width: '100%', position: 'absolute', bottom: '0px' }}
+        />
+
+        {/* Fixed bottom section that will hide when footer is visible */}
+        {showFixedSection && (
+          <div className="fixed p-5 bottom-0 z-[9999] left-0 w-full bg-[#131313] transition-all duration-300">
+            <div className="grid gap-3 grid-cols-12 w-full">
+              <div className="col-span-1">
+                <div className="flex gap-2 h-full">
+                  <button
+                    className="px-3 h-full bg-[#0b120d] flex items-center justify-center rounded-xl"
+                    onClick={prevSlide}
+                  >
+                    {prevBtn}
+                  </button>
+                  <button
+                    className="px-3 h-full bg-[#0b120d] flex items-center justify-center rounded-xl"
+                    onClick={nextSlide}
+                  >
+                    {nextBtn}
+                  </button>
+                </div>
+              </div>
+              <div className="col-span-10">
+                {isLocksLoading ? (
+                  <div className="h-full flex items-center justify-center">
+                    <CircularLoader size={30} />
+                  </div>
+                ) : (
+                  <Slider
+                    //@ts-expect-error ignore
+                    ref={(slider) => (sliderRef.current = slider)}
+                    {...settings}
+                  >
+                    {locks.map((item, key) => (
+                      <div key={key} className="px-3">
+                        <div className="cardCstm p-3 rounded-xl bg-[#0b120d] relative border border-[#2a2a2a] flex items-center justify-between  gap-3">
+                          <div className="flex items-center gap-2">
+                            <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
+                              <Logo
+                                chainId={chainId}
+                                token={item.token}
+                                margin={0}
+                                height={20}
+                              />{" "}
+                            </div>
+                            <div className="content">
+                              <h6 className="m-0 text-white text-xs font-medium flex items-center gap-1">
+                                Lock #{item.id} <span className="icn">{lockIcn}</span>
+                              </h6>
+                              <p className="m-0 text-[10px]">
+                                {fromUnits(Number(item.amount), Number(item.decimals))} {gobV2[chainId || 8453]?.symbol}
+                                {"  "} {item.expires_at === "0" ? "-" : formatTimestamp(Number(item.expires_at))}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="right text-right">
+                            <p className="m-0 text-base">100%</p>
+                            <p className="m-0 text-green-500 text-xs">
+                              {item?.pool?.length} Pools Selected
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </Slider>
+                )}
+              </div>
+              <div className="col-span-1">
                 <button
-                  className="px-3 h-full bg-[#0b120d] flex items-center justify-center rounded-xl"
-                  onClick={prevSlide}
+                  onClick={() => setVote(!vote)}
+                  className="flex items-center justify-center commonBtn w-full px-8 rounded text-base font-medium "
+                  style={{ height: "100%" }}
+                  disabled={isLocksLoading}
                 >
-                  {prevBtn}
-                </button>
-                <button
-                  className="px-3 h-full bg-[#0b120d] flex items-center justify-center rounded-xl"
-                  onClick={nextSlide}
-                >
-                  {nextBtn}
+                  Vote
                 </button>
               </div>
             </div>
-            <div className="col-span-10">
-              <Slider
-                //@ts-expect-error ignore
-                ref={(slider) => (sliderRef.current = slider)}
-                {...settings}
-              >
-                {locks.map((item, key) => (
-                  <div key={key} className="px-3">
-                    <div className="cardCstm p-3 rounded-xl bg-[#0b120d] relative border border-[#2a2a2a] flex items-center justify-between  gap-3">
-                      <div className="flex items-center gap-2">
-                        <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
-                          <Logo
-                            chainId={chainId}
-                            token={item.token}
-                            margin={0}
-                            height={20}
-                          />{" "}
-                        </div>
-                        <div className="content">
-                          <h6 className="m-0 text-white text-xs font-medium flex items-center gap-1">
-                            Lock #{item.id} <span className="icn">{lockIcn}</span>
-                          </h6>
-                          <p className="m-0 text-[10px]">
-                            {fromUnits(Number(item.amount), Number(item.decimals))} {gobV2[chainId || 8453]?.symbol}
-                            {"  "} {item.expires_at === "0" ? "-" : formatTimestamp(Number(item.expires_at))}
-                            </p>
-                        </div>
-                      </div>
-                      <div className="right text-right">
-                        <p className="m-0 text-base">100%</p>
-                        <p className="m-0 text-green-500 text-xs">
-                          {item?.pool?.length} Pools Selected
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </Slider>
-            </div>
-            <div className="col-span-1">
-              <button
-                onClick={() => setVote(!vote)}
-                className="flex items-center justify-center commonBtn w-full px-8 rounded text-base font-medium "
-                style={{ height: "100%" }}
-              >
-                Vote
-              </button>
-            </div>
           </div>
-        </div>
+        )}
       </section>
     </>
   );

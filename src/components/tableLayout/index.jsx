@@ -29,16 +29,20 @@ const TableLayout = ({ column, data}) => {
                   {column &&
                     column.length > 0 &&
                     column.map((item, colIndex) => {
+                      // Determine if this cell should have fixed height (default to true if not specified)
+                      const hasFixedHeight = item.hasFixedHeight !== false;
+                      const cellClassName = `border-0 p-3 fw-sbold ${hasFixedHeight ? 'table-cell-fixed-height' : 'table-cell-fixheight'}`;
+                      
                       if (item.component) {
                         return (
-                          <td key={colIndex} className="border-0 p-3 fw-sbold table-cell-fixed-height">
+                          <td key={colIndex} className={cellClassName}>
                             {item.component(rowData, rowIndex, data)}
                           </td>
                         );
                       }
 
                       return (
-                        <td key={colIndex} className="border-0 p-3 fw-sbold table-cell-fixed-height">
+                        <td key={colIndex} className={cellClassName}>
                           {rowData[item?.accessor]}
                         </td>
                       );
@@ -80,6 +84,10 @@ const Table = styled.table`
     height: 180px; /* Set a fixed height for all cells */
     max-height: 180px;
     overflow: hidden;
+  }
+  .table-cell-fixheight {
+    height: 180px; /* Set a fixed height for all cells */
+    max-height: 180px;
   }
 `;
 

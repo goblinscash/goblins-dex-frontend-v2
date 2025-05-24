@@ -463,3 +463,5 @@ const fb = (
     />
   </svg>
 );
+export { default as CircularLoader } from './CircularLoader';
+
