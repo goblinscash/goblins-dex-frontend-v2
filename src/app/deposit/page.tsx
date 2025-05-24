@@ -363,90 +363,22 @@ const Deposit = () => {
     }
   };
 
-  const createGuage = async () => {
-    try {
-      if (!address) return alert("Please connect your wallet");
-      if (pool?.factory == ZeroAddress || pool?.lp == ZeroAddress) return;
-
-      handleLoad("createGauge", true);
-
-      const aerodromeVoter = new ethers.Contract(
-        aerodromeContracts[chainId].voter,
-        voterAbi,
-        await signer
-      );
-
-      const tx = await aerodromeVoter.createGauge(pool?.factory, pool?.lp, {
-        gasLimit: 5000000,
-      });
-
-      await tx.wait();
-      await fetchPoolByIndex(chainId, Number(id));
-      handleLoad("createGauge", false);
-    } catch (error) {
-      console.log(error);
-      handleLoad("createGauge", false);
-    }
-  };
-
-  const addReward = async () => {
-    try {
-      if (!address) return alert("Please connect your wallet");
-      if (pool?.bribe == ZeroAddress || pool?.lp == ZeroAddress) return;
-
-      handleLoad("addReward", true);
-
-      const txApprove = await approve(
-        //@ts-expect-error ignore
-        token?.address,
-        await signer,
-        //@ts-expect-error ignore
-        pool.bribe,
-        Number(amount),
-        token?.decimals
-      );
-      if (txApprove) {
-        await txApprove.wait();
-      }
-      handProgress("isAllowanceForToken", true);
-      const bribeVotingReward = new ethers.Contract(
-        //@ts-expect-error ignore
-        pool.bribe,
-        bribeVotingRewardAbi,
-        await signer
-      );
-
-      const tx = await bribeVotingReward.notifyRewardAmount(
-        token?.address,
-        //@ts-expect-error ignore
-        toUnits(amount, token?.decimals),
-        { gasLimit: 5000000 }
-      );
-
-      await tx.wait();
-      handProgress("isRewardAdded", true);
-      await fetchPoolByIndex(chainId, Number(id));
-      handleLoad("addReward", false);
-    } catch (error) {
-      console.log(error);
-      handleLoad("addReward", false);
-    }
-  };
-
   const mint = async () => {
     try {
       if (!address) return alert("Please connect your wallet");
       if (!amount0 || !amount1 || !token0 || !token1) return;
+
       handleLoad("mint", true);
       const tickSpacing = 100
-      const tickLower = -2000
-      const tickUpper = 2000
+      const tickLower = -100000
+      const tickUpper = 100
       const amount0Desired = toUnits(amount0, token0?.decimals);
       const amount1Desired = toUnits(amount1, token1?.decimals);
       const amount0Min = 0;
       const amount1Min = 0;
       const deadline = Math.floor(Date.now() / 1000) + 600;
       const sqrtPriceX96 = encodeSqrtRatioX96(1,1)
+      console.log(token1?.decimals,amount1Desired, "|||++++||||", token0?.decimals, amount0Desired)
 
       const tx0Approve = await approve(
         token0.address,

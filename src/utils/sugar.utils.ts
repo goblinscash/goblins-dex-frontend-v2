@@ -10,6 +10,7 @@ import { formatValue, fromUnits } from "./math.utils";
 
 export type FormattedPool = {
     chainId: number;
+    id: number;
     lp: string;
     symbol: string;
     decimals: number;

@@ -23,6 +23,8 @@ type LockItem = {
 type DepositItem = {
     id: number;
     tokenPair: {
+        index: number;
+        lp: string;
         token0: string;
         token1: string;
         token0Name: string;
@@ -125,7 +127,6 @@ const Dashboard = () => {
     const fetchDepositsByAccount = async () => {
         if (!address) return
         const [deposits_, pools] = await Promise.all([positions(chainId, 100, 0, address), all(chainId, 100, 0, undefined)]);
-        console.log("Deposits by account: ", deposits_)
 
         setDeposits(deposits_.map((deposit: Position, index: number) => {
             const pool = pools.find((pool: FormattedPool) => pool.lp === deposit.lp)!;
@@ -137,10 +138,12 @@ const Dashboard = () => {
             const depositInfo = {
                 id: pool.type > 0 ? Number(deposit.id) : index + 1,
                 tokenPair: {
+                    index: pool.id,
+                    lp: pool.lp,
                     token0: pool.token0,
                     token1: pool.token1,
                     token0Name: token0.name,
-                    token1Name: token1.name,
+                    token1Name: token1?.name,
                     fee: pool.pool_fee || "",
                     type: PoolTypeMap[String(pool.type)],
                     token0Amount: String(Number(deposit.amount0) / 10 ** token0.decimals),
@@ -174,6 +177,7 @@ const Dashboard = () => {
         }));
     };
 
+    console.log(deposits, "deposits++")
     return (
         <div className='container px-3 py-5'>
             {/* Liquidity Rewards Section */}

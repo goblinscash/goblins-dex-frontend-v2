@@ -2,8 +2,11 @@ import Logo from '@/components/common/Logo';
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
 import { useChainId } from 'wagmi';
+import { useRouter } from 'next/navigation'
 
 interface TokenPair {
+  index: number;
+  lp: string;
   token0: string;
   token1: string;
   token0Name: string;
@@ -30,14 +33,15 @@ interface DepositCardProps {
   onExpandChange?: (expanded: boolean) => void;
 }
 
-const DepositCard: React.FC<DepositCardProps> = ({ 
-  depositId, 
-  tokenPair, 
+const DepositCard: React.FC<DepositCardProps> = ({
+  depositId,
+  tokenPair,
   forceExpanded = false,
   onExpandChange
 }) => {
   const chainId = useChainId();
   const [isExpanded, setIsExpanded] = useState(false);
+  const router = useRouter()
 
   // Update local expanded state when forceExpanded changes
   useEffect(() => {
@@ -51,6 +55,16 @@ const DepositCard: React.FC<DepositCardProps> = ({
       onExpandChange(newState);
     }
   };
+
+  const navigate = (type: string) => {
+    if (type == "deposit") {
+      router.push(`/deposit?token0=${tokenPair.token0}&token1=${tokenPair.token1}&type=${tokenPair.type}`)
+    } else if(type == "stake"){
+      router.push(`/stake?pool=${tokenPair.lp}&type=${tokenPair.type}&id=${tokenPair.index}`)
+    } else if(type == "withdraw"){
+      router.push(`/withdraw?token0=${tokenPair.token0}&token1=${tokenPair.token1}&type=${tokenPair.type}`)
+    }
+  }
 
   return (
     <div className="w-full">
@@ -83,7 +97,7 @@ const DepositCard: React.FC<DepositCardProps> = ({
                 </li>
               </ul>
             </div>
-            
+
             {/* Token info */}
             <div className="ml-2 sm:ml-3">
               <div className="flex items-center">
@@ -93,7 +107,7 @@ const DepositCard: React.FC<DepositCardProps> = ({
               <div className="text-neon-green text-xs sm:text-sm">{tokenPair.type}</div>
             </div>
           </div>
-          
+
           <div className="text-right mt-1 sm:mt-0">
             <div className="text-gray-400 text-xs hidden sm:text-sm sm:block">Deposited</div>
             <div className="text-white text-sm hidden sm:text-base font-medium sm:block">{tokenPair.depositedUsd}</div>
@@ -105,25 +119,28 @@ const DepositCard: React.FC<DepositCardProps> = ({
           </div>
         </div>
       </div>
-    
+
       {/* Collapsible Deposit Section */}
       <div className="w-full bg-[#0F1118] border border-[#2A2A2A] rounded-lg overflow-hidden">
         {/* Header with Toggle Button */}
-        <div 
+        <div
           className="flex items-center justify-between p-3 sm:p-4 border-b border-[#2A2A2A] cursor-pointer"
           onClick={toggleExpand}
         >
           <div className="flex items-center">
             <button className={`transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''}`}>
               <svg className="w-4 h-4 sm:w-5 sm:h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M9 18L15 12L9 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M9 18L15 12L9 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
             <span className="ml-1 sm:ml-2 text-white text-sm sm:text-lg font-medium whitespace-nowrap">Deposit #{depositId}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-white opacity-60 text-xs sm:text-sm hidden sm:inline">{isExpanded ? 'Hide' : 'Show'} Details</span>
-            <button className="px-2 sm:px-3 py-1 sm:py-1.5 text-neon-green text-xs sm:text-sm font-medium rounded-md whitespace-nowrap">
+            <button
+              onClick={() => navigate("deposit")}
+              className="px-2 sm:px-3 py-1 sm:py-1.5 text-neon-green text-xs sm:text-sm font-medium rounded-md whitespace-nowrap"
+            >
               Deposit
             </button>
           </div>
@@ -153,16 +170,16 @@ const DepositCard: React.FC<DepositCardProps> = ({
                 {tokenPair.unstaked1Amount} {tokenPair.token1Name}
               </div>
               <div className="flex gap-2 mt-4">
-                <Link href={'/stake'}>
+                <button onClick={() => navigate("stake")}>
                   <span className="px-2 sm:px-3 py-1 text-neon-green text-xs sm:text-sm font-medium rounded-md hover:bg-[#3A3A3A] transition-colors whitespace-nowrap">
                     Stake
                   </span>
-                </Link>
-                <Link href={'/withdraw'}>
+                </button>
+                <button onClick={() => navigate("withdraw")}>
                   <span className="px-2 sm:px-3 py-1 text-neon-green text-xs sm:text-sm font-medium rounded-md hover:bg-[#3A3A3A] transition-colors whitespace-nowrap">
                     Withdraw
                   </span>
-                </Link>
+                </button>
               </div>
             </div>
 
