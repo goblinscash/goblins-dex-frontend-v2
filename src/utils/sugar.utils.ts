@@ -42,6 +42,9 @@ export type FormattedPool = {
     poolBalance: number;
     apr: number;
     volume: number;
+    position?:number;
+    tickLower?:string;
+    tickUpper?:string;
 };
 
 export type LpVote = {
@@ -112,7 +115,7 @@ export const all = async (chainId: number, limit: number, offset: number, type?:
         //@ts-expect-error ignore warning
         const formattedPools = poolsRaw.map((pool, index) => ({
             chainId: chainId,
-            id: offset+index,
+            id: offset + index,
             lp: pool[0],
             symbol: pool[1],
             decimals: formatValue(pool[2]),
@@ -210,9 +213,11 @@ export const byIndex = async (chainId: number, index: number) => {
     }
 };
 
+
 export interface Position {
     id: bigint;
     lp: string;
+    nftId?: number;
     liquidity: bigint;
     staked: bigint;
     amount0: bigint;
@@ -227,6 +232,10 @@ export interface Position {
     sqrt_ratio_lower: bigint;
     sqrt_ratio_upper: bigint;
     alm: string;
+    //@ts-expect-error ignore
+    position
+
+
 }
 
 export const positions = async (chainId: number, limit: number, offset: number, account: string): Promise<Position[]> => {
@@ -402,14 +411,14 @@ export const allRelay = async (chainId: number, account: string) => {
         const relayRaw = await instance.all(account);
 
 
-        let relay: Relay[] = relayRaw.map((fields:Relay) => ({
+        let relay: Relay[] = relayRaw.map((fields: Relay) => ({
             venft_id: formatValue(fields.venft_id),
             decimals: Number(fields.decimals),
             amount: formatValue(fields.amount),
             voting_amount: formatValue(fields.voting_amount),
             used_voting_amount: formatValue(fields.used_voting_amount),
             voted_at: formatValue(fields.voted_at),
-            votes: fields.votes.map((vote:LpVote) => ({
+            votes: fields.votes.map((vote: LpVote) => ({
                 lp: vote.lp,
                 weight: formatValue(vote.weight),
             })),
@@ -428,7 +437,7 @@ export const allRelay = async (chainId: number, account: string) => {
             })),
         }));
 
-        relay = relay.filter((item: Relay) => item.inactive !== true )
+        relay = relay.filter((item: Relay) => item.inactive !== true)
 
 
         return relay;

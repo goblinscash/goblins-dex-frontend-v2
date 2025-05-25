@@ -28,6 +28,9 @@ interface TokenPair {
   tradingFees1: string;
   depositedUsd: string;
   poolTotalUsd: string;
+  position?: number;
+  tickUpper?: string;
+  tickLower?: string;
 }
 
 interface DepositCardProps {
@@ -59,7 +62,7 @@ const DepositCard: React.FC<DepositCardProps> = ({
   const toggleExpand = () => {
     const newState = !isExpanded;
     setIsExpanded(newState);
-    if (onExpandChange) {
+    if (onExpandChange) { 
       onExpandChange(newState);
     }
   };
@@ -68,9 +71,9 @@ const DepositCard: React.FC<DepositCardProps> = ({
     if (type == "deposit") {
       router.push(`/deposit?token0=${tokenPair.token0}&token1=${tokenPair.token1}&type=${tokenPair.type}`)
     } else if (type == "stake") {
-      router.push(`/gauge?stake=true&pool=${tokenPair.lp}&type=${tokenPair.type}&id=${tokenPair.index}`)
+      router.push(`/gauge?stake=true&pool=${tokenPair.lp}&type=${tokenPair.type}&id=${tokenPair.index || 0}&position=${tokenPair.position}`)
     } else if (type == "withdraw") {
-      router.push(`/gauge?withdraw=true&token0=${tokenPair.token0}&token1=${tokenPair.token1}&type=${tokenPair.type}`)
+      router.push(`/gauge?withdraw=true&token0=${tokenPair.token0}&token1=${tokenPair.token1}&type=${tokenPair.type}&position=${tokenPair.position}`)
     }
   }
 
@@ -175,7 +178,7 @@ const DepositCard: React.FC<DepositCardProps> = ({
                 <path d="M9 18L15 12L9 6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
-            <span className="ml-1 sm:ml-2 text-white text-sm font-medium whitespace-nowrap">Deposit #{depositId}</span>
+            <span className="ml-1 sm:ml-2 text-white text-sm font-medium whitespace-nowrap">Deposit #{tokenPair.position}</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-white opacity-60 text-xs hidden sm:inline">{isExpanded ? 'Hide' : 'Show'} Details</span>

@@ -23,6 +23,7 @@ import JSBI from "jsbi";
 import { MAX_UINT_128 } from "./constant.utils";
 import { getUniswapQuote } from "./quote.utils";
 
+
 type SwapRoute = {
     from: string;
     fee: number;
@@ -746,9 +747,14 @@ export const fetchV3Position = async (chainId: number, tokenId: number) => {
             aerodromeNfpm,
             new ethers.JsonRpcProvider(rpcUrls[chainId])
         );
+        const cl_instance = new ethers.Contract(
+            aerodromeContracts[chainId].clFactory as string,
+            clFactoryAbi,
+            new ethers.JsonRpcProvider(rpcUrls[chainId])
+        );
 
-
-        let position = await instance.positions(tokenId)
+        let position = await instance.positions(tokenId);
+        const lp = await cl_instance.getPool(ethers.getAddress(position[2]), ethers.getAddress(position[3]), position[4].toString())
         position = {
             nonce: position[0].toString(),
             operator: ethers.getAddress(position[1]),
@@ -761,7 +767,8 @@ export const fetchV3Position = async (chainId: number, tokenId: number) => {
             feeGrowthInside0LastX128: position[8].toString(),
             feeGrowthInside1LastX128: position[9].toString(),
             tokensOwed0: position[10].toString(),
-            tokensOwed1: position[11].toString()
+            tokensOwed1: position[11].toString(),
+            lp: lp
         };
         return position
     } catch (error) {

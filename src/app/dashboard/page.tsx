@@ -8,6 +8,25 @@ import { VeNFT, locksByAccount, positions, all, Position, FormattedPool, PoolTyp
 import { useChainId, useAccount } from 'wagmi';
 import { calculateRebaseAPR, formatLockedFor } from '@/utils/math.utils';
 import { getToken } from '@/utils/token.utils';
+import { v3PositionByAddress } from '@/utils/web3.utils';
+interface PositionType {
+    nonce: string;
+    operator: string;
+    token0: string;
+    token1: string;
+    fee: string;
+    tickLower: string;
+    tickUpper: string;
+    liquidity: string;
+    feeGrowthInside0LastX128: string;
+    feeGrowthInside1LastX128: string;
+    tokensOwed0: string;
+    tokensOwed1: string;
+}
+interface NFTPosition {
+    nftId: number;
+    position: PositionType;
+}
 
 type LockItem = {
     id: string;
@@ -23,6 +42,9 @@ type LockItem = {
 type DepositItem = {
     id: number;
     tokenPair: {
+        position?: number,
+        tickLower?: string,
+        tickUpper?: string,
         index: number;
         lp: string;
         token0: string;
@@ -94,6 +116,7 @@ const Dashboard = () => {
     const [allDepositsExpanded, setAllDepositsExpanded] = useState(false);
     const [expandedDepositStates, setExpandedDepositStates] = useState<{ [key: number]: boolean }>({});
     const [open, setOpen] = useState(false);
+    const [v3PositionData, setV3PositionData] = useState<NFTPosition[]>([]);
 
     const chainId = useChainId();
     const { address } = useAccount();
@@ -103,7 +126,7 @@ const Dashboard = () => {
     useEffect(() => {
         if (chainId && address) {
             fetchLocksByAccount()
-            fetchDepositsByAccount()
+            fetchv3PositionByAddress().then(() => fetchDepositsByAccount());
         }
     }, [chainId, address]);
 
@@ -120,16 +143,47 @@ const Dashboard = () => {
             logoUri: getToken(lock.token)!.logoURI,
             rebaseApr: `${calculateRebaseAPR(lock.rebase_amount, lock.amount, lock.decimals)}%`,
             rebaseAmount: String(parseFloat(lock.rebase_amount) / 10 ** parseInt(lock.decimals)),
-            } as LockItem)
+        } as LockItem)
         ))
+    }
+
+    async function fetchv3PositionByAddress() {
+        const v3Position = await v3PositionByAddress(chainId, address!);
+
+        setV3PositionData(v3Position.map((item) => {
+            //@ts-expect-error ignore
+            item.lp = item?.position.lp;
+            return item;
+        }
+        ));
     }
 
     const fetchDepositsByAccount = async () => {
         if (!address) return
         const [deposits_, pools] = await Promise.all([positions(chainId, 100, 0, address), all(chainId, 100, 0, undefined)]);
 
-        setDeposits(deposits_.map((deposit: Position, index: number) => {
-            const pool = pools.find((pool: FormattedPool) => pool.lp === deposit.lp)!;
+        const v3Position: NFTPosition[] = await v3PositionByAddress(chainId, address!);
+        console.log(v3Position, "v3Position")
+
+        const depositsExtended = [...deposits_, ...v3Position];
+
+        //@ts-expect-error ignore
+        const updatedDeposits = depositsExtended.map((deposit: Position, index: number) => {
+
+            const lpAddress = deposit?.lp ?? deposit?.position?.lp;
+
+
+            const pool = pools.find((pool: FormattedPool) => pool.lp === lpAddress);
+            if (!pool) {
+                console.warn("No pool matched for lp:", lpAddress);
+                return null;
+            }
+            console.log(pool, "ppppppppppppppppppppppp", deposit)
+
+            const isV3 = !!deposit?.position;
+            const position = isV3 ? deposit?.nftId : 0;
+            const tickLower = isV3 ? deposit.position?.tickLower : 0;
+            const tickUpper = isV3 ? deposit.position?.tickUpper : 0;
 
             const token0 = getToken(pool.token0)!;
             const token1 = getToken(pool.token1)!;
@@ -138,6 +192,9 @@ const Dashboard = () => {
             const depositInfo = {
                 id: pool.type > 0 ? Number(deposit.id) : index + 1,
                 tokenPair: {
+                    position,
+                    tickUpper,
+                    tickLower,
                     index: pool.id,
                     lp: pool.lp,
                     token0: pool.token0,
@@ -152,16 +209,25 @@ const Dashboard = () => {
                     unstaked1Amount: String(Number(deposit.staked1) / 10 ** token1.decimals),
                     apr: `${pool.apr}%`,
                     emissionsToken: rewardToken?.symbol ?? "",
-                    emissionsAmount: rewardToken ? String(Number(deposit.emissions_earned) / 10 ** rewardToken.decimals) : "",
+                    emissionsAmount: rewardToken
+                        ? String(Number(deposit.emissions_earned) / 10 ** rewardToken.decimals)
+                        : "",
                     tradingFees0: String(Number(deposit.unstaked_earned0) / 10 ** token0.decimals),
                     tradingFees1: String(Number(deposit.unstaked_earned1) / 10 ** token1.decimals),
-                    depositedUsd: `$${(parseFloat(String(pool.poolBalance).replace("$", "")) * Number(deposit.liquidity) / pool.liquidity).toFixed(2)}`,
-                    poolTotalUsd: `${pool.poolBalance}`,
+                    depositedUsd: `$${(
+                        (parseFloat(String(pool.poolBalance).replace("$", "")) *
+                            Number(deposit.liquidity || deposit.position?.liquidity)) /
+                        pool.liquidity
+                    ).toFixed(2)}`,
+                    poolTotalUsd: `${pool.poolBalance}`
                 }
             } as DepositItem;
 
             return depositInfo;
-        }));
+        });
+        setDeposits(updatedDeposits.filter((d): d is DepositItem => d !== null));
+
+
     }
 
     const toggleExpandAllDeposits = () => {
@@ -217,6 +283,7 @@ const Dashboard = () => {
                         <DepositCard
                             key={index}
                             depositId={deposit.id}
+
                             tokenPair={deposit.tokenPair}
                             forceExpanded={allDepositsExpanded}
                             onExpandChange={(expanded) => handleDepositExpandChange(deposit.id, expanded)}
@@ -325,11 +392,11 @@ const Dashboard = () => {
                 </div>
                 <div className="space-y-5 mt-3">
                     {[1, 2, 3, 4].map((index) => (
-                        <ClaimCard 
+                        <ClaimCard
                             key={`claim-${index}`}
                             lockId={`68969-${index}`}
-                            fBOMBAmount="0.03499" 
-                            wstETHAmount="0.0" 
+                            fBOMBAmount="0.03499"
+                            wstETHAmount="0.0"
                         />
                     ))}
                 </div>
