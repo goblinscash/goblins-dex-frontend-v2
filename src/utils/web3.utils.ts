@@ -10,6 +10,7 @@ import uniPoolAbi from "../abi/uniPool.json"
 import uniswapFactoryAbi from "../abi/uniswapFactory.json"
 import routerAbi from "../abi/aerodrome/router.json";
 import voterAbi from "../abi/aerodrome/voter.json";
+import aerodromeNfpm from "@/abi/aerodrome/nfpm.json"
 
 import { fromUnits, toUnits } from "./math.utils";
 import { getTokenDetails } from "./requests.utils";
@@ -715,4 +716,74 @@ export const quoteV2AddLiquidity = async (chainId: number, token0: string, token
     }
 }
 
+export const fetchV3Position = async (chainId: number, tokenId: number) => {
+    try {
+        if (!isValidChainId(chainId)) {
+            throw new Error(`Invalid chainId: ${chainId}`);
+        }
+
+        const instance = new ethers.Contract(
+            aerodromeContracts[chainId].nfpm as string,
+            aerodromeNfpm,
+            new ethers.JsonRpcProvider(rpcUrls[chainId])
+        );
+
+
+        let position = await instance.positions(tokenId)
+        position = {
+            nonce: position[0].toString(),
+            operator: ethers.getAddress(position[1]),
+            token0: ethers.getAddress(position[2]),
+            token1: ethers.getAddress(position[3]),
+            fee: position[4].toString(),
+            tickLower: position[5].toString(),
+            tickUpper: position[6].toString(),
+            liquidity: position[7].toString(),
+            feeGrowthInside0LastX128: position[8].toString(),
+            feeGrowthInside1LastX128: position[9].toString(),
+            tokensOwed0: position[10].toString(),
+            tokensOwed1: position[11].toString()
+        };
+        return position
+    } catch (error) {
+        console.log(error, "error")
+    }
+};
+
+export const v3PositionByAddress = async (chainId: number, wallet: string) => {
+    try {
+        if (!isValidChainId(chainId)) {
+            throw new Error(`Invalid chainId: ${chainId}`);
+        }
+
+        const instance = new ethers.Contract(
+            aerodromeContracts[chainId].nfpm as string,
+            aerodromeNfpm,
+            new ethers.JsonRpcProvider(rpcUrls[chainId])
+        );
+        const totalNft = Number(await instance.balanceOf(wallet))
+        const ids = [...Array(totalNft)].map((_, i) => {
+            return instance.tokenOfOwnerByIndex(wallet, i)
+        });
+
+        let nftIds = await Promise.all(ids)
+        nftIds = nftIds.map((item) => parseInt(item))
+
+        if (nftIds?.length == 0) return []
+
+        const positionPromises = nftIds?.map(async (id) => {
+            const position = await fetchV3Position(chainId, id);
+            return {
+                nftId: id,
+                position,
+            };
+        });
+
+        const _positions = await Promise.all(positionPromises)
+        return _positions
+    } catch (error) {
+        console.log(error)
+        return []
+    }
+}
 // aerodrome //
