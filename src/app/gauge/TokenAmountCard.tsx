@@ -5,7 +5,7 @@ interface TokenAmountCardProps {
   chainId: number;
   token: string;
   tokenSymbol: string;
-  amount: string;
+  amount: string | number;
   // usdValue: string;
   iconColor: string;
 }

@@ -26,7 +26,7 @@ const PoolInfoCard: React.FC<PoolInfoCardProps> = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const openModal = () => setIsModalOpen(true);
-  // const closeModal = () => setIsModalOpen(false);
+  const closeModal = () => setIsModalOpen(false);
 
   return (
     <div className="w-full bg-[#0F1118] border border-[#2A2A2A] rounded-lg overflow-hidden p-4 mb-4">

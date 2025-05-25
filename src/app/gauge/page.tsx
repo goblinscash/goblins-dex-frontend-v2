@@ -46,12 +46,16 @@ type StakeDetails = {
 
 const StakePage = () => {
   const [stakePercentage, setStakePercentage] = useState(100);
+  const [stakingAction, setStakingAction] = useState<string | null>(null);
   const [load, setLoad] = useState<{ [key: string]: boolean }>({});
   const signer = useEthersSigner();
   const chainId = useChainId();
   const { address } = useAccount();
 
   const searchParams = useSearchParams();
+
+
+
   const id = searchParams.get("id");
   const [stakeDetails, setStakeDetails] = useState<StakeDetails>();
 
@@ -101,13 +105,25 @@ const StakePage = () => {
     if (chainId && id && address) {
       fetchUserPosition(chainId, Number(id))
     }
+
+    if (Boolean(searchParams.get("withdraw"))) {
+      setStakingAction("withdraw");
+
+    }
+    if (Boolean(searchParams.get("stake"))) {
+      setStakingAction("stake");
+
+    }
+
+
+
   }, [searchParams, chainId, id, address]);
 
-
+  console.log(stakingAction, "stakingAction")
   const handleLoad = (action: string, status: boolean) => {
     setLoad((prev) => ({ ...prev, [action]: status }));
   };
-
+  console.log(stakeDetails, "Stakedetails")
   const stake = async () => {
     try {
       if (!address) return toast.warn("Please connect your wallet");
@@ -116,6 +132,8 @@ const StakePage = () => {
       if (!stakeDetails?.lp) return;
 
       handleLoad("Stake", true);
+
+
 
       const tx0Approve = await approve(
         stakeDetails?.lp,
@@ -136,7 +154,7 @@ const StakePage = () => {
       );
 
       const tx = await gaugeInstance["deposit(uint256)"](
-        toUnits(stakeDetails.liquidity, 18),
+        toUnits( (stakeDetails.liquidity * stakePercentage) / 100, 18),
         {
           gasLimit: 5000000
         }
@@ -231,7 +249,7 @@ const StakePage = () => {
               chainId={chainId}
               token={stakeDetails.token0.address}
               tokenSymbol={stakeDetails?.token0.name}
-              amount={stakeDetails.token0Amount}
+              amount={(Number(stakeDetails.token0Amount) * stakePercentage) / 100}
               // usdValue={'0'}
               iconColor="purple-600"
             />}
@@ -240,7 +258,7 @@ const StakePage = () => {
               chainId={chainId}
               token={stakeDetails.token1.address}
               tokenSymbol={stakeDetails?.token1.name}
-              amount={stakeDetails.token1Amount}
+              amount={(Number(stakeDetails.token1Amount) * stakePercentage) / 100}
               // usdValue={'0'}
               iconColor="yellow-500"
             />}
@@ -253,11 +271,15 @@ const StakePage = () => {
             label="stake"
             onClick={() => stake()}
             load={load["Stake"]}
+            disableBtn={stakingAction == "withdraw"}
+
           />
           <ActButton
             label="Unstake"
             onClick={() => unstake()}
             load={load["Unstake"]}
+            disableBtn={stakingAction == "stake"}
+
           />
 
 
