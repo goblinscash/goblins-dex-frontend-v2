@@ -29,7 +29,7 @@ const PoolInfoCard: React.FC<PoolInfoCardProps> = ({
   const closeModal = () => setIsModalOpen(false);
 
   return (
-    <div className="w-full bg-[#0F1118] border border-[#2A2A2A] rounded-lg overflow-hidden p-4 mb-4">
+    <div className="w-full bg-[#000E0E] border border-[#2A2A2A] rounded-lg overflow-hidden p-4 mb-4">
       <h1 className="flex items-center gap-2 border-b border-[#273257] pb-3 text-lg font-semibold sm:pb-5 sm:text-xl mb-6">{labelName}</h1>
       <div className="flex flex-col sm:flex-row justify-between gap-2">
         <div className="flex items-center">

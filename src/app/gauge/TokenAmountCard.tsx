@@ -19,7 +19,7 @@ const TokenAmountCard: React.FC<TokenAmountCardProps> = ({
   iconColor
 }) => {
   return (
-    <div className="bg-[#0F1118] border border-[#2A2A2A] rounded-lg p-4">
+    <div className="bg-[#000E0E] border border-[#2A2A2A] rounded-lg p-4">
       <div className="flex items-center">
         <div className={`w-8 h-8 rounded-full bg-${iconColor} flex items-center justify-center mr-2`}>
           <Logo

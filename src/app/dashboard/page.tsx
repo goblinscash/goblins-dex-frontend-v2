@@ -183,7 +183,7 @@ const Dashboard = () => {
             <div className='liquid-content mb-8'>
                 <div className="w-full flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-5">
                     <div className="flex items-center gap-2">
-                        <h1 className="text-xl sm:text-2xl font-bold text-white whitespace-nowrap">Liquidity Rewards</h1>
+                        <h1 className="text-xl font-medium text-white whitespace-nowrap">Liquidity Rewards</h1>
                         <button className="w-5 h-5 rounded-full bg-[#2A2A2A] flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#3A3A3A]">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-3 h-3">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -194,7 +194,7 @@ const Dashboard = () => {
                     <div className="flex items-center gap-2 w-full sm:w-auto">
                         <button
                             onClick={toggleExpandAllDeposits}
-                            className="flex items-center justify-center px-3 py-2 rounded-md bg-[#0F1118] border border-[#2A2A2A] text-white hover:bg-[#1A1A24] whitespace-nowrap min-w-[110px] w-1/2 sm:w-auto"
+                            className="flex items-center justify-center px-3 py-2 rounded-md bg-[#000E0E] border border-[#2A2A2A] text-white hover:bg-[#1A1A24] whitespace-nowrap min-w-[110px] w-1/2 sm:w-auto"
                         >
                             <span className="mr-1">Expand</span>
                             <span className="hidden sm:inline mr-1">All</span>
@@ -229,7 +229,7 @@ const Dashboard = () => {
             <div className='lock-section'>
                 <div className="w-full flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-5">
                     <div className="flex items-center gap-2">
-                        <h1 className="text-xl sm:text-2xl font-bold text-white whitespace-nowrap">Locks</h1>
+                        <h1 className="text-xl font-medium text-white whitespace-nowrap">Locks</h1>
                         <button className="w-5 h-5 rounded-full bg-[#2A2A2A] flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#3A3A3A]">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-3 h-3">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -272,7 +272,7 @@ const Dashboard = () => {
             <div className='claim-section mt-8'>
                 <div className="w-full flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-5">
                     <div className="flex items-center gap-2">
-                        <h1 className="text-xl sm:text-2xl font-bold text-white whitespace-nowrap">Voting Rewards</h1>
+                        <h1 className="text-xl font-medium font-bold text-white whitespace-nowrap">Voting Rewards</h1>
                         <button className="w-5 h-5 rounded-full bg-[#2A2A2A] flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#3A3A3A]">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-3 h-3">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />

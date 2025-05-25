@@ -613,6 +613,7 @@ const Incentivize = () => {
                                         onChange={(e) =>
                                           handleChange(e.target.value)
                                         }
+                                        placeholder="0"
                                       />
                                       <div className="text-end text-xs text-accent-50">$0.0</div>
                                     </div>

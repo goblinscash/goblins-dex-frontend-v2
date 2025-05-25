@@ -739,7 +739,7 @@ const Deposit = () => {
                               type="number"
                               value={amount0}
                               onChange={handleChangeAmount}
-                              placeholder="Token0 amount"
+                              placeholder="0"
                               className="form-control border-0 p-3 h-10 text-xs bg-transparent w-full"
                             />
                           </div>
@@ -782,7 +782,7 @@ const Deposit = () => {
                               type="number"
                               value={amount1}
                               onChange={handleChangeAmount}
-                              placeholder="Token1 amount"
+                              placeholder="0"
                               className="form-control border-0 p-3 h-10 text-xs bg-transparent w-full"
                             />
                           </div>

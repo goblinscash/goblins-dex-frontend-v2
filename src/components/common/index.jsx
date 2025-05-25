@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 // css
 import { CstmDropdown, YellowBtn } from "./commonStyled";
 import { useRouter } from "next/router";
+import SlippageToleranceModal from "./SlippageToleranceModal";
 
 // accordion item
 export const AccordionItem = ({
@@ -464,4 +465,13 @@ const fb = (
   </svg>
 );
 export { default as CircularLoader } from './CircularLoader';
+export { default as ActButton } from "./ActButton";
+export { default as BtnLoader } from "./BtnLoader";
+export { default as Logo } from "./Logo";
+export { default as Notify } from "./Notify";
+export { default as Progress } from "./Progress";
+export { default as TransactionModal } from "./TransactionModal";
+
+// Export SlippageToleranceModal
+export { SlippageToleranceModal };
 

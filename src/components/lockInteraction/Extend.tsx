@@ -306,7 +306,7 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
                             </div>
                         </div>
                         <div className="md:col-span-6 col-span-12">
-                            <div className="cardCstm p-3 md:p-4 rounded-md bg-[var(--backgroundColor2)] opacity-70 relative h-full flex justify-between flex-col">
+                            <div className="cardCstm p-3 md:p-4 rounded-md bg-[var(--backgroundColor2)] opacity-70 relative flex justify-between flex-col">
                                 <div className="top w-full">
                                     <h4 className="m-0 font-semibold text-xl">Extend Lock</h4>
                                     <div className="content pt-3">

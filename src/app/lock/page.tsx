@@ -241,7 +241,10 @@ const Deposit = () => {
                             <span className="font-medium text-base">
                               Amount to lock
                             </span>
-                            <span className="opacity-60 font-light text-xs">
+                            <span 
+                              className="opacity-60 font-light text-xs cursor-pointer hover:text-[#00ff4e] transition-colors"
+                              onClick={() => setAmount(userBalance)}
+                            >
                               Balance : {userBalance} {gobV2[chainId || 8453]?.symbol}
                             </span>
                           </div>

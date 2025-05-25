@@ -39,7 +39,7 @@ const ClaimCard: React.FC<ClaimCardProps> = ({ fBOMBAmount, wstETHAmount, lockId
                         <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"></path>
                     </svg>
                 </span>
-                <div className="text-xs text-gray-400">2.51561 AERO locked</div>
+                <div className="text-xs text-gray-400">2.51561 GOBV2 locked</div>
             </div>
 
             {/* Right side values */}
@@ -56,7 +56,7 @@ const ClaimCard: React.FC<ClaimCardProps> = ({ fBOMBAmount, wstETHAmount, lockId
                 </div>
                 <div className="flex sm:justify-end gap-2">
                     <span className="text-gray-400">0.00001</span>
-                    <span className="text-white">AERO</span>
+                    <span className="text-white">GOBV2</span>
                     <span className="text-[10px] text-blue-400">INCENTIVE</span>
                 </div>
                 <div className="flex sm:justify-end gap-2">

@@ -234,6 +234,7 @@ const Increase: React.FC<IncreaseProps> = ({ tokenId }) => {
                                                     onChange={(e) => setAmount(e.target.value)}
                                                     value={amount}
                                                     type="number"
+                                                    placeholder='0'
                                                     className="block w-full disabled:cursor-not-allowed disabled:text-opacity-50 dark:disabled:text-opacity-30 bg-transparent border border-accent-30 hover:border-accent-40 focus:border-accent-40 placeholder-accent-40 outline-0 p-2.5 text-sm rounded-lg"
                                                 />
                                             </div>
