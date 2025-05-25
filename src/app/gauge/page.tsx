@@ -11,13 +11,14 @@ import { useAccount, useChainId } from 'wagmi';
 import { useSearchParams } from 'next/navigation';
 import { getToken, Token } from '@/utils/token.utils';
 import { approve } from '@/utils/web3.utils';
-import { zeroAddr } from '@/utils/config.utils';
+import { aerodromeContracts, zeroAddr } from '@/utils/config.utils';
 import { toast } from 'react-toastify';
 import { ethers } from 'ethers';
 import guageAbi from "@/abi/aerodrome/gauge.json"
 import { toUnits } from '@/utils/math.utils';
 import ActButton from '@/components/common/ActButton';
 import Notify from '@/components/common/Notify';
+import aerodromeRouterAbi from "@/abi/aerodrome/router.json"
 
 const feeNoticeMessage = "10% of fees generated from unstaked deposits is distributed to pool voters.";
 
@@ -154,7 +155,7 @@ const StakePage = () => {
       );
 
       const tx = await gaugeInstance["deposit(uint256)"](
-        toUnits( (stakeDetails.liquidity * stakePercentage) / 100, 18),
+        toUnits((stakeDetails.liquidity * stakePercentage) / 100, 18),
         {
           gasLimit: 5000000
         }
@@ -202,6 +203,56 @@ const StakePage = () => {
     }
 
   }
+
+  const removeV2Liquidity = async () => {
+    try {
+      if (!address) return alert("Please connect your wallet");
+      if (!stakeDetails) return
+
+      handleLoad("RemoveLiquidity", true);
+      const amount0Min = toUnits(stakeDetails?.token0Amount, stakeDetails.token0?.decimals);
+      const amount1Min = toUnits(stakeDetails?.token0Amount, stakeDetails.token1?.decimals);
+      const to = address;
+      const deadline = Math.floor(Date.now() / 1000) + 600;
+      const stable = stakeDetails.type.includes("Volatile") ? false : true
+
+      const tx0Approve = await approve(
+        stakeDetails?.lp,
+        await signer,
+        aerodromeContracts[chainId].router,
+        stakeDetails.liquidity,
+        18
+      );
+      if (tx0Approve) {
+        await tx0Approve.wait();
+      }
+
+      const aerodromeRouter = new ethers.Contract(
+        aerodromeContracts[chainId].router,
+        aerodromeRouterAbi,
+        await signer
+      );
+
+      const tx = await aerodromeRouter.removeLiquidity(
+        stakeDetails.token0.address,
+        stakeDetails.token1.address,
+        stable,
+        toUnits(stakeDetails.liquidity, 18),
+        amount0Min,
+        amount1Min,
+        to,
+        deadline,
+        { gasLimit: 5000000 }
+      );
+
+      await tx.wait();
+
+      handleLoad("RemoveLiquidity", false);
+    } catch (error) {
+      console.log(error);
+      handleLoad("RemoveLiquidity", false);
+    }
+  };
 
   console.log("pool+++++>>>>>>>>>>>", stakeDetails)
 
@@ -282,7 +333,11 @@ const StakePage = () => {
 
           />
 
-
+          <ActButton
+            label="RemoveLiquidity"
+            onClick={() => removeV2Liquidity()}
+            load={load["RemoveLiquidity"]}
+          />
         </div>
 
       </div>
