@@ -4,11 +4,13 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 interface StakeSliderProps {
   initialPercentage?: number;
   onChange?: (percentage: number) => void;
+  position: boolean
 }
 
 const StakeSlider: React.FC<StakeSliderProps> = ({
   initialPercentage = 100,
-  onChange
+  onChange,
+  position
 }) => {
   const [percentage, setPercentage] = useState(initialPercentage);
   const debounceOnChange = useMemo(() => {
@@ -66,6 +68,7 @@ const StakeSlider: React.FC<StakeSliderProps> = ({
           max="100"
           step="1"
           value={percentage}
+          disabled={position}
           onChange={handleChange}
         />
       </div>

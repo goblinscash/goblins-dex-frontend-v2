@@ -77,21 +77,21 @@ const StakePage = () => {
 
     const stakeInfo = {
       lp: pool.lp,
-      liquidity: Number(position_.liquidity) / 10 ** 18,
+      liquidity: Number(position_?.liquidity) / 10 ** 18,
       token0: token0,
       token1: token1,
       fee: pool.pool_fee || "",
       type: PoolTypeMap[String(pool.type)],
-      token0Amount: String(Number(position_.amount0) / 10 ** token0.decimals),
-      token1Amount: String(Number(position_.amount1) / 10 ** token1.decimals),
-      unstaked0Amount: String(Number(position_.staked0) / 10 ** token0.decimals),
-      unstaked1Amount: String(Number(position_.staked1) / 10 ** token1.decimals),
+      token0Amount: String(Number(position_?.amount0) / 10 ** token0.decimals),
+      token1Amount: String(Number(position_?.amount1) / 10 ** token1.decimals),
+      unstaked0Amount: String(Number(position_?.staked0) / 10 ** token0.decimals),
+      unstaked1Amount: String(Number(position_?.staked1) / 10 ** token1.decimals),
       apr: `${pool.apr}%`,
       emissionsToken: rewardToken?.symbol ?? "",
-      emissionsAmount: rewardToken ? String(Number(position_.emissions_earned) / 10 ** rewardToken.decimals) : "",
-      tradingFees0: String(Number(position_.unstaked_earned0) / 10 ** token0.decimals),
-      tradingFees1: String(Number(position_.unstaked_earned1) / 10 ** token1.decimals),
-      depositedUsd: `$${(parseFloat(String(pool.poolBalance).replace("$", "")) * Number(position_.liquidity) / pool.liquidity).toFixed(2)}`,
+      emissionsAmount: rewardToken ? String(Number(position_?.emissions_earned) / 10 ** rewardToken.decimals) : "",
+      tradingFees0: String(Number(position_?.unstaked_earned0) / 10 ** token0.decimals),
+      tradingFees1: String(Number(position_?.unstaked_earned1) / 10 ** token1.decimals),
+      depositedUsd: `$${(parseFloat(String(pool?.poolBalance).replace("$", "")) * Number(position_?.liquidity) / pool?.liquidity).toFixed(2)}`,
       poolTotalUsd: `${pool.poolBalance}`,
       gauge: pool.gauge,
       gauge_alive: pool.gauge_alive,
@@ -290,6 +290,7 @@ const StakePage = () => {
           <StakeSlider
             initialPercentage={stakePercentage}
             onChange={(value) => setStakePercentage(value)}
+            position={searchParams.get("position") != null && Number(searchParams.get("position")) > 0 ? true : false}
           />
 
           {/* Token Amounts */}
