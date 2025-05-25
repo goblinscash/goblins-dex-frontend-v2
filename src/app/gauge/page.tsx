@@ -116,8 +116,6 @@ const StakePage = () => {
 
     }
 
-
-
   }, [searchParams, chainId, id, address]);
 
   console.log(stakingAction, "stakingAction")

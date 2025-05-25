@@ -251,7 +251,7 @@ const Liquidity = () => {
               <form action="">
                 <div className="flex items-center gap-3">
                   <Link
-                    href={"/pools?token0=&token1=&poolType=&stable="}
+                    href={"/pools"}
                     className="flex items-center justify-center btn text-xs commonBtn rounded-lg h-[40px] px-4 font-medium "
                   >
                     Deposit Liquidity

@@ -19,10 +19,7 @@ import { useSearchParams } from "next/navigation";
 import Logo from "@/components/common/Logo";
 import { byIndex, FormattedPool, PoolTypeMap } from "@/utils/sugar.utils";
 import Progress from "@/components/common/Progress";
-import SelectTokenPopup, { Token } from "@/components/modals/SelectTokenPopup";
-import { createPortal } from "react-dom";
-import { tokens } from "@/utils/token.utils";
-import { stableTokens } from "@/utils/constant.utils";
+import { Token } from "@/components/modals/SelectTokenPopup";
 import nfpmAbi from "@/abi/aerodrome/nfpm.json"
 import clFactoryAbi from "@/abi/aerodrome/clFactory.json"
 import { encodeSqrtRatioX96 } from "@uniswap/v3-sdk"
@@ -37,23 +34,19 @@ const Deposit = () => {
   const token0Address = searchParams.get("token0");
   const token1Address = searchParams.get("token1");
   const id = searchParams.get("id");
-  const stableParam = searchParams.get("stable");
-  const stable = stableParam === "true";
+  const type = Number(searchParams.get("type"));
+
+  const stable = type == 0 ? true : false
 
   const [token0, setToken0] = useState<Token | null>(null);
   const [token1, setToken1] = useState<Token | null>(null);
   const [token, setToken] = useState<Token | null>(null);
   const [amount0, setAmount0] = useState("");
   const [amount1, setAmount1] = useState("");
-  const [amount, setAmount] = useState("");
   const [lowValue, setLowValue] = useState("2470.0953938521");
   const [highValue, setHighValue] = useState("2622.8296946691");
   const [pool, setPool] = useState<FormattedPool | null>(null);
   const [ratio, setRatio] = useState<number | null>(null)
-  const [tokenBeingSelected, setTokenBeingSelected] = useState<
-    "token0" | "token1" | null
-  >(null);
-  const [filteredTokenList, setFilteredTokenList] = useState([]);
 
   const [status, setStatus] = useState<{ [key: string]: boolean }>({
     isTokenSelected: false,
@@ -65,62 +58,24 @@ const Deposit = () => {
     isAllowanceForToken: false,
   });
 
-  const handleTokenSelect = (token: Token) => {
-    if (tokenBeingSelected === "token0") {
-      setAmount("");
-      setToken(token);
-    } else if (tokenBeingSelected === "token1") {
-      setToken(token);
-      setAmount("");
-    }
-    setTokenBeingSelected(null);
-  };
-
-  const handleChange = (value: string) => {
-    setAmount(value);
-  };
-
   const handleChangeAmount = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     if (name === "amount0") {
       setAmount0(value)
-      if (ratio != null && value !== "" && !isNaN(+value)) {
-        setAmount1((+value * ratio).toString())
-      } else {
-        setAmount1("")
-      }
+      // if (ratio != null && value !== "" && !isNaN(+value)) {
+      //   setAmount1((+value).toString())
+      // } else {
+      //   setAmount1("")
+      // }
     } else if (name === "amount1") {
       setAmount1(value)
-      if (ratio != null && value !== "" && !isNaN(+value)) {
-        setAmount0((+value / ratio).toString())
-      } else {
-        setAmount0("")
-      }
+      // if (ratio != null && value !== "" && !isNaN(+value)) {
+      //   setAmount0((+value).toString())
+      // } else {
+      //   setAmount0("")
+      // }
     }
   }
-
-  const setInitialToken = () => {
-    let tokens_ = tokens.filter((item) => item.chainId == chainId);
-    tokens_ = [...tokens_, ...stableTokens(chainId)];
-    //@ts-expect-error ignore warning
-    setFilteredTokenList(tokens_);
-    if (tokens_?.length == 0) {
-      setToken(null);
-      return;
-    }
-    setToken({
-      address: tokens_[0].address,
-      symbol: tokens_[0].symbol,
-      decimals: tokens_[0].decimals,
-      balance: 0,
-    } as Token);
-  };
-
-  useEffect(() => {
-    if (chainId) {
-      setInitialToken();
-    }
-  }, [chainId]);
 
   useEffect(() => {
     if (chainId && token0Address && token1Address) {
@@ -205,9 +160,9 @@ const Deposit = () => {
       )
 
       //@ts-expect-error ignore
-      const ratio = fromUnits(data.amountOne, token0.decimals) / fromUnits(data.amountTwo, token1.decimals)
+      let ratio = fromUnits(data.amountOne, token0.decimals) / fromUnits(data.amountTwo, token1.decimals)
+      ratio = type == 1 ? 1: ratio 
       setRatio(ratio)
-      console.log(fromUnits(data.amountOne, token0.decimals), "dat+>>>", fromUnits(data.amountTwo, token1.decimals), ratio)
     } catch (error) {
       setRatio(null)
       console.log(error)
@@ -375,8 +330,8 @@ const Deposit = () => {
       const amount0Min = 0;
       const amount1Min = 0;
       const deadline = Math.floor(Date.now() / 1000) + 600;
-      const sqrtPriceX96 = encodeSqrtRatioX96(1,1)
-      console.log(token1?.decimals,amount1Desired, "|||++++||||", token0?.decimals, amount0Desired)
+      const sqrtPriceX96 = encodeSqrtRatioX96(1, 1)
+      console.log(token1?.decimals, amount1Desired, "|||++++||||", token0?.decimals, amount0Desired)
 
       const tx0Approve = await approve(
         token0.address,
@@ -459,20 +414,9 @@ const Deposit = () => {
 
   }
 
+  console.log(ratio)
   return (
     <>
-      {tokenBeingSelected &&
-        createPortal(
-          <SelectTokenPopup
-            tokenBeingSelected={tokenBeingSelected}
-            onSelectToken={handleTokenSelect}
-            onClose={() => setTokenBeingSelected(null)}
-            chainId={chainId}
-            tokens={filteredTokenList}
-          />,
-          document.body
-        )}
-
       <section className="relative py-5 ">
         <div className="container">
           <div className="grid gap-3 grid-cols-12">
@@ -512,119 +456,32 @@ const Deposit = () => {
                         />
                       </SwapList>
                       <div className="btnWrpper mt-3">
-                        <ActButton
-                          label="addLiquidity"
-                          onClick={() => addLiquidity()}
-                          load={load["addLiquidity"]}
-                        />
-                        <ActButton
-                          label="concentrated addLiquidity"
-                          onClick={() => mint()}
-                          load={load["mint"]}
-                        />
+                        {type == 1 ?
+                          <ActButton
+                            label="concentrated addLiquidity"
+                            onClick={() => mint()}
+                            load={load["mint"]}
+                          /> :
+                          <ActButton
+                            label="addLiquidity"
+                            onClick={() => addLiquidity()}
+                            load={load["addLiquidity"]}
+                          />
+                        }
                       </div>
                     </div>
 
-                    {/* <div className="content pt-3">
-                      <SwapList className="list-none py-3 relative z-10 pl-0 mb-0">
-                        <Progress
-                          icon={pool?.gauge === ZeroAddress ? lock : unlock}
-                          symbol={pool?.symbol}
-                          text={
-                            pool?.gauge === ZeroAddress
-                              ? "Create gauge for this pool"
-                              : "Gauge found for this pool"
-                          }
-                        />
-                        <div className="md:col-span-7 col-span-12">
-                          <div className="cardCstm p-3 md:p-4 rounded-md bg-[var(--backgroundColor2)] relative">
-                            <form action="">
-                              <div className="py-2">
-                                <div className="flex items-center justify-between gap-3">
-                                  <span className="font-medium text-base">
-                                    Add Reward
-                                  </span>
-                                  <span className="opacity-60 font-light text-xs">
-                                    Available {token?.balance} {token?.symbol}
-                                  </span>
-                                </div>
-                                <div className="flex border border-gray-800 rounded mt-1">
-                                  <div
-                                    className="cursor-pointer left relative flex items-center gap-2 p-3 border-r border-gray-800 w-[180px]"
-                                    onClick={() =>
-                                      setTokenBeingSelected("token0")
-                                    }
-                                  >
-                                    <span className="icn">
-                                      <Logo
-                                        chainId={chainId}
-                                        token={token?.address}
-                                        margin={0}
-                                        height={20}
-                                      />
-                                    </span>
-                                    <span className="">{token?.symbol}</span>
-                                    <span className="absolute right-2">
-                                      {downArrow}
-                                    </span>
-                                  </div>
-                                  <input
-                                    type="number"
-                                    className="form-control border-0 p-3 h-10 text-xs bg-transparent w-full"
-                                    value={amount}
-                                    onChange={(e) =>
-                                      handleChange(e.target.value)
-                                    }
-                                  />
-                                </div>
-                              </div>
-                            </form>
-                          </div>
-                        </div>
-
-                        <Progress
-                          icon={status.isAllowanceForToken ? unlock : lock}
-                          symbol={token?.symbol}
-                          text="Allowed the contracts to access"
-                        />
-                        <Progress
-                          icon={status.isRewardAdded ? unlock : lock}
-                          symbol={token?.symbol}
-                          text="Deposit reward"
-                        />
-                      </SwapList>
-
-                      <div className="btnWrpper mt-3">
-                        <ActButton
-                          label={
-                            pool?.gauge === ZeroAddress
-                              ? "Create Guage"
-                              : "Add Reward"
-                          }
-                          onClick={() =>
-                            pool?.gauge === ZeroAddress
-                              ? createGuage()
-                              : addReward()
-                          }
-                          load={
-                            pool?.gauge === ZeroAddress
-                              ? load["createGauge"]
-                              : load["addReward"]
-                          }
-                        />
-                      </div>
-                    </div> */}
 
                   </div>
                 </div>
                 <div className="md:col-span-7 col-span-12 md:sticky top-0">
-                  <div className="py-2">
+                  {type == 1 && <div className="py-2">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="p-4 rounded-xl bg-[#111] border border-[#333333]">
                         <div className="flex justify-between items-center mb-2">
                           <span className="font-medium text-base">Low</span>
                           <div className="flex">
-                            <button 
+                            <button
                               className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600 mr-1"
                               onClick={() => {
                                 const currentValue = parseFloat(lowValue);
@@ -636,7 +493,7 @@ const Deposit = () => {
                             >
                               <span>−</span>
                             </button>
-                            <button 
+                            <button
                               className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600 mr-1"
                               onClick={() => {
                                 const currentValue = parseFloat(lowValue);
@@ -648,7 +505,7 @@ const Deposit = () => {
                             >
                               <span>+</span>
                             </button>
-                            <button 
+                            <button
                               className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600"
                               onClick={() => setLowValue("0")}
                             >
@@ -667,7 +524,7 @@ const Deposit = () => {
                         <div className="flex justify-between items-center mb-2">
                           <span className="font-medium text-base">High</span>
                           <div className="flex">
-                            <button 
+                            <button
                               className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600 mr-1"
                               onClick={() => {
                                 const currentValue = parseFloat(highValue);
@@ -679,7 +536,7 @@ const Deposit = () => {
                             >
                               <span>−</span>
                             </button>
-                            <button 
+                            <button
                               className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600 mr-1"
                               onClick={() => {
                                 const currentValue = parseFloat(highValue);
@@ -691,7 +548,7 @@ const Deposit = () => {
                             >
                               <span>+</span>
                             </button>
-                            <button 
+                            <button
                               className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600"
                               onClick={() => setHighValue("∞")}
                             >
@@ -707,7 +564,9 @@ const Deposit = () => {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </div>}
+
+
                   <div className="py-2">
                     <div className="cardCstm p-3 md:p-10 rounded-2xl bg-[#0b120d] relative border border-[#2a2a2a]">
                       <form action="">

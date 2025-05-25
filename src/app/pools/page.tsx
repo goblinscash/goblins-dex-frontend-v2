@@ -5,7 +5,7 @@ import SelectTokenPopup, { Token } from "@/components/modals/SelectTokenPopup";
 import Logo from "@/components/common/Logo";
 import { useChainId } from "wagmi";
 import { useRouter, useSearchParams } from "next/navigation";
-import { tokens } from "@/utils/token.utils";
+import { getToken, tokens } from "@/utils/token.utils";
 import { stableTokens } from "@/utils/constant.utils";
 import ListLayout from "@/components/lockRow";
 import { fetchV2Pools } from "@/utils/web3.utils";
@@ -23,13 +23,14 @@ type Data = {
   token1: string;
   symbol: string;
   chainId: number;
-  stable: boolean
   volume: string;
   apr: string;
   poolBalance: string;
   action: string;
   status: boolean;
+  type: number;
 };
+
 
 const column: Column[] = [
   {
@@ -84,7 +85,7 @@ const column: Column[] = [
   {
     accessor: "Action",
     component: (item: Data) => {
-      const url = `/deposit?token0=${item.token0}&token1=${item.token1}&stable=${item.stable}`;
+      const url = `/deposit?token0=${item.token0}&token1=${item.token1}&type=${item.type}`;
       return (
         <>
           <Link href={url} className="flex items-center justify-center rounded-xl font-semibold transition duration-[400ms] border border-[#454545] h-[38px] px-4 text-white hover:bg-[#00ff4e] hover:text-[#000]">
@@ -105,6 +106,7 @@ const Pools = () => {
   const [token1, setToken1] = useState<Token | null>(null);
   const [stablePool, setStablePool] = useState<Data[]>([]);
   const [volatilePool, setVolatilePool] = useState<Data[]>([]);
+  const [concentratedPool, setConcetratedPool] = useState<Data[]>([]);
   const [tokenBeingSelected, setTokenBeingSelected] = useState<
     "token0" | "token1" | null
   >(null);
@@ -150,6 +152,21 @@ const Pools = () => {
     const stable = await fetchV2Pools(chainId, token0.address, token1.address, true);
     //@ts-expect-error ignore
     setStablePool(stable);
+    // const v3Pool = await fetchV3Pools(chainId, token0.address, token1.address)    
+    const symbol = `Concentrated AMM-${getToken(token0.address)?.name}/${getToken(token1.address)?.name}`
+    setConcetratedPool([{
+      pool: "",
+      token0: token0.address,
+      token1: token1.address,
+      symbol: symbol,
+      chainId: chainId,
+      volume: "",
+      apr: "",
+      poolBalance: "",
+      action: "Deposit",
+      status: false,
+      type: 1
+    }])
   }
 
   return (
@@ -233,7 +250,7 @@ const Pools = () => {
                           <span className="">{infoIcn}</span>
                           <div className="content">
                             <p className="m-0 text-white/50 text-xs font-medium">
-                            Select your tokens first. Available liquidity pools for deposit will then appear.
+                              Select your tokens first. Available liquidity pools for deposit will then appear.
                             </p>
                           </div>
                         </div>
@@ -260,6 +277,17 @@ const Pools = () => {
                         <div className="tabContent pt-3">
                           {stablePool.length > 0 && stablePool[0]?.status == false && <ListLayout column={column} data={stablePool} />}
                           {volatilePool.length > 0 && volatilePool[0]?.status == false && <ListLayout column={column} data={volatilePool} />}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="col-span-12">
+                      <div className="py-2">
+                        <h4 className="m-0 font-medium text-l">Concetrated pools</h4>
+                      </div>
+                      <div className="w-full">
+                        <div className="tabContent pt-3">
+                          {concentratedPool.length > 0 && concentratedPool[0]?.status == false && <ListLayout column={column} data={concentratedPool} />}
                         </div>
                       </div>
                     </div>

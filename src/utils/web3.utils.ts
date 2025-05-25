@@ -11,6 +11,7 @@ import uniswapFactoryAbi from "../abi/uniswapFactory.json"
 import routerAbi from "../abi/aerodrome/router.json";
 import voterAbi from "../abi/aerodrome/voter.json";
 import aerodromeNfpm from "@/abi/aerodrome/nfpm.json"
+import clFactoryAbi from "@/abi/aerodrome/clFactory.json"
 
 import { fromUnits, toUnits } from "./math.utils";
 import { getTokenDetails } from "./requests.utils";
@@ -611,7 +612,7 @@ export const fetchV2Pools = async (chainId: number, token0: string, token1: stri
         const _token1 = await fetchTokenDetails(chainId, token1)
         const _symbol = stable ? "s" : "v"
         return [{
-            stable,
+            type: stable == false? -1 : 0,
             chainId,
             pool: ZeroAddress,
             token0,
@@ -639,12 +640,30 @@ export const fetchV2Pools = async (chainId: number, token0: string, token1: stri
         token1,
         tvl: 0,
         apr: 0,
-        stable,
+        type: stable == false? -1 : 0,
         poolBalance: 0,
         action: "Deposit",
         status: true,
-        // r0: metadata[2].toString(),
-        // r1: metadata[3].toString()
+    }]
+}
+
+export const fetchV3Pools = async (chainId: number, token0: string, token1: string) => {
+    if (!isValidChainId(chainId)) {
+        throw new Error(`Invalid chainId: ${chainId}`);
+    }
+
+    const clFactory = new ethers.Contract(
+        aerodromeContracts[chainId].clFactory,
+        clFactoryAbi,
+        new ethers.JsonRpcProvider(rpcUrls[chainId])
+    );
+
+    const pool = await clFactory.getPool(token0, token1, 100)
+
+    console.log(pool, "pool>>>>>>>")
+    return [{
+        chainId,
+        pool
     }]
 }
 
