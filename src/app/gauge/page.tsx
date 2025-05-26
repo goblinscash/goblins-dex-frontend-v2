@@ -15,10 +15,12 @@ import { aerodromeContracts, zeroAddr } from '@/utils/config.utils';
 import { toast } from 'react-toastify';
 import { ethers } from 'ethers';
 import guageAbi from "@/abi/aerodrome/gauge.json"
-import { toUnits } from '@/utils/math.utils';
+import { fromUnits, toUnits } from '@/utils/math.utils';
 import ActButton from '@/components/common/ActButton';
 import Notify from '@/components/common/Notify';
 import aerodromeRouterAbi from "@/abi/aerodrome/router.json"
+import nfpmAbi from "@/abi/aerodrome/nfpm.json"
+import clGaugeAbi from "@/abi/aerodrome/clGauge.json"
 
 const feeNoticeMessage = "10% of fees generated from unstaked deposits is distributed to pool voters.";
 type LiquidityPosition = {
@@ -77,9 +79,7 @@ const StakePage = () => {
   const { address } = useAccount();
 
   const searchParams = useSearchParams();
-
-
-
+  const _position = Number(searchParams.get("position"))
   const id = searchParams.get("id");
   const [stakeDetails, setStakeDetails] = useState<StakeDetails>();
 
@@ -89,7 +89,7 @@ const StakePage = () => {
     let activeStake: ActiveStakeInfo;
 
 
-    if (Number(searchParams.get("position")) > 0) {
+    if (_position > 0) {
       const v3Position: LiquidityPosition = await fetchV3Position(chainId, Number(searchParams.get("position")));
       //@ts-expect-error ignore
       const [pool]: [FormattedPool] = await Promise.all([byIndex(chainId, index)]);
@@ -127,9 +127,6 @@ const StakePage = () => {
       }
     }
 
-    console.log(activeStake, "activeStakeInfo")
-
-
     const token0 = getToken(activeStake?.pool!.token0)!;
     const token1 = getToken(activeStake?.pool!.token1)!;
     const rewardToken = getToken(activeStake.pool!.emissions_token);
@@ -141,10 +138,12 @@ const StakePage = () => {
       token1: token1,
       fee: activeStake.pool!.fee || "",
       type: PoolTypeMap[String(activeStake.pool!.type)],
-      token0Amount: String(Number(activeStake.position?.amount0 || 0) / 10 ** token0.decimals),
-      token1Amount: String(Number(activeStake.position?.amount1 || 0) / 10 ** token1.decimals),
-      unstaked0Amount: String(Number(activeStake.position?.staked0 || 0) / 10 ** token0.decimals),
-      unstaked1Amount: String(Number(activeStake.position?.staked1 || 0) / 10 ** token1.decimals),
+      //@ts-expect-error ignore
+      token0Amount: activeStake?.pool.type > 0 ? fromUnits(activeStake?.pool.reserve0, token0.decimals) : fromUnits(activeStake.position?.amount0 || 0 , token0.decimals),
+      //@ts-expect-error ignore
+      token1Amount: activeStake?.pool.type > 0 ? fromUnits(activeStake?.pool.reserve1, token1.decimals) : fromUnits(activeStake.position?.amount1 || 0, token1.decimals),
+      unstaked0Amount: fromUnits(activeStake.position?.staked0 || 0, token0.decimals),
+      unstaked1Amount: fromUnits(activeStake.position?.staked1 || 0, token1.decimals),
       apr: `${activeStake.pool!.apr}%`,
       emissionsToken: rewardToken?.symbol ?? "",
       emissionsAmount: rewardToken ? String(Number(activeStake.position?.emissions_earned || 0) / 10 ** rewardToken.decimals) : "",
@@ -181,7 +180,7 @@ const StakePage = () => {
   const handleLoad = (action: string, status: boolean) => {
     setLoad((prev) => ({ ...prev, [action]: status }));
   };
-  console.log(stakeDetails, "Stakedetails")
+  
   const stake = async () => {
     try {
       if (!address) return toast.warn("Please connect your wallet");
@@ -311,6 +310,83 @@ const StakePage = () => {
     }
   };
 
+  const clStake = async () => {
+    try {
+      if (!address) return toast.warn("Please connect your wallet");
+      if (stakeDetails?.gauge == zeroAddr) return toast.warn("Gauge is not available for this pool")
+      if (_position == 0) return toast.warn("You dont have lp position to stake");
+      if(!stakeDetails) return
+
+      handleLoad("ClStake", true);
+
+
+      const nfpmInstance = new ethers.Contract(
+        aerodromeContracts[chainId].nfpm,
+        nfpmAbi,
+        await signer
+      )
+
+      const txApprove = await nfpmInstance.approve(stakeDetails?.gauge, _position)
+      await txApprove.wait()
+
+      const gaugeInstance = new ethers.Contract(
+        stakeDetails.gauge,
+        clGaugeAbi,
+        await signer
+      );
+
+      const tx = await gaugeInstance.deposit(
+        _position,
+        {
+          gasLimit: 5000000
+        }
+      );
+
+
+      await tx.wait()
+      Notify({ chainId, txhash: tx.hash });
+      handleLoad("ClStake", false);
+    } catch (error) {
+      console.log(error);
+      handleLoad("ClStake", false);
+    }
+
+  }
+
+  const clUnstake = async () => {
+    try {
+      if (!address) return toast.warn("Please connect your wallet");
+      if (stakeDetails?.gauge == zeroAddr) return toast.warn("Gauge is not available for this pool")
+      // if (_position == 0) return toast.warn("You dont have lp position to stake");
+      if(!stakeDetails) return
+
+      handleLoad("ClUnstake", true);
+
+      const gaugeInstance = new ethers.Contract(
+        stakeDetails.gauge,
+        clGaugeAbi,
+        await signer
+      );
+
+      const tx = await gaugeInstance.withdraw(
+        _position,
+        {
+          gasLimit: 5000000
+        }
+      );
+
+
+      await tx.wait()
+      Notify({ chainId, txhash: tx.hash });
+      handleLoad("ClUnstake", false);
+    } catch (error) {
+      console.log(error);
+      handleLoad("ClUnstake", false);
+    }
+
+  }
+
+
   console.log("pool+++++>>>>>>>>>>>", stakeDetails , activeStakeInfo)
 
   return (
@@ -378,8 +454,8 @@ const StakePage = () => {
 
           <ActButton
             label="stake"
-            onClick={() => stake()}
-            load={load["Stake"]}
+            onClick={() => _position > 0 ? clStake() : stake()}
+            load={_position > 0 ? load['ClStake'] : load["Stake"]}
             disableBtn={stakingAction == "withdraw"}
 
           />
@@ -391,11 +467,11 @@ const StakePage = () => {
 
           />
 
-          <ActButton
+          {_position == 0 && <ActButton
             label="RemoveLiquidity"
             onClick={() => removeV2Liquidity()}
             load={load["RemoveLiquidity"]}
-          />
+          /> }
         </div>
 
       </div>

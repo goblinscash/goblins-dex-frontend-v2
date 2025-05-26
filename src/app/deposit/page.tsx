@@ -44,8 +44,8 @@ const Deposit = () => {
   const [token, setToken] = useState<Token | null>(null);
   const [amount0, setAmount0] = useState("");
   const [amount1, setAmount1] = useState("");
-  const [lowValue, setLowValue] = useState("2470.0953938521");
-  const [highValue, setHighValue] = useState("2622.8296946691");
+  const [lowValue, setLowValue] = useState("2470.38521");
+  const [highValue, setHighValue] = useState("2622.6691");
   const [pool, setPool] = useState<FormattedPool | null>(null);
   const [ratio, setRatio] = useState<number | null>(null)
 

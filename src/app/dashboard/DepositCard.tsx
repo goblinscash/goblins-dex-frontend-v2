@@ -7,10 +7,13 @@ import { toast } from 'react-toastify';
 import { ethers } from 'ethers';
 import poolAbi from "@/abi/aerodrome/pool.json"
 import Notify from '@/components/common/Notify';
+import { zeroAddr } from '@/utils/config.utils';
+import gaugeAbi from "@/abi/aerodrome/gauge.json"
 
 interface TokenPair {
   index: number;
   lp: string;
+  gauge: string;
   token0: string;
   token1: string;
   token0Name: string;
@@ -62,7 +65,7 @@ const DepositCard: React.FC<DepositCardProps> = ({
   const toggleExpand = () => {
     const newState = !isExpanded;
     setIsExpanded(newState);
-    if (onExpandChange) { 
+    if (onExpandChange) {
       onExpandChange(newState);
     }
   };
@@ -81,7 +84,7 @@ const DepositCard: React.FC<DepositCardProps> = ({
     setLoad((prev) => ({ ...prev, [action]: status }));
   };
 
-  const claim = async () => {
+  const claimPoolFee = async () => {
     try {
       if (!address) return toast.warn("Please connect your wallet");
       if (!tokenPair.lp) return;
@@ -111,6 +114,37 @@ const DepositCard: React.FC<DepositCardProps> = ({
 
   }
 
+  const claimGuageReward = async () => {
+    try {
+      if (!address) return toast.warn("Please connect your wallet");
+      if (tokenPair?.gauge == zeroAddr) return toast.warn("Gauge not found for this pool")
+      if(Number(tokenPair.emissionsAmount) == 0) return toast.warn("Emission is zero.")
+
+      handleLoad("ClaimGuageReward", true);
+
+      const gaugeInstance = new ethers.Contract(
+        tokenPair.gauge,
+        gaugeAbi,
+        await signer
+      );
+
+      const tx = await gaugeInstance.getReward(
+        address,
+        {
+          gasLimit: 5000000
+        }
+      );
+
+
+      await tx.wait()
+      Notify({ chainId, txhash: tx.hash });
+      handleLoad("ClaimGuageReward", false);
+    } catch (error) {
+      console.log(error);
+      handleLoad("ClaimGuageReward", false);
+    }
+
+  }
   return (
     <div className="w-full">
       {/* Pool Info Header */}
@@ -240,6 +274,14 @@ const DepositCard: React.FC<DepositCardProps> = ({
               <div className="text-white text-sm font-bold">
                 {tokenPair.emissionsAmount} {tokenPair.emissionsToken}
               </div>
+              <div className="flex mt-4">
+                <button
+                  onClick={claimGuageReward}
+                  className="px-2 sm:px-3 py-1 text-neon-green text-xs font-medium rounded-md transition-colors whitespace-nowrap"
+                >
+                  {load["ClaimGuageReward"] ? "Processing..." : "Claim"}
+                </button>
+              </div>
             </div>
 
             {/* Trading Fees Column */}
@@ -253,7 +295,7 @@ const DepositCard: React.FC<DepositCardProps> = ({
               </div>
               <div className="flex mt-4">
                 <button
-                  onClick={claim}
+                  onClick={claimPoolFee}
                   className="px-2 sm:px-3 py-1 text-neon-green text-xs font-medium rounded-md transition-colors whitespace-nowrap"
                 >
                   {load["Claim"] ? "Processing..." : "Claim"}
