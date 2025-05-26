@@ -202,4 +202,3 @@ export const calculateRebaseAPR = (
 
   return 7 //yearlyApr.toFixed(5);
 };
-

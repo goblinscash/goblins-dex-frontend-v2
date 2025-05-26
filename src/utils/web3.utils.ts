@@ -20,9 +20,10 @@ import { Price, Token } from '@uniswap/sdk-core'
 import { TickMath, nearestUsableTick } from '@uniswap/v3-sdk';
 import JSBI from "jsbi";
 
-import { MAX_UINT_128 } from "./constant.utils";
+import { getMaxTick, getMinTick, MAX_UINT_128, TICK_SPACING, TICK_SPACING_TO_FEE } from "./constant.utils";
 import { getUniswapQuote } from "./quote.utils";
 
+type TickSpacing = typeof TICK_SPACING[number];
 
 type SwapRoute = {
     from: string;
@@ -613,7 +614,7 @@ export const fetchV2Pools = async (chainId: number, token0: string, token1: stri
         const _token1 = await fetchTokenDetails(chainId, token1)
         const _symbol = stable ? "s" : "v"
         return [{
-            type: stable == false? -1 : 0,
+            type: stable == false ? -1 : 0,
             chainId,
             pool: ZeroAddress,
             token0,
@@ -641,14 +642,14 @@ export const fetchV2Pools = async (chainId: number, token0: string, token1: stri
         token1,
         tvl: 0,
         apr: 0,
-        type: stable == false? -1 : 0,
+        type: stable == false ? -1 : 0,
         poolBalance: 0,
         action: "Deposit",
         status: true,
     }]
 }
 
-export const fetchV3Pools = async (chainId: number, token0: string, token1: string) => {
+export const fetchV3PoolsDetail = async (chainId: number, token0: string, token1: string) => {
     if (!isValidChainId(chainId)) {
         throw new Error(`Invalid chainId: ${chainId}`);
     }
@@ -659,14 +660,32 @@ export const fetchV3Pools = async (chainId: number, token0: string, token1: stri
         new ethers.JsonRpcProvider(rpcUrls[chainId])
     );
 
-    const pool = await clFactory.getPool(token0, token1, 100)
+    const pools = await Promise.all(
+        TICK_SPACING.map(async (tickSpacing) => {
+            try {
+                const pool = await clFactory.getPool(token0, token1, tickSpacing);
+                if (pool === ethers.ZeroAddress) return null;
 
-    console.log(pool, "pool>>>>>>>")
-    return [{
-        chainId,
-        pool
-    }]
-}
+                const tickLower = getMinTick(tickSpacing);
+                const tickUpper = getMaxTick(tickSpacing);
+
+                return {
+                    pool,
+                    fee: TICK_SPACING_TO_FEE[tickSpacing],
+                    tickSpacing,
+                    tickLower,
+                    tickUpper
+                };
+            } catch (err) {
+                console.error(`Failed to fetch pool for tickSpacing ${tickSpacing}`, err);
+                return null;
+            }
+        })
+    );
+
+
+    return pools;
+};
 
 export const findIndex = async (chainId: number, pool: string) => {
     if (!isValidChainId(chainId)) {

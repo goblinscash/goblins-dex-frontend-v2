@@ -23,6 +23,7 @@ import { Token } from "@/components/modals/SelectTokenPopup";
 import nfpmAbi from "@/abi/aerodrome/nfpm.json"
 import clFactoryAbi from "@/abi/aerodrome/clFactory.json"
 import { encodeSqrtRatioX96 } from "@uniswap/v3-sdk"
+import { getMaxTick, getMinTick } from "@/utils/constant.utils";
 
 const Deposit = () => {
   const [load, setLoad] = useState<{ [key: string]: boolean }>({});
@@ -322,16 +323,15 @@ const Deposit = () => {
       if (!amount0 || !amount1 || !token0 || !token1) return;
 
       handleLoad("mint", true);
-      const tickSpacing = 100
-      const tickLower = -100000
-      const tickUpper = 100
+      const tickSpacing = 1
+      const tickLower = getMinTick(tickSpacing)
+      const tickUpper = getMaxTick(tickSpacing)
       const amount0Desired = toUnits(amount0, token0?.decimals);
       const amount1Desired = toUnits(amount1, token1?.decimals);
       const amount0Min = 0;
       const amount1Min = 0;
       const deadline = Math.floor(Date.now() / 1000) + 600;
-      const sqrtPriceX96 = encodeSqrtRatioX96(1, 1)
-      console.log(token1?.decimals, amount1Desired, "|||++++||||", token0?.decimals, amount0Desired)
+      const sqrtPriceX96 = encodeSqrtRatioX96(3, 1)
 
       const tx0Approve = await approve(
         token0.address,
