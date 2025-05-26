@@ -10,7 +10,7 @@ import { useEthersSigner } from '@/hooks/useEthersSigner';
 import { useAccount, useChainId } from 'wagmi';
 import { useSearchParams } from 'next/navigation';
 import { getToken, Token } from '@/utils/token.utils';
-import { approve } from '@/utils/web3.utils';
+import { approve, fetchV3Position } from '@/utils/web3.utils';
 import { aerodromeContracts, zeroAddr } from '@/utils/config.utils';
 import { toast } from 'react-toastify';
 import { ethers } from 'ethers';
@@ -21,6 +21,21 @@ import Notify from '@/components/common/Notify';
 import aerodromeRouterAbi from "@/abi/aerodrome/router.json"
 
 const feeNoticeMessage = "10% of fees generated from unstaked deposits is distributed to pool voters.";
+type LiquidityPosition = {
+  nonce: string;
+  operator: string;
+  token0: string;
+  token1: string;
+  fee: string;
+  tickLower: string;
+  tickUpper: string;
+  liquidity: string;
+  feeGrowthInside0LastX128: string;
+  feeGrowthInside1LastX128: string;
+  tokensOwed0: string;
+  tokensOwed1: string;
+  lp: string;
+} & Position;
 
 type StakeDetails = {
   lp: string;
@@ -44,11 +59,19 @@ type StakeDetails = {
   gauge_alive: boolean;
   gauge_liquidity: number;
 };
+type ActiveStakeInfo = {
+  activeVersion?: string;
+  pool?: FormattedPool;
+  position?: Position | LiquidityPosition;
+};
+
+
 
 const StakePage = () => {
   const [stakePercentage, setStakePercentage] = useState(100);
   const [stakingAction, setStakingAction] = useState<string | null>(null);
   const [load, setLoad] = useState<{ [key: string]: boolean }>({});
+  const [activeStakeInfo, setActiveStakeInfo] = useState<ActiveStakeInfo>({});
   const signer = useEthersSigner();
   const chainId = useChainId();
   const { address } = useAccount();
@@ -63,39 +86,75 @@ const StakePage = () => {
 
   const fetchUserPosition = async (chainId: number, index: number) => {
     if (!address) return
-    //@ts-expect-error ignore
-    const [pool, position]: [FormattedPool, Position[]] = await Promise.all([byIndex(chainId, index), positions(chainId, 100, 0, address)]);
+    let activeStake: ActiveStakeInfo;
 
-    //@ts-expect-error ignore
-    const position_: Position = position.find((position_: Position) => position_.lp === pool.lp)
 
-    const token0 = getToken(pool.token0)!;
-    const token1 = getToken(pool.token1)!;
-    const rewardToken = getToken(pool.emissions_token);
+    if (Number(searchParams.get("position")) > 0) {
+      const v3Position: LiquidityPosition = await fetchV3Position(chainId, Number(searchParams.get("position")));
+      //@ts-expect-error ignore
+      const [pool]: [FormattedPool] = await Promise.all([byIndex(chainId, index)]);
+      console.log(v3Position, "resulkt");
+      setActiveStakeInfo((prevState) => ({
+        ...prevState,
+        position: v3Position,
+        activeVersion: "v3",
+        pool
 
-    console.log(token0, "Deposits by account: ", pool)
+      }))
+      activeStake = {
+        position: v3Position,
+        activeVersion: "v3",
+        pool
+      }
+    }
+    else {
+      //@ts-expect-error ignore
+      const [pool, position]: [FormattedPool, Position[]] = await Promise.all([byIndex(chainId, index), positions(chainId, 100, 0, address)]);
+      console.log(pool, "poolpool", position)
+      //@ts-expect-error ignore
+      const position_: Position = position.find((position_: Position) => position_.lp === pool.lp)
+      setActiveStakeInfo((prevState) => ({
+        ...prevState,
+        position: position_,
+        activeVersion: "v2",
+        pool
+
+      }))
+      activeStake = {
+        position: position_,
+        activeVersion: "v2",
+        pool
+      }
+    }
+
+    console.log(activeStake, "activeStakeInfo")
+
+
+    const token0 = getToken(activeStake?.pool!.token0)!;
+    const token1 = getToken(activeStake?.pool!.token1)!;
+    const rewardToken = getToken(activeStake.pool!.emissions_token);
 
     const stakeInfo = {
-      lp: pool.lp,
-      liquidity: Number(position_?.liquidity) / 10 ** 18,
+      lp: activeStake.pool!.lp,
+      liquidity: Number(activeStake.position!.liquidity) / 10 ** 18,
       token0: token0,
       token1: token1,
-      fee: pool.pool_fee || "",
-      type: PoolTypeMap[String(pool.type)],
-      token0Amount: String(Number(position_?.amount0) / 10 ** token0.decimals),
-      token1Amount: String(Number(position_?.amount1) / 10 ** token1.decimals),
-      unstaked0Amount: String(Number(position_?.staked0) / 10 ** token0.decimals),
-      unstaked1Amount: String(Number(position_?.staked1) / 10 ** token1.decimals),
-      apr: `${pool.apr}%`,
+      fee: activeStake.pool!.fee || "",
+      type: PoolTypeMap[String(activeStake.pool!.type)],
+      token0Amount: String(Number(activeStake.position?.amount0 || 0) / 10 ** token0.decimals),
+      token1Amount: String(Number(activeStake.position?.amount1 || 0) / 10 ** token1.decimals),
+      unstaked0Amount: String(Number(activeStake.position?.staked0 || 0) / 10 ** token0.decimals),
+      unstaked1Amount: String(Number(activeStake.position?.staked1 || 0) / 10 ** token1.decimals),
+      apr: `${activeStake.pool!.apr}%`,
       emissionsToken: rewardToken?.symbol ?? "",
-      emissionsAmount: rewardToken ? String(Number(position_?.emissions_earned) / 10 ** rewardToken.decimals) : "",
-      tradingFees0: String(Number(position_?.unstaked_earned0) / 10 ** token0.decimals),
-      tradingFees1: String(Number(position_?.unstaked_earned1) / 10 ** token1.decimals),
-      depositedUsd: `$${(parseFloat(String(pool?.poolBalance).replace("$", "")) * Number(position_?.liquidity) / pool?.liquidity).toFixed(2)}`,
-      poolTotalUsd: `${pool.poolBalance}`,
-      gauge: pool.gauge,
-      gauge_alive: pool.gauge_alive,
-      gauge_liquidity: pool.gauge_liquidity
+      emissionsAmount: rewardToken ? String(Number(activeStake.position?.emissions_earned || 0) / 10 ** rewardToken.decimals) : "",
+      tradingFees0: String(Number(activeStake.position?.unstaked_earned0 || 0) / 10 ** token0.decimals),
+      tradingFees1: String(Number(activeStake.position?.unstaked_earned1 || 0) / 10 ** token1.decimals),
+      depositedUsd: `$${(parseFloat(String(activeStake.pool!.poolBalance).replace("$", "")) * Number(activeStake.position!.liquidity) / activeStake.pool!.liquidity).toFixed(2)}`,
+      poolTotalUsd: `${activeStake.pool!.poolBalance}`,
+      gauge: activeStake.pool!.gauge,
+      gauge_alive: activeStake.pool!.gauge_alive,
+      gauge_liquidity: activeStake.pool!.gauge_liquidity
     } as StakeDetails;
 
     setStakeDetails(stakeInfo)
@@ -252,7 +311,7 @@ const StakePage = () => {
     }
   };
 
-  console.log("pool+++++>>>>>>>>>>>", stakeDetails)
+  console.log("pool+++++>>>>>>>>>>>", stakeDetails , activeStakeInfo)
 
   return (
     <div className='container px-3 py-5 flex flex-col grow h-full min-h-[55vh]'>
