@@ -120,11 +120,10 @@ export const stableTokens = (chainId: number) => {
 export const getMinTick = (tickSpacing: number) => Math.ceil(-887272 / tickSpacing) * tickSpacing
 export const getMaxTick = (tickSpacing: number) => Math.floor(887272 / tickSpacing) * tickSpacing
 
-export const TICK_SPACING = [1, 50, 100, 200, 2000] as const
+export const TICK_SPACING = [1, 50, 200, 2000] as const
 export const TICK_SPACING_TO_FEE = {
     1: 100,
     50: 500,
-    100: 500,
     200: 3000,
     2000: 10000
 }

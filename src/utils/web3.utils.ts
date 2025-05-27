@@ -666,8 +666,6 @@ export const fetchV3PoolsDetail = async (chainId: number, token0: string, token1
         TICK_SPACING.map(async (tickSpacing) => {
             try {
                 const pool = await clFactory.getPool(token0, token1, tickSpacing);
-                if (pool === ethers.ZeroAddress) return null;
-
                 const tickLower = getMinTick(tickSpacing);
                 const tickUpper = getMaxTick(tickSpacing);
 
@@ -685,6 +683,7 @@ export const fetchV3PoolsDetail = async (chainId: number, token0: string, token1
         })
     );
 
+    console.log(pools, "pool+++>>><<")
 
     return pools;
 };

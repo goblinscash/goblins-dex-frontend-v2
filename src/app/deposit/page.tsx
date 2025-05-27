@@ -25,6 +25,7 @@ import nfpmAbi from "@/abi/aerodrome/nfpm.json"
 import clFactoryAbi from "@/abi/aerodrome/clFactory.json"
 import { encodeSqrtRatioX96 } from "@uniswap/v3-sdk"
 import { getMaxTick, getMinTick } from "@/utils/constant.utils";
+import { toast } from "react-toastify";
 
 
 
@@ -79,16 +80,7 @@ const Deposit = () => {
   const [highPrice, setHighPrice] = useState(1.0006002);
 
   const [v3PositionDetails, setV3PositionDetails] = useState<(PoolConfig | null)[]>([]);
-
-  const feeTiers = [
-    { value: "0.01", label: "Best for very stable pairs." },
-    { value: "0.05", label: "Best for stable pairs." },
-    { value: "0.30", label: "Best for most pairs." },
-    { value: "1.00", label: "Best for exotic pairs." },
-  ];
-
-
-
+  const [selectedV3PositionDetails, setSelectedV3PositionDetails] = useState<(PoolConfig | null)>({});
 
 
   const handleChangeAmount = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -134,6 +126,7 @@ const Deposit = () => {
           setSelectedFee(Number(details[0]?.fee));
           setLowPrice(Number(details[0]?.tickLower))
           setLowPrice(Number(details[0]?.tickUpper))
+          setSelectedV3PositionDetails(details[0])
           setV3PositionDetails(details);
         })
         .catch((error) => {
@@ -372,19 +365,17 @@ const Deposit = () => {
 
   const mint = async () => {
     try {
-      if (!address) return alert("Please connect your wallet");
-      if (!amount0 || !amount1 || !token0 || !token1) return;
+      if (!address) return toast.warn("Please connect your wallet");
+      if (!amount0 || !amount1 || !token0 || !token1) return toast.warn("Enter the amounts for token0 and token1");
+      if (!selectedV3PositionDetails?.fee) return toast.warn("Select a fee tier")
 
       handleLoad("mint", true);
-      const tickSpacing = 1
-      const tickLower = getMinTick(tickSpacing)
-      const tickUpper = getMaxTick(tickSpacing)
       const amount0Desired = toUnits(amount0, token0?.decimals);
       const amount1Desired = toUnits(amount1, token1?.decimals);
       const amount0Min = 0;
       const amount1Min = 0;
       const deadline = Math.floor(Date.now() / 1000) + 600;
-      const sqrtPriceX96 = encodeSqrtRatioX96(3, 1)
+      const sqrtPriceX96 = encodeSqrtRatioX96(amount1Desired.toString(), amount0Desired.toString())
 
       const tx0Approve = await approve(
         token0.address,
@@ -416,17 +407,12 @@ const Deposit = () => {
         await signer
       )
 
-      const pool = await clFactoryInstance.getPool(token0.address, token1.address, tickSpacing)
-
-      if (pool == zeroAddr) {
+      if (selectedV3PositionDetails?.pool == zeroAddr) {
         const tx = await clFactoryInstance.createPool(
           token0.address,
           token1.address,
-          tickSpacing,
-          sqrtPriceX96.toString(),
-          {
-            gasLimit: 5000000
-          }
+          selectedV3PositionDetails?.tickSpacing,
+          sqrtPriceX96.toString()
         )
 
         await tx.wait()
@@ -442,18 +428,15 @@ const Deposit = () => {
         {
           token0: token0.address,
           token1: token1.address,
-          tickSpacing,
-          tickLower,
-          tickUpper,
+          tickSpacing: selectedV3PositionDetails.tickSpacing,
+          tickLower: selectedV3PositionDetails.tickLower,
+          tickUpper: selectedV3PositionDetails.tickUpper,
           amount0Desired,
           amount1Desired,
           amount0Min,
           amount1Min,
           recipient: address,
           deadline
-        },
-        {
-          gasLimit: 5000000
         }
       );
 
@@ -467,6 +450,7 @@ const Deposit = () => {
 
   }
 
+  console.log(selectedV3PositionDetails, "selectedV3PositionDetails")
   return (
     <>
       <section className="relative py-5 ">
@@ -531,12 +515,13 @@ const Deposit = () => {
                 <div className="md:col-span-7 col-span-12 md:sticky top-0 w-full px-4 bg-black text-white p-3 rounded-xl w-full space-y-4" >
                   <div className="bg-black text-white p-1 rounded-xl w-full max-w-md space-y-4">
                     <div>
-                      <p className="text-sm font-medium mb-2">{selectedFee} fee tier</p>
-                      <div className="grid grid-cols-5 gap-3">
+                      <p className="text-sm font-medium mb-2">{Number(selectedFee) / 10000} fee tier</p>
+                      <div className="grid grid-cols-4 gap-3">
                         {v3PositionDetails.map((tier: PoolConfig | null, index: number) => (
                           tier != null ? <button
                             key={index}
                             onClick={() => {
+                              setSelectedV3PositionDetails(tier)
                               setSelectedFee(Number(tier.fee));
                               setLowValue(Number(tier.tickLower));
                               setHighValue(Number(tier.tickUpper))
@@ -547,7 +532,7 @@ const Deposit = () => {
                                 ? "border-green-500 bg-green-900"
                                 : "border-gray-700 hover:border-gray-500"}`}
                           >
-                            <p className="font-bold">{tier.fee}%</p>
+                            <p className="font-bold">{Number(tier.fee) / 10000}%</p>
 
                           </button> : <button
                             key={index}
@@ -581,7 +566,7 @@ const Deposit = () => {
                                 const currentValue = lowValue;
                                 if (!isNaN(currentValue)) {
                                   const newVal = currentValue - 1;
-                              setLowValue(Number(newVal.toFixed(10)));
+                                  setLowValue(Number(newVal.toFixed(10)));
                                 }
                               }}
                             >
