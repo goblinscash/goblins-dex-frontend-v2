@@ -513,137 +513,141 @@ const Deposit = () => {
 
 
                 <div className="md:col-span-7 col-span-12 md:sticky top-0 w-full px-4 bg-black text-white p-3 rounded-xl w-full space-y-4" >
-                  <div className="bg-black text-white p-1 rounded-xl w-full max-w-md space-y-4">
-                    <div>
-                      <p className="text-sm font-medium mb-2">{Number(selectedFee) / 10000} fee tier</p>
-                      <div className="grid grid-cols-4 gap-3">
-                        {v3PositionDetails.map((tier: PoolConfig | null, index: number) => (
-                          tier != null ? <button
-                            key={index}
-                            onClick={() => {
-                              setSelectedV3PositionDetails(tier)
-                              setSelectedFee(Number(tier.fee));
-                              setLowValue(Number(tier.tickLower));
-                              setHighValue(Number(tier.tickUpper))
+                  {type == 1 &&
+                    <>
+                      <div className="bg-black text-white p-1 rounded-xl w-full max-w-md space-y-4">
+                        <div>
+                          <p className="text-sm font-medium mb-2">{Number(selectedFee) / 10000} fee tier</p>
+                          <div className="grid grid-cols-4 gap-3">
+                            {v3PositionDetails.map((tier: PoolConfig | null, index: number) => (
+                              tier != null ? <button
+                                key={index}
+                                onClick={() => {
+                                  setSelectedV3PositionDetails(tier)
+                                  setSelectedFee(Number(tier.fee));
+                                  setLowValue(Number(tier.tickLower));
+                                  setHighValue(Number(tier.tickUpper))
 
-                            }}
-                            className={`border p-3 rounded-lg text-sm transition-all duration-150 text-center whitespace-nowrap
+                                }}
+                                className={`border p-3 rounded-lg text-sm transition-all duration-150 text-center whitespace-nowrap
             ${selectedFee === Number(tier?.fee)
-                                ? "border-green-500 bg-green-900"
-                                : "border-gray-700 hover:border-gray-500"}`}
-                          >
-                            <p className="font-bold">{Number(tier.fee) / 10000}%</p>
+                                    ? "border-green-500 bg-green-900"
+                                    : "border-gray-700 hover:border-gray-500"}`}
+                              >
+                                <p className="font-bold">{Number(tier.fee) / 10000}%</p>
 
-                          </button> : <button
-                            key={index}
-                            onClick={() => {
-                              setSelectedFee(0);
+                              </button> : <button
+                                key={index}
+                                onClick={() => {
+                                  setSelectedFee(0);
 
-                              setLowValue(Number(0));
-                              setHighValue(Number(0))
-                            }}
-                            className={`border p-3 rounded-lg text-sm transition-all duration-150 text-center whitespace-nowrap
+                                  setLowValue(Number(0));
+                                  setHighValue(Number(0))
+                                }}
+                                className={`border p-3 rounded-lg text-sm transition-all duration-150 text-center whitespace-nowrap
                 ${selectedFee === null
-                                ? "border-green-500 bg-green-900"
-                                : "border-gray-700 hover:border-gray-500"}`}
-                          >
-                            <p className="font-bold">{0}%</p>
+                                    ? "border-green-500 bg-green-900"
+                                    : "border-gray-700 hover:border-gray-500"}`}
+                              >
+                                <p className="font-bold">{0}%</p>
 
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  {type == 1 && <div className="py-2">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="p-4 rounded-xl bg-[#111] border border-[#333333]">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="font-medium text-base">Low</span>
-                          <div className="flex">
-                            <button
-                              className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600 mr-1"
-                              onClick={() => {
-                                const currentValue = lowValue;
-                                if (!isNaN(currentValue)) {
-                                  const newVal = currentValue - 1;
-                                  setLowValue(Number(newVal.toFixed(10)));
-                                }
-                              }}
-                            >
-                              <span>−</span>
-                            </button>
-                            <button
-                              className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600 mr-1"
-                              onClick={() => {
-                                const currentValue = lowValue;
-                                if (!isNaN(currentValue)) {
-                                  const newVal = currentValue + 1;
-                                  setLowValue(Number(newVal.toFixed(10)));
-                                }
-                              }}
-                            >
-                              <span>+</span>
-                            </button>
-                            <button
-                              className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600"
-                              onClick={() => setLowValue(0)}
-                            >
-                              <span>0</span>
-                            </button>
+                              </button>
+                            ))}
                           </div>
                         </div>
-                        <div className="text-xl md:text-2xl font-bold mb-1 break-all">
-                          {lowValue}
-                        </div>
-                        <div className="text-right">
-                          <span className="text-red-400 text-xs md:text-sm">~$2,475.81</span>
-                        </div>
                       </div>
-                      <div className="p-4 rounded-xl bg-[#111] border border-[#333333]">
-                        <div className="flex justify-between items-center mb-2">
-                          <span className="font-medium text-base">High</span>
-                          <div className="flex">
-                            <button
-                              className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600 mr-1"
-                              onClick={() => {
-                                const currentValue = highValue;
-                                if (!isNaN(currentValue)) {
-                                  const newVal = currentValue - 1;
-                                  if (newVal >= 0) setHighValue(Number(newVal.toFixed(10)));
-                                }
-                              }}
-                            >
-                              <span>−</span>
-                            </button>
-                            <button
-                              className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600 mr-1"
-                              onClick={() => {
-                                const currentValue = highValue;
-                                if (!isNaN(currentValue)) {
-                                  const newVal = currentValue + 1;
-                                  setHighValue(Number(newVal.toFixed(10)));
-                                }
-                              }}
-                            >
-                              <span>+</span>
-                            </button>
-                            <button
-                              className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600"
-                              onClick={() => setHighValue(0)}
-                            >
-                              <span>∞</span>
-                            </button>
+                      <div className="py-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="p-4 rounded-xl bg-[#111] border border-[#333333]">
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="font-medium text-base">Low</span>
+                              <div className="flex">
+                                <button
+                                  className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600 mr-1"
+                                  onClick={() => {
+                                    const currentValue = lowValue;
+                                    if (!isNaN(currentValue)) {
+                                      const newVal = currentValue - 1;
+                                      setLowValue(Number(newVal.toFixed(10)));
+                                    }
+                                  }}
+                                >
+                                  <span>−</span>
+                                </button>
+                                <button
+                                  className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600 mr-1"
+                                  onClick={() => {
+                                    const currentValue = lowValue;
+                                    if (!isNaN(currentValue)) {
+                                      const newVal = currentValue + 1;
+                                      setLowValue(Number(newVal.toFixed(10)));
+                                    }
+                                  }}
+                                >
+                                  <span>+</span>
+                                </button>
+                                <button
+                                  className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600"
+                                  onClick={() => setLowValue(0)}
+                                >
+                                  <span>0</span>
+                                </button>
+                              </div>
+                            </div>
+                            <div className="text-xl md:text-2xl font-bold mb-1 break-all">
+                              {lowValue}
+                            </div>
+                            <div className="text-right">
+                              <span className="text-red-400 text-xs md:text-sm">~$2,475.81</span>
+                            </div>
+                          </div>
+                          <div className="p-4 rounded-xl bg-[#111] border border-[#333333]">
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="font-medium text-base">High</span>
+                              <div className="flex">
+                                <button
+                                  className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600 mr-1"
+                                  onClick={() => {
+                                    const currentValue = highValue;
+                                    if (!isNaN(currentValue)) {
+                                      const newVal = currentValue - 1;
+                                      if (newVal >= 0) setHighValue(Number(newVal.toFixed(10)));
+                                    }
+                                  }}
+                                >
+                                  <span>−</span>
+                                </button>
+                                <button
+                                  className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600 mr-1"
+                                  onClick={() => {
+                                    const currentValue = highValue;
+                                    if (!isNaN(currentValue)) {
+                                      const newVal = currentValue + 1;
+                                      setHighValue(Number(newVal.toFixed(10)));
+                                    }
+                                  }}
+                                >
+                                  <span>+</span>
+                                </button>
+                                <button
+                                  className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600"
+                                  onClick={() => setHighValue(0)}
+                                >
+                                  <span>∞</span>
+                                </button>
+                              </div>
+                            </div>
+                            <div className="text-xl md:text-2xl font-bold mb-1 break-all">
+                              {highValue}
+                            </div>
+                            <div className="text-right">
+                              <span className="text-red-400 text-xs md:text-sm">~$2,628.9</span>
+                            </div>
                           </div>
                         </div>
-                        <div className="text-xl md:text-2xl font-bold mb-1 break-all">
-                          {highValue}
-                        </div>
-                        <div className="text-right">
-                          <span className="text-red-400 text-xs md:text-sm">~$2,628.9</span>
-                        </div>
                       </div>
-                    </div>
-                  </div>}
+                    </>
+                  }
 
 
                   <div className="py-2">
