@@ -131,7 +131,9 @@ const Deposit = () => {
       fetchV3PoolsDetail(chainId, token0.address, token1.address)
         .then((details: (PoolConfig | null)[]) => {
           // const filtered: PoolConfig[] = details.filter((item): item is PoolConfig => item !== null);
-
+          setSelectedFee(Number(details[0]?.fee));
+          setLowPrice(Number(details[0]?.tickLower))
+          setLowPrice(Number(details[0]?.tickUpper))
           setV3PositionDetails(details);
         })
         .catch((error) => {
