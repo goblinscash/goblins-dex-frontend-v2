@@ -9,6 +9,7 @@ import {
   approve,
   erc20Balance,
   fetchTokenDetails,
+  fetchV3PoolsDetail,
   quoteV2AddLiquidity,
 } from "@/utils/web3.utils";
 import { aerodromeContracts, zeroAddr } from "@/utils/config.utils";
@@ -24,6 +25,18 @@ import nfpmAbi from "@/abi/aerodrome/nfpm.json"
 import clFactoryAbi from "@/abi/aerodrome/clFactory.json"
 import { encodeSqrtRatioX96 } from "@uniswap/v3-sdk"
 import { getMaxTick, getMinTick } from "@/utils/constant.utils";
+
+
+
+type PoolConfig = {
+  pool?: string;         // Address of the pool (Ethereum-style)
+  fee?: number;          // Fee in basis points (e.g., 100 = 0.01%)
+  tickSpacing?: number;  // Distance between allowable ticks
+  tickLower?: number;    // Lower tick bound
+  tickUpper?: number;    // Upper tick bound
+};
+
+
 
 const Deposit = () => {
   const [load, setLoad] = useState<{ [key: string]: boolean }>({});
@@ -44,8 +57,8 @@ const Deposit = () => {
   const [token, setToken] = useState<Token | null>(null);
   const [amount0, setAmount0] = useState("");
   const [amount1, setAmount1] = useState("");
-  const [lowValue, setLowValue] = useState("2470.38521");
-  const [highValue, setHighValue] = useState("2622.6691");
+  const [lowValue, setLowValue] = useState<number>(0);
+  const [highValue, setHighValue] = useState<number>(0);
   const [pool, setPool] = useState<FormattedPool | null>(null);
   const [ratio, setRatio] = useState<number | null>(null)
 
@@ -58,6 +71,25 @@ const Deposit = () => {
     isRewardAdded: false,
     isAllowanceForToken: false,
   });
+
+
+
+  const [selectedFee, setSelectedFee] = useState<number | null>(0);
+  const [lowPrice, setLowPrice] = useState(0.99860105);
+  const [highPrice, setHighPrice] = useState(1.0006002);
+
+  const [v3PositionDetails, setV3PositionDetails] = useState<(PoolConfig | null)[]>([]);
+
+  const feeTiers = [
+    { value: "0.01", label: "Best for very stable pairs." },
+    { value: "0.05", label: "Best for stable pairs." },
+    { value: "0.30", label: "Best for most pairs." },
+    { value: "1.00", label: "Best for exotic pairs." },
+  ];
+
+
+
+
 
   const handleChangeAmount = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -87,12 +119,24 @@ const Deposit = () => {
   useEffect(() => {
     if (chainId && id) {
       fetchPoolByIndex(chainId, Number(id));
+
     }
   }, [searchParams, chainId, id]);
 
   useEffect(() => {
     if (chainId && amount0 && amount1 && token0 && token1) {
       checkAllownceStatus(chainId);
+    }
+    if (token0?.address && token1?.address) {
+      fetchV3PoolsDetail(chainId, token0.address, token1.address)
+        .then((details: (PoolConfig | null)[]) => {
+          // const filtered: PoolConfig[] = details.filter((item): item is PoolConfig => item !== null);
+
+          setV3PositionDetails(details);
+        })
+        .catch((error) => {
+          console.error(error, "error");
+        });
     }
   }, [chainId, amount0, amount1, token0]);
 
@@ -113,7 +157,12 @@ const Deposit = () => {
     if (chainId && token?.address && address) {
       fetchRewardTokenBalance();
     }
+
   }, [chainId, token?.address, address]);
+
+  useEffect(() => {
+
+  }, [])
 
   useEffect(() => {
     if (chainId && token0?.address) {
@@ -162,7 +211,7 @@ const Deposit = () => {
 
       //@ts-expect-error ignore
       let ratio = fromUnits(data.amountOne, token0.decimals) / fromUnits(data.amountTwo, token1.decimals)
-      ratio = type == 1 ? 1: ratio 
+      ratio = type == 1 ? 1 : ratio
       setRatio(ratio)
     } catch (error) {
       setRatio(null)
@@ -250,6 +299,8 @@ const Deposit = () => {
     setToken1(newToken1);
   };
 
+
+  console.log(v3PositionDetails, "v3PositionDetails")
   const addLiquidity = async () => {
     try {
       if (!address) return alert("Please connect your wallet");
@@ -364,7 +415,7 @@ const Deposit = () => {
       )
 
       const pool = await clFactoryInstance.getPool(token0.address, token1.address, tickSpacing)
-      console.log(pool, "poolpool")
+
       if (pool == zeroAddr) {
         const tx = await clFactoryInstance.createPool(
           token0.address,
@@ -414,7 +465,6 @@ const Deposit = () => {
 
   }
 
-  console.log(ratio)
   return (
     <>
       <section className="relative py-5 ">
@@ -474,7 +524,49 @@ const Deposit = () => {
 
                   </div>
                 </div>
-                <div className="md:col-span-7 col-span-12 md:sticky top-0">
+
+
+                <div className="md:col-span-7 col-span-12 md:sticky top-0 w-full px-4 bg-black text-white p-3 rounded-xl w-full space-y-4" >
+                  <div className="bg-black text-white p-1 rounded-xl w-full max-w-md space-y-4">
+                    <div>
+                      <p className="text-sm font-medium mb-2">{selectedFee} fee tier</p>
+                      <div className="grid grid-cols-5 gap-3">
+                        {v3PositionDetails.map((tier: PoolConfig | null, index: number) => (
+                          tier != null ? <button
+                            key={index}
+                            onClick={() => {
+                              setSelectedFee(Number(tier.fee));
+                              setLowValue(Number(tier.tickLower));
+                              setHighValue(Number(tier.tickUpper))
+
+                            }}
+                            className={`border p-3 rounded-lg text-sm transition-all duration-150 text-center whitespace-nowrap
+            ${selectedFee === Number(tier?.fee)
+                                ? "border-green-500 bg-green-900"
+                                : "border-gray-700 hover:border-gray-500"}`}
+                          >
+                            <p className="font-bold">{tier.fee}%</p>
+
+                          </button> : <button
+                            key={index}
+                            onClick={() => {
+                              setSelectedFee(0);
+
+                              setLowValue(Number(0));
+                              setHighValue(Number(0))
+                            }}
+                            className={`border p-3 rounded-lg text-sm transition-all duration-150 text-center whitespace-nowrap
+                ${selectedFee === null
+                                ? "border-green-500 bg-green-900"
+                                : "border-gray-700 hover:border-gray-500"}`}
+                          >
+                            <p className="font-bold">{0}%</p>
+
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                   {type == 1 && <div className="py-2">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="p-4 rounded-xl bg-[#111] border border-[#333333]">
@@ -484,10 +576,10 @@ const Deposit = () => {
                             <button
                               className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600 mr-1"
                               onClick={() => {
-                                const currentValue = parseFloat(lowValue);
+                                const currentValue = lowValue;
                                 if (!isNaN(currentValue)) {
                                   const newVal = currentValue - 1;
-                                  if (newVal >= 0) setLowValue(newVal.toFixed(10));
+                              setLowValue(Number(newVal.toFixed(10)));
                                 }
                               }}
                             >
@@ -496,10 +588,10 @@ const Deposit = () => {
                             <button
                               className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600 mr-1"
                               onClick={() => {
-                                const currentValue = parseFloat(lowValue);
+                                const currentValue = lowValue;
                                 if (!isNaN(currentValue)) {
                                   const newVal = currentValue + 1;
-                                  setLowValue(newVal.toFixed(10));
+                                  setLowValue(Number(newVal.toFixed(10)));
                                 }
                               }}
                             >
@@ -507,7 +599,7 @@ const Deposit = () => {
                             </button>
                             <button
                               className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600"
-                              onClick={() => setLowValue("0")}
+                              onClick={() => setLowValue(0)}
                             >
                               <span>0</span>
                             </button>
@@ -527,10 +619,10 @@ const Deposit = () => {
                             <button
                               className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600 mr-1"
                               onClick={() => {
-                                const currentValue = parseFloat(highValue);
+                                const currentValue = highValue;
                                 if (!isNaN(currentValue)) {
                                   const newVal = currentValue - 1;
-                                  if (newVal >= 0) setHighValue(newVal.toFixed(10));
+                                  if (newVal >= 0) setHighValue(Number(newVal.toFixed(10)));
                                 }
                               }}
                             >
@@ -539,10 +631,10 @@ const Deposit = () => {
                             <button
                               className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600 mr-1"
                               onClick={() => {
-                                const currentValue = parseFloat(highValue);
+                                const currentValue = highValue;
                                 if (!isNaN(currentValue)) {
                                   const newVal = currentValue + 1;
-                                  setHighValue(newVal.toFixed(10));
+                                  setHighValue(Number(newVal.toFixed(10)));
                                 }
                               }}
                             >
@@ -550,7 +642,7 @@ const Deposit = () => {
                             </button>
                             <button
                               className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600"
-                              onClick={() => setHighValue("∞")}
+                              onClick={() => setHighValue(0)}
                             >
                               <span>∞</span>
                             </button>

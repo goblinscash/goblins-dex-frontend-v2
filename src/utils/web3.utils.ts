@@ -649,6 +649,8 @@ export const fetchV2Pools = async (chainId: number, token0: string, token1: stri
     }]
 }
 
+
+//fetchV3PoolsDetailfetchV3PoolsDetailfetchV3PoolsDetailfetchV3PoolsDetail
 export const fetchV3PoolsDetail = async (chainId: number, token0: string, token1: string) => {
     if (!isValidChainId(chainId)) {
         throw new Error(`Invalid chainId: ${chainId}`);
