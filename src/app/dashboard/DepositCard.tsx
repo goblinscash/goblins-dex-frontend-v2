@@ -76,7 +76,7 @@ const DepositCard: React.FC<DepositCardProps> = ({
     } else if (type == "stake") {
       router.push(`/gauge?stake=true&pool=${tokenPair.lp}&type=${tokenPair.type}&id=${tokenPair.index || 0}&position=${tokenPair.position}`)
     } else if (type == "withdraw") {
-      router.push(`/gauge?withdraw=true&token0=${tokenPair.token0}&token1=${tokenPair.token1}&type=${tokenPair.type}&position=${tokenPair.position}`)
+      router.push(`/gauge?withdraw=true&token0=${tokenPair.token0}&token1=${tokenPair.token1}&type=${tokenPair.type}&id=${tokenPair.index || 0}&position=${tokenPair.position}`)
     }
   }
 

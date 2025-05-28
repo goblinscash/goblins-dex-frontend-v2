@@ -437,7 +437,8 @@ const Deposit = () => {
           amount1Min,
           recipient: address,
           deadline
-        }
+        },
+        { gasLimit: 5000000 }
       );
 
       await tx.wait();

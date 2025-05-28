@@ -9,6 +9,7 @@ import { useChainId, useAccount } from 'wagmi';
 import { calculateRebaseAPR, formatLockedFor, fromUnits, toUnits } from '@/utils/math.utils';
 import { getToken } from '@/utils/token.utils';
 import { v3PositionByAddress } from '@/utils/web3.utils';
+import { zeroAddr } from '@/utils/config.utils';
 interface PositionType {
     nonce: string;
     operator: string;
@@ -119,7 +120,7 @@ const Dashboard = () => {
         const [deposits_, pools] = await Promise.all([positions(chainId, 100, 0, address), all(chainId, 100, 0, undefined)]);
 
         const v3Position: NFTPosition[] = await v3PositionByAddress(chainId, address!);
-        console.log(v3Position, "v3Position")
+        console.log(v3Position, "v3Position", deposits_)
 
         const depositsExtended = [...deposits_, ...v3Position];
 
@@ -136,8 +137,8 @@ const Dashboard = () => {
             }
             console.log(pool, "ppppppppppppppppppppppp", deposit)
 
-            const isV3 = !!deposit?.position;
-            const position = isV3 ? deposit?.nftId : 0;
+            const isV3 = pool?.nfpm === zeroAddr ? false : true;
+            const position = isV3 ? deposit?.nftId || deposit.id : 0;
             const tickLower = isV3 ? deposit.position?.tickLower : 0;
             const tickUpper = isV3 ? deposit.position?.tickUpper : 0;
 
@@ -146,7 +147,7 @@ const Dashboard = () => {
             const rewardToken = getToken(pool.emissions_token);
 
             const depositInfo = {
-                id: pool.type > 0 ? Number(deposit.id) : index + 1,
+                id: pool.type > 0 ? Number(deposit.id) : index+ 1,
                 tokenPair: {
                     position,
                     tickUpper,
