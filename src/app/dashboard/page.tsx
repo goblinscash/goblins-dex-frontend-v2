@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from 'react';
+import DocumentationModal from '@/components/modals/DocumentationModal';
 import DepositCard from './DepositCard';
 import LockCard from './LockCard';
 import ClaimCard from './ClaimCard';
@@ -74,6 +75,77 @@ const Dashboard = () => {
     const [expandedDepositStates, setExpandedDepositStates] = useState<{ [key: number]: boolean }>({});
     const [open, setOpen] = useState(false);
     const [v3PositionData, setV3PositionData] = useState<NFTPosition[]>([]);
+
+    const [isLiquidityRewardsModalOpen, setIsLiquidityRewardsModalOpen] = useState(false);
+    const [isLocksModalOpen, setIsLocksModalOpen] = useState(false);
+    const [isVotingRewardsModalOpen, setIsVotingRewardsModalOpen] = useState(false);
+
+    const liquidityPoolsAndRewardsContent = (
+      <>
+        <h4>Understanding Liquidity Pools in Goblins Cash V2</h4>
+        <p>The core functionality of Goblins Cash V2 is to allow users to exchange tokens in a secure way, with low fees and low slippage.</p>
+        <p>Slippage is the difference between the current market price of a token and the price at which the actual exchange/swap is executed...</p>
+        <p>To provide access to the best rates on the market, Goblins Cash V2 utilizes different types of tokens:<ul><li><strong>Correlated tokens:</strong> Assets expected to trade closely in price (e.g., stablecoins like $USDC, $DAI).</li><li><strong>Uncorrelated tokens:</strong> Assets whose prices are not expected to move closely (e.g., $GOB, $BTC).</li></ul></p>
+        <p>Goblins Cash V2 offers different liquidity pool types... primarily Stable Pools and Volatile Pools...</p>
+        <p>The protocol&apos;s router evaluates pool types... uses time-weighted average prices (TWAPs)...</p>
+        <p>The deeper the liquidity... the smaller the slippage...</p>
+        <h5>Pool Types:</h5>
+        <p><strong>Stable Pools:</strong> Designed for tokens with little to no volatility relative to each other. Common formula: <code>x³y + y³x ≥ k</code></p>
+        <p><strong>Volatile Pools:</strong> Designed for tokens with higher price volatility. Common formula: <code>x × y ≥ k</code></p>
+        <p><strong>Concentrated Liquidity (CL) Pools:</strong> Allow LPs to deposit assets within a specific price range... using &quot;ticks&quot;...</p>
+        <ul>
+          <li><strong>Tick Spacing:</strong> Minimum price movement between ranges. Examples: Stable tokens (0.01%-0.5%), Volatile tokens (2%+).</li>
+          <li><strong>CL Pool Symbols:</strong> Often indicate nature, e.g., <code>CL1-wstETH/WETH</code>.</li>
+          <li><strong>CL Pool Fees:</strong> Can be adjusted flexibly.</li>
+        </ul>
+        <h4>Understanding Rewards & APR Calculation in Goblins Cash V2</h4>
+        <p>Providing liquidity... can earn rewards from transaction fees and potential token incentives (emissions).</p>
+        <h5>Calculating APRs (Annual Percentage Rate):</h5>
+        <p><strong>For Basic Pools:</strong> APR generally based on rewards earned / total value of staked liquidity.</p>
+        <p><strong>For Concentrated Liquidity (CL) Pools:</strong> APR calculation is nuanced, considering rewards for liquidity in the active trading price range.</p>
+      </>
+    );
+
+    const votingRewardsContent = (
+      <>
+        <h4>Fees</h4>
+        <p>Token pairs in Goblins Cash V2 capture fees from the trading volume enabled by the liquidity in each pool.</p>
+        <p>The fees collected by staked Liquidity Providers (LPs) in the previous epoch are often deposited as incentives for the current voting epoch.</p>
+        <p>Fee rewards are distributed in the same tokens as the liquidity pool tokens from which they originate. For example, if the pool is a Goblins Cash V2 AMM pool for GOB/USDC, the distributed fee tokens would be $GOB and $USDC.</p>
+        <p>Fee rewards that are part of direct LP earnings are typically distributed as accrued and can be claimed at any time. Fee rewards deposited as voter incentives are usually available for claim after the epoch changes (e.g., Thursday 00:00 UTC) and are distributed proportionally to the voting power cast by a voter (e.g., $veGOB).</p>
+
+        <h4>Incentives</h4>
+        <p>In addition to fee rewards, liquidity pools can receive external voter rewards from protocols or other participants (these are often known as incentives).</p>
+        <p>Incentives can be deposited for whitelisted tokens and are distributed only to voters on that specific pool, proportionally to their share of pool votes.</p>
+        <p>These rewards are typically available for claim after the epoch changes (e.g., Thursday 00:00 UTC) and are distributed proportionally to the voting power cast by a voter (e.g., $veGOB).</p>
+
+        <h4>Rewards Claim</h4>
+        <p>Rebase rewards, if applicable within the Goblins Cash V2 system, are typically claimable after a new epoch has started (e.g., Thursday 00:00 UTC).</p>
+        <p><strong>An example of incentives, voting, and rewards claim timeline:</strong></p>
+        <ul>
+          <li>A new epoch starts (e.g., Thursday 00:00 UTC).</li>
+          <li>Incentives are deposited by projects or individuals at any point during the epoch.</li>
+          <li>Voters use their voting power (e.g., $veGOB) to vote for their preferred pools.</li>
+          <li>Once the next epoch arrives (e.g., the following Thursday 00:00 UTC), users are able to claim the rewards earned from the concluded epoch.</li>
+        </ul>
+      </>
+    );
+
+    const locksContent = (
+      <>
+        <h4>Understanding Locks (veNFTs) in Goblins Cash V2</h4>
+        <p>Locking your GOB tokens (or other designated tokens) allows you to participate in protocol governance and earn a share of protocol fees and emissions. These locks are often represented as veNFTs (Vote-Escrowed Non-Fungible Tokens).</p>
+        <p><strong>Key Aspects of Locks:</strong></p>
+        <ul>
+          <li><strong>Voting Power:</strong> The longer you lock your tokens, and the greater the amount, the more voting power (e.g., veGOB) you receive.</li>
+          <li><strong>Rewards:</strong> This voting power is then used to vote on which liquidity pools receive token emissions. As a voter, you typically earn a share of the transaction fees from the pools you vote for, plus a portion of the emissions.</li>
+          <li><strong>Boosties:</strong> Some systems allow locks to boost the rewards earned from liquidity provision.</li>
+        </ul>
+        <p>The APR for rewards earned via locks and voting is influenced by the total rewards distributed and the total voting power participating.</p>
+        <br/>
+        {liquidityPoolsAndRewardsContent} {/* Append general pool info */}
+      </>
+    );
 
     const chainId = useChainId();
     const { address } = useAccount();
@@ -208,7 +280,10 @@ const Dashboard = () => {
                 <div className="w-full flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-5">
                     <div className="flex items-center gap-2">
                         <h1 className="text-xl font-medium text-white whitespace-nowrap">Liquidity Rewards</h1>
-                        <button className="w-5 h-5 rounded-full bg-[#2A2A2A] flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#3A3A3A]">
+                        <button 
+                            onClick={() => setIsLiquidityRewardsModalOpen(true)}
+                            className="w-5 h-5 rounded-full bg-[#2A2A2A] flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#3A3A3A]"
+                        >
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-3 h-3">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
@@ -254,7 +329,10 @@ const Dashboard = () => {
                 <div className="w-full flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-5">
                     <div className="flex items-center gap-2">
                         <h1 className="text-xl font-medium text-white whitespace-nowrap">Locks</h1>
-                        <button className="w-5 h-5 rounded-full bg-[#2A2A2A] flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#3A3A3A]">
+                        <button 
+                            onClick={() => setIsLocksModalOpen(true)}
+                            className="w-5 h-5 rounded-full bg-[#2A2A2A] flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#3A3A3A]"
+                        >
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-3 h-3">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
@@ -297,7 +375,10 @@ const Dashboard = () => {
                 <div className="w-full flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0 mb-5">
                     <div className="flex items-center gap-2">
                         <h1 className="text-xl font-medium font-bold text-white whitespace-nowrap">Voting Rewards</h1>
-                        <button className="w-5 h-5 rounded-full bg-[#2A2A2A] flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#3A3A3A]">
+                        <button 
+                            onClick={() => setIsVotingRewardsModalOpen(true)}
+                            className="w-5 h-5 rounded-full bg-[#2A2A2A] flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#3A3A3A]"
+                        >
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-3 h-3">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
@@ -358,6 +439,25 @@ const Dashboard = () => {
                     ))}
                 </div>
             </div>
+
+            <DocumentationModal
+              isOpen={isLiquidityRewardsModalOpen}
+              onClose={() => setIsLiquidityRewardsModalOpen(false)}
+              title="Liquidity Pools & Rewards Explained"
+              content={liquidityPoolsAndRewardsContent}
+            />
+            <DocumentationModal
+              isOpen={isLocksModalOpen}
+              onClose={() => setIsLocksModalOpen(false)}
+              title="Locks Explained"
+              content={locksContent}
+            />
+            <DocumentationModal
+              isOpen={isVotingRewardsModalOpen}
+              onClose={() => setIsVotingRewardsModalOpen(false)}
+              title="Voting Rewards Explained"
+              content={votingRewardsContent}
+            />
         </div>
     );
 };
