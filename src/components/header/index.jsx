@@ -22,6 +22,7 @@ const Header = () => {
   const currentPath = usePathname();
   const [openDropdown, setOpenDropdown] = useState(null);
   const [menu, setMenu] = useState("");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const { address } = useAccount();
   const { open } = useWeb3Modal();
@@ -35,6 +36,22 @@ const Header = () => {
   };
 
   const isChecked = theme === "dark";
+
+  const menuIcon = (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+    </svg>
+  );
+
+  const closeIcon = (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  );
+
+  const handleLinkClick = () => {
+    setIsMobileMenuOpen(false);
+  };
 
   return (
     <>
@@ -51,52 +68,68 @@ const Header = () => {
               height={10000}
               width={10000}
             />
-            <MobileMenu
-              className={`cstmMenu ml-8 flex items-center justify-start w-full ps-lg-4 gap-2`}
+
+            {/* Hamburger Button */}
+            <div className="md:hidden">
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="text-[var(--text-color)] focus:outline-none"
+              >
+                {isMobileMenuOpen ? closeIcon : menuIcon}
+              </button>
+            </div>
+
+            {/* Navigation Links */}
+            <div
+              className={`
+                ${isMobileMenuOpen ? 'flex flex-col absolute top-full left-0 right-0 shadow-lg p-4 z-50 md:hidden' : 'hidden'}
+                md:flex md:items-center md:justify-start md:static md:ml-8 md:shadow-none md:p-0 md:gap-2
+              `}
+              style={{ background: isMobileMenuOpen ? "var(--backgroundColor)" : "transparent" }}
             >
-              <div className="left flex items-center gap-3">
-                <ul className="list-none pl-0 mb-0 flex items-center justify-end gap-3">
-                  <li className={`px-2 ${currentPath === "/dashboard" ? "menu-item-active" : "menu-item-inactive"}`}>
-                    <Link href="/dashboard" className="">
-                      Dashboard
-                    </Link>
-                  </li>
-                  <li className={`px-2 ${currentPath === "/swap" ? "menu-item-active" : "menu-item-inactive"}`}>
-                    <Link href="/swap" className="">
-                      Swap
-                    </Link>
-                  </li>
-                  <li className={`px-2 ${currentPath === "/liquidity" ? "menu-item-active" : "menu-item-inactive"}`}>
-                    <Link href="/liquidity" className="">
-                      Liquidity
-                    </Link>
-                  </li>
-                  <li className={`px-2 ${currentPath === "/locks" ? "menu-item-active" : "menu-item-inactive"}`}>
-                    <Link href="/locks" className="">
-                      Lock
-                    </Link>
-                  </li>
-                  <li className={`px-2 ${currentPath === "/vote" ? "menu-item-active" : "menu-item-inactive"}`}>
-                    <Link href="/vote" className="">
-                      Vote
-                    </Link>
-                  </li>
-                  <li className={`px-2 ${currentPath === "/incentivize" ? "menu-item-active" : "menu-item-inactive"}`}>
-                    <Link href="/incentivize" className="">
-                      Incentivize
-                    </Link>
-                  </li>
-                </ul>
-              </div>
-            </MobileMenu>
+              <ul className={`list-none pl-0 mb-0 flex items-center gap-3 ${isMobileMenuOpen ? 'flex-col w-full space-y-2 items-start' : 'justify-end md:flex'}`}>
+                <li className={`px-2 ${currentPath === "/dashboard" ? "menu-item-active" : "menu-item-inactive"}`}>
+                  <Link href="/dashboard" className="" onClick={handleLinkClick}>
+                    Dashboard
+                  </Link>
+                </li>
+                <li className={`px-2 ${currentPath === "/swap" ? "menu-item-active" : "menu-item-inactive"}`}>
+                  <Link href="/swap" className="" onClick={handleLinkClick}>
+                    Swap
+                  </Link>
+                </li>
+                <li className={`px-2 ${currentPath === "/liquidity" ? "menu-item-active" : "menu-item-inactive"}`}>
+                  <Link href="/liquidity" className="" onClick={handleLinkClick}>
+                    Liquidity
+                  </Link>
+                </li>
+                <li className={`px-2 ${currentPath === "/locks" ? "menu-item-active" : "menu-item-inactive"}`}>
+                  <Link href="/locks" className="" onClick={handleLinkClick}>
+                    Lock
+                  </Link>
+                </li>
+                <li className={`px-2 ${currentPath === "/vote" ? "menu-item-active" : "menu-item-inactive"}`}>
+                  <Link href="/vote" className="" onClick={handleLinkClick}>
+                    Vote
+                  </Link>
+                </li>
+                <li className={`px-2 ${currentPath === "/incentivize" ? "menu-item-active" : "menu-item-inactive"}`}>
+                  <Link href="/incentivize" className="" onClick={handleLinkClick}>
+                    Incentivize
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            
+            {/* Connect Button and other right-side elements */}
             <MobileMenu
-              className={`cstmMenu flex items-center justify-end w-full ps-lg-4 gap-2`}
+              className={`cstmMenu flex items-center justify-end ps-lg-4 gap-2 ${isMobileMenuOpen ? 'hidden md:flex' : 'flex'}`} // Hide on mobile when menu is open, or adjust styling
             >
               <div className="right flex items-center gap-3">
                 <ul className="list-none pl-0 mb-0 flex items-center justify-end gap-3">
                   <li className="px-1">
                     <button
-                      className="btn flex items-center justify-center commonBtn rounded text-xs font-medium "
+                      className="btn flex items-center justify-center commonBtn rounded text-xs font-medium"
                       onClick={connect}
                     >
                       {address ? (
@@ -123,6 +156,10 @@ const MobileMenu = styled.div`
   a {
     transition: 0.4s;
     /* The &:hover rule that set color to #00ff4e has been removed */
+  }
+  /* Ensure this styled component does not interfere with Tailwind's visibility classes */
+  &.hidden {
+    display: none !important; /* Override if necessary, though Tailwind should handle it */
   }
 `;
 

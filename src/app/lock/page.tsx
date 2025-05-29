@@ -249,8 +249,8 @@ const Deposit = () => {
                             </span>
                           </div>
                           <div className="py-2">
-                            <div className="flex border border-gray-800 rounded mt-1">
-                              <div className="left relative flex items-center gap-2 p-3 border-r border-gray-800 w-[180px]">
+                            <div className="flex flex-col sm:flex-row border border-gray-800 rounded mt-1 gap-1">
+                              <div className="left relative flex items-center gap-2 p-3 border-r sm:border-r border-gray-800 w-full sm:w-[170px] md:w-[180px]">
                                 <span className="icn">
                                   {gobV2[chainId || 8453]?.address ? (
                                     <Logo

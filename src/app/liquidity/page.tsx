@@ -135,7 +135,7 @@ const column: Column[] = [
             <summary className="border-0 cursor-pointer p-0 flex items-center m-1">
               {moreIcn}
             </summary>
-            <ul className="menu dropdown-content z-[1] bg-base-100 bg-white rounded-box w-52 p-2 shadow-md text-dark absolute right-0 mt-2">
+            <ul className="menu dropdown-content z-[1] bg-base-100 bg-white rounded-box w-48 sm:w-52 p-2 shadow-md text-dark absolute right-0 mt-2">
               <li className="border-b border-dashed border-[#000] py-1">
                 <Link
                   href={url}
@@ -247,7 +247,7 @@ const Liquidity = () => {
         <div className="grid gap-3 grid-cols-12">
           <div className="col-span-12">
             <div className="flex items-center justify-between flex-wrap">
-              <h4 className="m-0 font-bold text-2xl">Liquidity Pools</h4>
+              <h4 className="m-0 font-bold text-xl sm:text-2xl">Liquidity Pools</h4>
               <form action="">
                 <div className="flex items-center gap-3">
                   <Link

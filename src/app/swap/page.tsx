@@ -369,9 +369,9 @@ const Swap = () => {
                             Balance: {token0?.balance} {token0?.symbol}
                           </span>
                         </div>
-                        <div className="flex rounded mt-1">
+                        <div className="flex flex-col sm:flex-row rounded mt-1 gap-1">
                           <div
-                            className="cursor-pointer left relative flex items-center gap-2 p-3 border-r border-gray-800 w-[180px]"
+                            className="cursor-pointer left relative flex items-center gap-2 p-3 border-r border-gray-800 w-full sm:w-[170px] md:w-[180px]"
                             onClick={() => setTokenBeingSelected("token0")}
                           >
                             <span className="icn">
@@ -418,9 +418,9 @@ const Swap = () => {
                             Balance: {token1?.balance} {token1?.symbol}
                           </span>
                         </div>
-                        <div className="flex rounded mt-1">
+                        <div className="flex flex-col sm:flex-row rounded mt-1 gap-1">
                           <div
-                            className="cursor-pointer left relative flex items-center gap-2 p-3 border-r border-gray-800 w-[180px]"
+                            className="cursor-pointer left relative flex items-center gap-2 p-3 border-r border-gray-800 w-full sm:w-[170px] md:w-[180px]"
                             onClick={() => setTokenBeingSelected("token1")}
                           >
                             <span className="icn">
@@ -456,7 +456,7 @@ const Swap = () => {
                               <BtnLoader />
                             </div>
                           ) : (
-                            <div className="flex items-start justify-center my-4 gap-2">
+                            <div className="flex flex-wrap items-start justify-center my-4 gap-2">
                               {root?.length
                                 ? root.map((item: string, index: number) => (
                                   <div

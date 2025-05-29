@@ -196,7 +196,7 @@ const Pools = () => {
                   <div className="grid gap-3 grid-cols-12">
                     <div className="sm:col-span-6 col-span-12">
                       <div
-                        className="flex items-center relative iconWithText cursor-pointer rounded-lg bg-[#000e0e] gap-3 px-4 py-5"
+                        className="flex items-center relative iconWithText cursor-pointer rounded-lg bg-[#000e0e] gap-3 px-3 py-3 sm:px-4 sm:py-4 md:py-5"
                         onClick={() => setTokenBeingSelected("token0")}
                       >
                         <span className="absolute right-2 icn">{downIcn}</span>
@@ -221,7 +221,7 @@ const Pools = () => {
                     </div>
                     <div className="sm:col-span-6 col-span-12">
                       <div
-                        className="flex items-center relative iconWithText cursor-pointer rounded-lg bg-[#000e0e] gap-3 px-4 py-5"
+                        className="flex items-center relative iconWithText cursor-pointer rounded-lg bg-[#000e0e] gap-3 px-3 py-3 sm:px-4 sm:py-4 md:py-5"
                         onClick={() => setTokenBeingSelected("token1")}
                       >
                         <span className="absolute right-2 icn">{downIcn}</span>
@@ -246,7 +246,7 @@ const Pools = () => {
                     </div>
                     {token0?.address && token1?.address ? "" :
                       <div className="col-span-12">
-                        <div className="flex items-center relative iconWithText cursor-pointer rounded-lg bg-[#000e0e] gap-3 px-4 py-5">
+                        <div className="flex items-center relative iconWithText cursor-pointer rounded-lg bg-[#000e0e] gap-3 px-3 py-3 sm:px-4 sm:py-4 md:py-5">
                           <span className="">{infoIcn}</span>
                           <div className="content">
                             <p className="m-0 text-white/50 text-xs font-medium">

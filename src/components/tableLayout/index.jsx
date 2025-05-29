@@ -81,13 +81,13 @@ const Table = styled.table`
     vertical-align: top;
   }
   .table-cell-fixed-height {
-    height: 180px; /* Set a fixed height for all cells */
-    max-height: 180px;
-    overflow: hidden;
+    /* height: 180px; */ /* Set a fixed height for all cells */
+    /* max-height: 180px; */
+    /* overflow: hidden; */ /* Removed to allow content wrapping and dynamic height */
   }
   .table-cell-fixheight {
-    height: 180px; /* Set a fixed height for all cells */
-    max-height: 180px;
+    /* height: 180px; */ /* Set a fixed height for all cells */
+    /* max-height: 180px; */ /* Removed to allow content wrapping and dynamic height */
   }
 `;
 
