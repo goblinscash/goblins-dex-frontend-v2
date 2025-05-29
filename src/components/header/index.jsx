@@ -60,14 +60,58 @@ const Header = () => {
         style={{ zIndex: 999, background: "var(--backgroundColor)" }}
       >
         <div className="container px-3 py-2">
-          <nav className="flex items-center justify-between">
-            <Image
-              src={logo}
-              alt="logo"
-              className="max-w-full h-auto w-auto object-contain"
-              height={10000}
-              width={10000}
-            />
+          <nav className="flex items-center justify-between relative"> {/* Added relative class */}
+            <div className="flex items-center md:gap-4"> {/* New wrapper div */}
+              <Image
+                src={logo}
+                alt="logo"
+                className="max-w-full h-auto w-auto object-contain"
+                height={10000}
+                width={10000}
+              />
+
+              {/* Navigation Links */}
+              <div
+                className={`
+                  cstmMenu ${isMobileMenuOpen ? 'flex flex-col absolute top-full left-0 right-0 shadow-lg p-4 z-50 md:hidden' : 'hidden'}
+                  md:flex md:items-center md:justify-start md:static md:ml-8 md:shadow-none md:p-0 md:gap-2
+                `}
+                style={{ background: isMobileMenuOpen ? "var(--backgroundColor)" : "transparent" }}
+              >
+                <ul className={`list-none pl-0 mb-0 flex items-center gap-3 ${isMobileMenuOpen ? 'flex-col w-full space-y-2 items-start' : 'justify-end md:flex'}`}>
+                  <li className={`px-2 ${currentPath === "/dashboard" ? "menu-item-active" : "menu-item-inactive"}`}>
+                    <Link href="/dashboard" onClick={handleLinkClick}>
+                    Dashboard
+                  </Link>
+                </li>
+                <li className={`px-2 ${currentPath === "/swap" ? "menu-item-active" : "menu-item-inactive"}`}>
+                  <Link href="/swap" onClick={handleLinkClick}>
+                    Swap
+                  </Link>
+                </li>
+                <li className={`px-2 ${currentPath === "/liquidity" ? "menu-item-active" : "menu-item-inactive"}`}>
+                  <Link href="/liquidity" onClick={handleLinkClick}>
+                    Liquidity
+                  </Link>
+                </li>
+                <li className={`px-2 ${currentPath === "/locks" ? "menu-item-active" : "menu-item-inactive"}`}>
+                  <Link href="/locks" onClick={handleLinkClick}>
+                    Lock
+                  </Link>
+                </li>
+                <li className={`px-2 ${currentPath === "/vote" ? "menu-item-active" : "menu-item-inactive"}`}>
+                  <Link href="/vote" onClick={handleLinkClick}>
+                    Vote
+                  </Link>
+                </li>
+                <li className={`px-2 ${currentPath === "/incentivize" ? "menu-item-active" : "menu-item-inactive"}`}>
+                  <Link href="/incentivize" onClick={handleLinkClick}>
+                    Incentivize
+                  </Link>
+                </li>
+              </ul>
+              </div>
+            </div> {/* End of new wrapper div */}
 
             {/* Hamburger Button */}
             <div className="md:hidden">
@@ -77,48 +121,6 @@ const Header = () => {
               >
                 {isMobileMenuOpen ? closeIcon : menuIcon}
               </button>
-            </div>
-
-            {/* Navigation Links */}
-            <div
-              className={`
-                ${isMobileMenuOpen ? 'flex flex-col absolute top-full left-0 right-0 shadow-lg p-4 z-50 md:hidden' : 'hidden'}
-                md:flex md:items-center md:justify-start md:static md:ml-8 md:shadow-none md:p-0 md:gap-2
-              `}
-              style={{ background: isMobileMenuOpen ? "var(--backgroundColor)" : "transparent" }}
-            >
-              <ul className={`list-none pl-0 mb-0 flex items-center gap-3 ${isMobileMenuOpen ? 'flex-col w-full space-y-2 items-start' : 'justify-end md:flex'}`}>
-                <li className={`px-2 ${currentPath === "/dashboard" ? "menu-item-active" : "menu-item-inactive"}`}>
-                  <Link href="/dashboard" className="" onClick={handleLinkClick}>
-                    Dashboard
-                  </Link>
-                </li>
-                <li className={`px-2 ${currentPath === "/swap" ? "menu-item-active" : "menu-item-inactive"}`}>
-                  <Link href="/swap" className="" onClick={handleLinkClick}>
-                    Swap
-                  </Link>
-                </li>
-                <li className={`px-2 ${currentPath === "/liquidity" ? "menu-item-active" : "menu-item-inactive"}`}>
-                  <Link href="/liquidity" className="" onClick={handleLinkClick}>
-                    Liquidity
-                  </Link>
-                </li>
-                <li className={`px-2 ${currentPath === "/locks" ? "menu-item-active" : "menu-item-inactive"}`}>
-                  <Link href="/locks" className="" onClick={handleLinkClick}>
-                    Lock
-                  </Link>
-                </li>
-                <li className={`px-2 ${currentPath === "/vote" ? "menu-item-active" : "menu-item-inactive"}`}>
-                  <Link href="/vote" className="" onClick={handleLinkClick}>
-                    Vote
-                  </Link>
-                </li>
-                <li className={`px-2 ${currentPath === "/incentivize" ? "menu-item-active" : "menu-item-inactive"}`}>
-                  <Link href="/incentivize" className="" onClick={handleLinkClick}>
-                    Incentivize
-                  </Link>
-                </li>
-              </ul>
             </div>
             
             {/* Connect Button and other right-side elements */}
