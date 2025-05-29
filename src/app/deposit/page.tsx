@@ -658,7 +658,7 @@ const Deposit = () => {
                           <div className="flex items-center justify-between gap-3">
                             <span className="font-medium text-base">Swap</span>
                             <span className="opacity-60 font-light text-xs">
-                              Available {token0?.balance} {token0?.symbol}
+                              Balance {token0?.balance} {token0?.symbol}
                             </span>
                           </div>
                           <div className="flex rounded mt-1">
@@ -701,7 +701,7 @@ const Deposit = () => {
                           <div className="flex items-center justify-between gap-3">
                             <span className="font-medium text-base">For</span>
                             <span className="opacity-60 font-light text-xs">
-                              Available {token1?.balance} {token1?.symbol}
+                              Balance {token1?.balance} {token1?.symbol}
                             </span>
                           </div>
                           <div className="flex rounded mt-1">
