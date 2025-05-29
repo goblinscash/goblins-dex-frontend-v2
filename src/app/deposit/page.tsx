@@ -50,6 +50,7 @@ const Deposit = () => {
   const token1Address = searchParams.get("token1");
   const id = searchParams.get("id");
   const type = Number(searchParams.get("type"));
+  const fee = Number(searchParams.get("fee"));
 
   const stable = type == 0 ? true : false
 
@@ -76,9 +77,6 @@ const Deposit = () => {
 
 
   const [selectedFee, setSelectedFee] = useState<number | null>(0);
-  const [lowPrice, setLowPrice] = useState(0.99860105);
-  const [highPrice, setHighPrice] = useState(1.0006002);
-
   const [v3PositionDetails, setV3PositionDetails] = useState<(PoolConfig | null)[]>([]);
   const [selectedV3PositionDetails, setSelectedV3PositionDetails] = useState<(PoolConfig | null)>({});
 
@@ -120,18 +118,7 @@ const Deposit = () => {
       checkAllownceStatus(chainId);
     }
     if (token0?.address && token1?.address) {
-      fetchV3PoolsDetail(chainId, token0.address, token1.address)
-        .then((details: (PoolConfig | null)[]) => {
-          // const filtered: PoolConfig[] = details.filter((item): item is PoolConfig => item !== null);
-          setSelectedFee(Number(details[0]?.fee));
-          setLowPrice(Number(details[0]?.tickLower))
-          setLowPrice(Number(details[0]?.tickUpper))
-          setSelectedV3PositionDetails(details[0])
-          setV3PositionDetails(details);
-        })
-        .catch((error) => {
-          console.error(error, "error");
-        });
+      fetchPoolFeeTierDetails(token0, token1)
     }
   }, [chainId, amount0, amount1, token0]);
 
@@ -175,6 +162,22 @@ const Deposit = () => {
     const _token = await fetchTokenDetails(chainId, token1);
     setToken1(_token as Token);
   };
+
+  const fetchPoolFeeTierDetails = async (token0: Token, token1: Token) => {
+    try {
+      let feeTier: (PoolConfig | null)[] = await fetchV3PoolsDetail(chainId, token0.address, token1.address)
+      setV3PositionDetails(feeTier);
+      if (fee) {
+       feeTier = feeTier.filter((item) => item?.fee == fee)
+       setSelectedFee(Number(feeTier[0]?.fee));
+        setLowValue(Number(feeTier[0]?.tickLower))
+        setHighValue(Number(feeTier[0]?.tickUpper))
+        setSelectedV3PositionDetails(feeTier[0])
+      } 
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   const handProgress = (action: string, status: boolean) => {
     setStatus((prev) => ({ ...prev, [action]: status }));
@@ -451,7 +454,7 @@ const Deposit = () => {
 
   }
 
-  console.log(selectedV3PositionDetails, "selectedV3PositionDetails")
+  console.log(selectedV3PositionDetails, "selectedV3PositionDetails", lowValue, highValue)
   return (
     <>
       <section className="relative py-5 ">
@@ -493,7 +496,7 @@ const Deposit = () => {
                         />
                       </SwapList>
                       <div className="btnWrpper mt-3">
-                        {type == 1 ?
+                        {type > 0 ?
                           <ActButton
                             label="concentrated addLiquidity"
                             onClick={() => mint()}
@@ -514,7 +517,7 @@ const Deposit = () => {
 
 
                 <div className="md:col-span-7 col-span-12 md:sticky top-0 w-full px-4 bg-black text-white p-3 rounded-xl w-full space-y-4" >
-                  {type == 1 &&
+                  {type > 0 &&
                     <>
                       <div className="bg-black text-white p-1 rounded-xl w-full max-w-md space-y-4">
                         <div>
@@ -531,7 +534,7 @@ const Deposit = () => {
 
                                 }}
                                 className={`border p-3 rounded-lg text-sm transition-all duration-150 text-center whitespace-nowrap
-            ${selectedFee === Number(tier?.fee)
+                  ${selectedFee === Number(tier?.fee)
                                     ? "border-green-500 bg-green-900"
                                     : "border-gray-700 hover:border-gray-500"}`}
                               >

@@ -127,3 +127,10 @@ export const TICK_SPACING_TO_FEE = {
     200: 3000,
     2000: 10000
 }
+
+export const FEE_TO_TICK_SPACING = {
+    100: 1,
+    500: 50,
+    3000: 200,
+    10000: 2000
+}

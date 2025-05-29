@@ -148,7 +148,7 @@ export const all = async (chainId: number, limit: number, offset: number, type?:
             poolBalance: `$${Number(fromUnits(pool[8], Number(pool[2]))) + Number(fromUnits(pool[11], Number(pool[2])))}`,
             apr: 0,
             volume: 0,
-            url: `/deposit?id=${index}&token0=${pool[7]}&token1=${pool[10]}&stable=${Number(pool.type) == -1 ? false : true}`
+            url: `/deposit?id=${index}&token0=${pool[7]}&token1=${pool[10]}&type=${Number(pool.type)}&fee=${pool.pool_fee}`
         })) as FormattedPool[];
 
         const filteredPools = type === undefined ? formattedPools : formattedPools.filter((pool) => Number(pool.type) == type)
