@@ -22,6 +22,16 @@ const Footer = () => {
                       Tokens
                     </Link>
                   </li>
+                  <li className="">
+                    <Link
+                      href={"https://goblins.cash/docs/"}
+                      className="font-medium text-sm transition duration-400  text-[#00ff4e] hover:text-white-500"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Documentation
+                    </Link>
+                  </li>
                   {/* <li className="">
                     <Link
                       href={""}
