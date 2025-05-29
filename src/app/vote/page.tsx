@@ -205,8 +205,8 @@ const Vote = () => {
                 </div>
               </div>
             </div>
-            <p className="m-0 text-[#757575] pt-2 text-xs">
-              TVL ~{item.poolBalance}
+            <p className="m-0 pt-2 text-xs text-blue-500">
+              TVL <span className="text-white">~{item.poolBalance}</span>
             </p>
           </div>
         );
@@ -219,12 +219,12 @@ const Vote = () => {
         const symbol = item.symbol?.split("-")[1]?.split("/");
         return (
           <div className="rounded p-3 bg-[#091616] text-xs h-full flex flex-col justify-between pb-5 text-right">
-            <p className="m-0 pb-3 border-b border-[#2a2a2a]">~$ --</p>
+            <p className="m-0 pb-3 border-b border-[#2a2a2a] text-white">~$ --</p>
             <div className="pt-3">
-              <p className="m-0 text-[#7e7e7e] ">
+              <p className="m-0 text-white ">
                 {fromUnits(Number(item.token0_fees), Number(item.decimals))} {symbol[0]}
               </p>
-              <p className="m-0 text-[#7e7e7e] ">
+              <p className="m-0 text-white ">
               {fromUnits(Number(item.token1_fees), Number(item.decimals))} {symbol[1]}
               </p>
             </div>
@@ -254,10 +254,10 @@ const Vote = () => {
       component: () => {
         return (
           <div className="rounded p-3 bg-[#091616] text-xs h-full flex flex-col justify-between pb-5 text-right">
-            <p className="m-0 pb-3 border-b border-[#2a2a2a]">
+            <p className="m-0 pb-3 border-b border-[#2a2a2a] text-white">
               No available incentives
             </p>
-            <p className="m-0 text-[#7e7e7e] pt-3">Fees + Incentives</p>
+            <p className="m-0 text-blue-500 pt-3">Fees + Incentives</p>
           </div>
         );
       },
@@ -269,14 +269,14 @@ const Vote = () => {
         return (
           <>
             <div className="rounded p-3 bg-[#091616] text-xs h-full flex flex-col justify-between pb-5 text-right">
-              <p className="m-0 pb-3 border-b border-[#2a2a2a]">7.35852%</p>
+              <p className="m-0 pb-3 border-b border-[#2a2a2a] text-white">7.35852%</p>
               <div className="pt-3">
-                <p className="m-0 text-[#7e7e7e]">
+                <p className="m-0 text-white">
                   ~ 0.0% Votes <br />
                   0.99938 veAERO
                   { }
                 </p>
-                <p className="m-0 text-[#7e7e7e] pt-3">Vote</p>
+                <p className="m-0 text-blue-500 pt-3">Vote</p>
               </div>
             </div>
             <div className="dropdown w-full">
@@ -344,12 +344,12 @@ const Vote = () => {
                   <div className="left flex items-center gap-2">
                     {clockIcn}
                     <p className="m-0 font-medium">Current voting round</p>
-                    <div className="rounded-full text-xs font-medium bg-[#00ff4e] text-black px-3 py-1">
+                    <div className="rounded-full text-xs font-medium bg-blue-500 text-white px-3 py-1">
                       ends in 7 days
                     </div>
                   </div>
                   <div className="">
-                    <p className="m-0 text-xs text-[#545454]">
+                    <p className="m-0 text-xs text-blue-500">
                       Voters earn a share of transaction fees and incentives for
                       helping govern how emissions are distributed.
                     </p>
@@ -359,32 +359,32 @@ const Vote = () => {
                   <div className="left">
                     <ul className="list-none pl-0 mb-0 flex items-center flex-wrap gap-2">
                       <li className="flex items-center gap-2 text-xs">
-                        <span className="text-[#545454]">
+                        <span className="text-blue-500">
                           Total voting power this epoch:
                         </span>
-                        <span className="themeClr">777.41M</span>
+                        <span className="text-white">777.41M</span>
                       </li>
                     </ul>
                   </div>
                   <div className="left">
                     <ul className="list-none pl-0 mb-0 flex items-center flex-wrap gap-2">
                       <li className="flex items-center gap-2 text-xs">
-                        <span className="text-[#545454]">Total Fees:</span>
-                        <span className="themeClr">~$2,048,125.32</span>
+                        <span className="text-blue-500">Total Fees:</span>
+                        <span className="text-white">~$2,048,125.32</span>
                       </li>{" "}
                       <li className="flex items-center gap-2 text-xs">
-                        <span className="text-[#545454]">
+                        <span className="text-blue-500">
                           Total Incentives:
                         </span>
-                        <span className="themeClr">~$72,544.2</span>
+                        <span className="text-white">~$72,544.2</span>
                       </li>{" "}
                       <li className="flex items-center gap-2 text-xs">
-                        <span className="text-[#545454]">Total Rewards:</span>
-                        <span className="themeClr">~~$2,120,669.52</span>
+                        <span className="text-blue-500">Total Rewards:</span>
+                        <span className="text-white">~~$2,120,669.52</span>
                       </li>{" "}
                       <li className="flex items-center gap-2 text-xs">
-                        <span className="text-[#545454]">New Emissions:</span>
-                        <span className="themeClr">8,067,170.33</span>
+                        <span className="text-blue-500">New Emissions:</span>
+                        <span className="text-white">8,067,170.33</span>
                       </li>
                     </ul>
                   </div>

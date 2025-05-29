@@ -22,6 +22,16 @@ const Footer = () => {
                       Tokens
                     </Link>
                   </li>
+                  <li className="">
+                    <Link
+                      href={"https://goblins.cash/docs/"}
+                      className="font-medium text-sm transition duration-400  text-[#00ff4e] hover:text-white-500"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Documentation
+                    </Link>
+                  </li>
                   {/* <li className="">
                     <Link
                       href={""}
@@ -41,16 +51,20 @@ const Footer = () => {
                 <ul className="list-none pl-0 mb-0 flex items-center gap-3">
                   <li className="">
                     <Link
-                      href={""}
-                      className="font-medium text-xs transition duration-400 text-gray-500 hover:text-[#00ff4e]"
+                      href={"https://goblins.cash/privacy-policy/"}
+                      className="font-medium text-xs transition duration-400 text-[#00ff4e] hover:text-white-500"
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
                       Privacy Policy
                     </Link>
                   </li>
                   <li className="">
                     <Link
-                      href={""}
-                      className="font-medium text-xs transition duration-400 text-gray-500 hover:text-[#00ff4e]"
+                      href={"https://goblins.cash/terms/"}
+                      className="font-medium text-xs transition duration-400 text-[#00ff4e] hover:text-white-500"
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
                       Terms & Condition
                     </Link>
