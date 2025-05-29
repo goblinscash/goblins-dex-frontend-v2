@@ -120,6 +120,46 @@ export const tokens = [
     "chainId": 8453,
     "decimals": 18,
     "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/virtual.png"
+  },
+  {
+    "name": "Shiba Inu",
+    "symbol": "SHIB",
+    "address": "0x2859e4544c4bb03966803b044a93563bd2d0dd4d",
+    "chainId": 56,
+    "decimals": 18,
+    "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/shib.png"
+  },
+  {
+    "name": "Pepe",
+    "symbol": "PEPE",
+    "address": "0x25d887Ce7a35172C62FeBFD67a1856F20FaEbB00",
+    "chainId": 56,
+    "decimals": 18,
+    "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/pepe.png"
+  },
+  {
+    "name": "FLOKI",
+    "symbol": "FLOKI",
+    "address": "0xfb5b838b6cfeedc2873ab27866079ac55363d37e",
+    "chainId": 56,
+    "decimals": 18,
+    "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/floki.png"
+  },
+  {
+    "name": "Binance-Peg Dogecoin",
+    "symbol": "DOGE",
+    "address": "0xba2ae424d960c26247dd6c32edc70b295c744c43",
+    "chainId": 56,
+    "decimals": 8,
+    "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/doge.png"
+  },
+  {
+    "name": "Bonk",
+    "symbol": "BONK",
+    "address": "0xa697e272a73744b343528c3bc4702f2565b2f422",
+    "chainId": 56,
+    "decimals": 18,
+    "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/bonk.png"
   }
 ]
 
@@ -170,7 +210,12 @@ export const tokenLogos = {
   "0x767dc7981a5d58539814110dea8dd88857164fa1": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/bcbch.png",
   "0x4fad9b2458634b1e5d679732ca3f6c203e565b13": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/ether.png",
   "0x205f59c72385c82b2328fc1c7776640c8d10f836": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/gob.png",
-  "0x75331507c3e54bb3a8e23890b94a4ce10b7be4c7": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/gob.png"
+  "0x75331507c3e54bb3a8e23890b94a4ce10b7be4c7": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/gob.png",
+  "0x2859e4544c4bb03966803b044a93563bd2d0dd4d": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/shib.png",
+  "0x25d887ce7a35172c62febfd67a1856f20faebb00": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/pepe.png",
+  "0xfb5b838b6cfeedc2873ab27866079ac55363d37e": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/floki.png",
+  "0xba2ae424d960c26247dd6c32edc70b295c744c43": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/doge.png",
+  "0xa697e272a73744b343528c3bc4702f2565b2f422": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/bonk.png"
 }
 
 export type Token = typeof tokens[0];
