@@ -49,7 +49,7 @@ export const erc20Balance = async (chainId: number, token: string, decimals: num
         const _balance = Number(fromUnits(balance, decimals))
         return _balance.toFixed(4)
     } catch (error) {
-        console.error(`Error fetching balance for token ${token} on chain ${chainId} for wallet ${wallet}:`, error);
+        console.log(error)
         return "0"
     }
 }

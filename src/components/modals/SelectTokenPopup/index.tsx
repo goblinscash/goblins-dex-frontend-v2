@@ -126,8 +126,10 @@ const SelectTokenPopup: React.FC<SelectTokenPopupProps> = ({ tokenBeingSelected,
                       </div>
                     </div>
                     <div className="right text-right">
-                      <p className="m-0 text-white font-medium text-base">0.0</p>
-                      <p className="m-0 text-xs text-gray-500">~$0.0</p>
+                      <p className="m-0 text-white font-medium text-base">
+                        {typeof token.balance === 'number' ? token.balance.toFixed(4) : '0.0'}
+                      </p>
+                      <p className="m-0 text-xs text-gray-500">~$0.0</p> {/* USD value can remain or be updated if available later */}
                     </div>
                   </li>
                 ))

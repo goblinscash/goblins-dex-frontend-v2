@@ -53,7 +53,8 @@ const Swap = () => {
   const [token1, setToken1] = useState<Token | null>(null);
   const [amount0, setAmount0] = useState<string>("");
 
-  const [filteredTokenList, setFilteredTokenList] = useState([]);
+  const [filteredTokenList, setFilteredTokenList] = useState<Token[]>([]); // Keep for original list if needed elsewhere
+  const [tokenListWithBalances, setTokenListWithBalances] = useState<Token[]>([]);
 
   const handleTokenSelect = (token: Token) => {
     const newQueryParams = new URLSearchParams(searchParams.toString());
@@ -69,29 +70,7 @@ const Swap = () => {
     setTokenBeingSelected(null);
   };
 
-  const setInitialToken = () => {
-    let tokens_ = tokens.filter((item) => item.chainId == chainId);
-    tokens_ = [...tokens_, ...stableTokens(chainId)];
-    //@ts-expect-error ignore
-    setFilteredTokenList(tokens_);
-    if (tokens_?.length == 0) {
-      setToken0(null);
-      setToken1(null);
-      return;
-    }
-    setToken0({
-      address: tokens_[0].address,
-      symbol: tokens_[0].symbol,
-      decimals: tokens_[0].decimals,
-      balance: 0
-    } as Token);
-    setToken1({
-      address: tokens_[1].address,
-      symbol: tokens_[1].symbol,
-      decimals: tokens_[1].decimals,
-      balance: 0
-    } as Token);
-  };
+  // Removed setInitialToken as its logic is merged into useEffect below
 
   const swapTokens = () => {
     if (!token0 || !token1) return;
@@ -110,10 +89,62 @@ const Swap = () => {
   };
 
   useEffect(() => {
-    if (chainId) {
-      setInitialToken();
+    let tokens_ = tokens.filter((item) => item.chainId == chainId);
+    tokens_ = [...tokens_, ...stableTokens(chainId)];
+    setFilteredTokenList(tokens_); // Keep original filtered list without balances if needed elsewhere
+
+    if (address && chainId) {
+      const fetchBalancesForList = async () => {
+        const enrichedTokens = await Promise.all(
+          tokens_.map(async (token) => {
+            try {
+              const balanceStr = await erc20Balance(chainId, token.address, token.decimals, address);
+              return {
+                ...token,
+                balance: parseFloat(balanceStr) || 0,
+              };
+            } catch (error) {
+              console.error(`Failed to fetch balance for ${token.symbol}`, error);
+              return {
+                ...token,
+                balance: 0, // Fallback balance
+              };
+            }
+          })
+        );
+        setTokenListWithBalances(enrichedTokens);
+      };
+      fetchBalancesForList();
+    } else {
+      // If no address, set list with balances to 0 or undefined
+      setTokenListWithBalances(tokens_.map(t => ({ ...t, balance: 0 } as Token)));
     }
-  }, [chainId]);
+
+    // Initialize token0 and token1 (similar to old setInitialToken)
+    // Balances for these specific token0/token1 on the main page are updated by a separate fetchTokenBalance effect
+    if (tokens_?.length > 0) {
+      if (!token0) { // Only set if not already set (e.g. by user selection or query param)
+        setToken0({
+          address: tokens_[0].address,
+          symbol: tokens_[0].symbol,
+          decimals: tokens_[0].decimals,
+          balance: 0 // This will be updated by the other useEffect for fetchTokenBalance
+        } as Token);
+      }
+      if (!token1) { // Only set if not already set
+         const defaultToken1Index = tokens_.length > 1 ? 1 : 0; // Handle case with only one token
+        setToken1({
+          address: tokens_[defaultToken1Index].address,
+          symbol: tokens_[defaultToken1Index].symbol,
+          decimals: tokens_[defaultToken1Index].decimals,
+          balance: 0 // This will be updated by the other useEffect for fetchTokenBalance
+        } as Token);
+      }
+    } else {
+      setToken0(null);
+      setToken1(null);
+    }
+  }, [chainId, address]); // Add address to dependencies
 
   useEffect(() => {
     if (chainId && amount0 && token0) {
@@ -344,7 +375,7 @@ const Swap = () => {
             onSelectToken={handleTokenSelect}
             onClose={() => setTokenBeingSelected(null)}
             chainId={chainId}
-            tokens={filteredTokenList}
+            tokens={tokenListWithBalances} // Use the new list with balances
           />,
           document.body
         )}
