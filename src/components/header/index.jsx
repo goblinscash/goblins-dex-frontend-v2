@@ -114,7 +114,7 @@ const Header = () => {
                     Tokens
                   </Link>
                 </li>
-                <li className={`px-2 menu-item-inactive`}> {/* Assuming no specific active state for external link like this here */}
+                <li className={`px-2 menu-item-inactive`}>
                   <Link href="https://goblins.cash/docs/" target="_blank" rel="noopener noreferrer" onClick={handleLinkClick}>
                     Docs
                   </Link>
