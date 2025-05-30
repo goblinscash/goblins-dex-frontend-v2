@@ -165,10 +165,10 @@ const Deposit = () => {
 
   const fetchPoolFeeTierDetails = async (token0: Token, token1: Token) => {
     try {
-      let feeTier: (PoolConfig | null)[] = await fetchV3PoolsDetail(chainId, token0.address, token1.address)
-      setV3PositionDetails(feeTier);
-      if (fee) {
-        const relevantTier = feeTier.find((item) => item?.fee == fee); // More robust than feeTier[0] after filter
+      const allFeeTiers: (PoolConfig | null)[] = await fetchV3PoolsDetail(chainId, token0.address, token1.address);
+      setV3PositionDetails(allFeeTiers);
+      if (fee) { // fee is from URL param
+        const relevantTier = allFeeTiers.find((item) => item?.fee == fee);
         if (relevantTier) {
           setSelectedFee(Number(relevantTier.fee));
           if (type > 0) { // Concentrated liquidity pool

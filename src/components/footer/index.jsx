@@ -14,6 +14,24 @@ const Footer = () => {
               <div className="flex items-center justify-between gap-3 flex-wrap">
                 {/* <p className="m-0 text-gray-500">Copyright © Goblins Cash</p> */}
                 <ul className="list-none pl-0 mb-0 flex items-center gap-3">
+                  <li className="">
+                    <Link
+                      href={"/tokenlist"}
+                      className="font-medium text-sm transition duration-400  text-[#00ff4e] hover:text-white-500"
+                    >
+                      Tokens
+                    </Link>
+                  </li>
+                  <li className="">
+                    <Link
+                      href={"https://goblins.cash/docs/"}
+                      className="font-medium text-sm transition duration-400  text-[#00ff4e] hover:text-white-500"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Documentation
+                    </Link>
+                  </li>
                   {/* <li className="">
                     <Link
                       href={""}
@@ -48,7 +66,7 @@ const Footer = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      Terms of Service
+                      Terms & Condition
                     </Link>
                   </li>
                 </ul>
