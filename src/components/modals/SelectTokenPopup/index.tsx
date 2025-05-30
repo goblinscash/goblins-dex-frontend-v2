@@ -6,7 +6,7 @@ import { shortenPubkey } from "@/utils/math.utils";
 import Logo from "@/components/common/Logo";
 import { tokens } from "@/utils/token.utils";
 
-export type Token = typeof tokens[0] & { balance?: number };
+export type Token = typeof tokens[0] & { balance?: number, priceRate?: number };
 
 interface SelectTokenPopupProps {
   tokenBeingSelected: "token0" | "token1" | "token";
@@ -129,7 +129,7 @@ const SelectTokenPopup: React.FC<SelectTokenPopupProps> = ({ tokenBeingSelected,
                       <p className="m-0 text-white font-medium text-base">
                         {typeof token.balance === 'number' ? token.balance.toFixed(4) : '0.0'}
                       </p>
-                      <p className="m-0 text-xs text-gray-500">~$0.0</p> {/* USD value can remain or be updated if available later */}
+                      <p className="m-0 text-xs text-gray-500">~${`${((token.balance ?? 0) * (token.priceRate ?? 0)).toFixed(2)}`}</p> {/* USD value can remain or be updated if available later */}
                     </div>
                   </li>
                 ))

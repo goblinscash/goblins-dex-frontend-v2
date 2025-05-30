@@ -25,6 +25,7 @@ import debounce from "lodash.debounce";
 import BtnLoader from "@/components/common/BtnLoader";
 import { stableTokens } from "@/utils/constant.utils";
 import { quoteForSwap } from "@/utils/routes/routes.utils";
+import { getUsdRates } from "@/utils/price.utils";
 
 interface SwapStep {
   from: string;
@@ -95,6 +96,7 @@ const Swap = () => {
 
     if (address && chainId) {
       const fetchBalancesForList = async () => {
+        const rates = await getUsdRates(chainId, tokens_.map((token) => token.address).filter((value, index, array) => array.indexOf(value) === index));
         const enrichedTokens = await Promise.all(
           tokens_.map(async (token) => {
             try {
@@ -102,12 +104,14 @@ const Swap = () => {
               return {
                 ...token,
                 balance: parseFloat(balanceStr) || 0,
+                priceRate: rates[token.address] || 0, // Use the fetched rate or fallback to 0
               };
             } catch (error) {
               console.error(`Failed to fetch balance for ${token.symbol}`, error);
               return {
                 ...token,
                 balance: 0, // Fallback balance
+                price: 0,
               };
             }
           })

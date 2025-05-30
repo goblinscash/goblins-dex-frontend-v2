@@ -10,6 +10,7 @@ import { stableTokens } from "@/utils/constant.utils";
 import ListLayout from "@/components/lockRow";
 import { erc20Balance, fetchV2Pools } from "@/utils/web3.utils";
 import Link from "next/link";
+import { getUsdRates } from "@/utils/price.utils";
 
 type Column = {
   accessor: string;
@@ -142,6 +143,7 @@ const Pools = () => {
 
       if (address) {
         const fetchBalancesForList = async () => {
+          const rates = await getUsdRates(chainId, tokens_.map((token) => token.address).filter((value, index, array) => array.indexOf(value) === index));
           const enrichedTokens = await Promise.all(
             tokens_.map(async (token) => {
               try {
@@ -149,12 +151,14 @@ const Pools = () => {
                 return {
                   ...token,
                   balance: parseFloat(balanceStr) || 0,
+                  priceRate: rates[token.address] || 0, // Use the fetched rate or fallback to 0
                 };
               } catch (error) {
                 console.error(`Failed to fetch balance for ${token.symbol} on chain ${chainId}`, error);
                 return {
                   ...token,
                   balance: 0, // Fallback balance
+                  price: 0,
                 };
               }
             })
