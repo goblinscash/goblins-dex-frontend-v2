@@ -7,6 +7,7 @@ import rewardSugarAbi from "../abi/sugar/rewardSugar.json"
 import relaySugarAbi from "../abi/sugar/relaySugar.json"
 
 import { formatValue, fromUnits } from "./math.utils";
+import { getUsdRate } from "./price.utils";
 
 export type FormattedPool = {
     chainId: number;
@@ -153,6 +154,21 @@ export const all = async (chainId: number, limit: number, offset: number, type?:
 
         const filteredPools = type === undefined ? formattedPools : formattedPools.filter((pool) => Number(pool.type) == type)
         const pools = filteredPools.filter((pool, index) => index >= offset && index < offset + limit);
+
+        const tokens = pools.map((pool) => {
+            return [pool.token0, pool.token1];
+        }).flat().filter((value, index, self) => self.indexOf(value) === index);
+
+        const rates: Record<string, number> = {};
+        await Promise.all(tokens.map(async (token) => {
+            rates[token] =  await getUsdRate(chainId, token);
+        }));
+
+        console.log(rates)
+
+        pools.forEach((pool) => {
+            pool.poolBalance = `$${rates[pool.token0] * Number(fromUnits(pool.reserve0, Number(pool.decimals))) + rates[pool.token1] * Number(fromUnits(pool.reserve1, Number(pool.decimals)))}` as any;
+        });
 
         return pools;
     } catch (error) {

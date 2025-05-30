@@ -10,14 +10,6 @@ export const tokens = [
     "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/gob.png"
   },
   {
-    "name": "Goblin V2",
-    "symbol": "GOBV2",
-    "address": "0xF69B558bfB2215e26C001D30F80E9926168e6880",
-    "chainId": 56,
-    "decimals": 18,
-    "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/gob.png"
-  },
-  {
     "name": "Goblin",
     "symbol": "GOB",
     "address": "0x205f59c72385c82b2328fc1c7776640c8d10f836",
@@ -172,7 +164,6 @@ export const tokens = [
 ]
 
 export const tokenLogos = {
-  "0xF69B558bfB2215e26C001D30F80E9926168e6880": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/gob.png",
   "0x5ca35ebc4f25b042d2cae75914c7e882e631fa9a": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/neiro.png",
   "0x2da56acb9ea78330f947bd57c54119debda7af71": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/mog.png",
   "0x2a06a17cbc6d0032cac2c6696da90f29d39a1a29": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/bitcoin.png",
