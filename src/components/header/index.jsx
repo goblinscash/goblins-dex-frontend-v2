@@ -109,6 +109,16 @@ const Header = () => {
                     Incentivize
                   </Link>
                 </li>
+                <li className={`px-2 ${currentPath === "/tokenlist" ? "menu-item-active" : "menu-item-inactive"}`}>
+                  <Link href="/tokenlist" onClick={handleLinkClick}>
+                    Tokens
+                  </Link>
+                </li>
+                <li className={`px-2 menu-item-inactive`}>
+                  <Link href="https://goblins.cash/docs/" target="_blank" rel="noopener noreferrer" onClick={handleLinkClick}>
+                    Docs
+                  </Link>
+                </li>
               </ul>
               </div>
             </div> {/* End of new wrapper div */}
