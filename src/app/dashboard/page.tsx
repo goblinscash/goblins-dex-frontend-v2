@@ -396,7 +396,7 @@ const Dashboard = () => {
 
                         {/* Dropdown */}
                         {open && (
-                            <div className="absolute right-0 z-10 mt-2 w-72 bg-[#000E0E] rounded-xl shadow-lg border border-[#1E2233]">
+                            <div className="absolute right-0 z-10 mt-2 w-full max-w-xs sm:w-72 bg-[#000E0E] rounded-xl shadow-lg border border-[#1E2233]">
                                 {locks?.map((lock, index) => (
                                     <div key={`${lock.id}-${index}`} className="px-4 py-3 border-b border-[#1E2233] last:border-0">
                                         <div className="flex items-start gap-3">

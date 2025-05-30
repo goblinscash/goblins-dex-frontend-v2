@@ -289,7 +289,7 @@ const Vote = () => {
               </div>
               <ul
                 tabIndex={0}
-                className="dropdown-content menu bg-white text-dark right-0 rounded-box z-1 w-52 p-2 shadow-sm"
+                className="dropdown-content menu bg-white text-dark right-0 rounded-box z-1 w-48 sm:w-52 p-2 shadow-sm"
               >
                 {locks &&
                   locks?.length &&
@@ -393,7 +393,7 @@ const Vote = () => {
             </div>
             <div className="col-span-12">
               <div className="mt-4">
-                <h4 className="m-0 font-bold text-2xl pb-3">
+                <h4 className="m-0 font-bold text-xl sm:text-2xl pb-3">
                   Select Liquidity Pools for Voting
                 </h4>
                 <div className="mt-2">
@@ -441,25 +441,25 @@ const Vote = () => {
 
         {/* Fixed bottom section that will hide when footer is visible */}
         {showFixedSection && (
-          <div className="fixed p-5 bottom-0 z-[9999] left-0 w-full bg-[#131313] transition-all duration-300">
-            <div className="grid gap-3 grid-cols-12 w-full">
-              <div className="col-span-1">
+          <div className="fixed p-2 sm:p-3 md:p-5 bottom-0 z-[9999] left-0 w-full bg-[#131313] transition-all duration-300">
+            <div className="grid gap-3 grid-cols-12 w-full items-stretch"> {/* Added items-stretch */}
+              <div className="col-span-3 sm:col-span-1"> {/* Adjusted col-span */}
                 <div className="flex gap-2 h-full">
                   <button
-                    className="px-3 h-full bg-[#0b120d] flex items-center justify-center rounded-xl"
+                    className="px-2 sm:px-3 h-full bg-[#0b120d] flex items-center justify-center rounded-xl w-1/2 sm:w-full" // Added w-1/2 sm:w-full
                     onClick={prevSlide}
                   >
                     {prevBtn}
                   </button>
                   <button
-                    className="px-3 h-full bg-[#0b120d] flex items-center justify-center rounded-xl"
+                    className="px-2 sm:px-3 h-full bg-[#0b120d] flex items-center justify-center rounded-xl w-1/2 sm:w-full" // Added w-1/2 sm:w-full
                     onClick={nextSlide}
                   >
                     {nextBtn}
                   </button>
                 </div>
               </div>
-              <div className="col-span-10">
+              <div className="col-span-6 sm:col-span-10"> {/* Adjusted col-span */}
                 {isLocksLoading ? (
                   <div className="h-full flex items-center justify-center">
                     <CircularLoader size={30} />
@@ -504,11 +504,10 @@ const Vote = () => {
                   </Slider>
                 )}
               </div>
-              <div className="col-span-1">
+              <div className="col-span-3 sm:col-span-1"> {/* Adjusted col-span */}
                 <button
                   onClick={() => setVote(!vote)}
-                  className="flex items-center justify-center commonBtn w-full px-8 rounded text-base font-medium "
-                  style={{ height: "100%" }}
+                  className="flex items-center justify-center commonBtn w-full px-2 sm:px-4 md:px-8 rounded text-sm sm:text-base font-medium h-full" /* Adjusted padding, text size, and added h-full */
                   disabled={isLocksLoading}
                 >
                   Vote

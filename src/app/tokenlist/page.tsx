@@ -160,7 +160,7 @@ const TokenListPage = () => {
 			<div className="container">
 				<div className="grid grid-cols-1 gap-8">
 					{/* Header Banner */}
-					<TokenBanner className="p-8 rounded-lg grid grid-cols-1 md:grid-cols-2 gap-4">
+					<TokenBanner className="p-4 sm:p-6 md:p-8 rounded-lg grid grid-cols-1 md:grid-cols-2 gap-4">
 						<div>
 							<h2 className="text-white text-lg font-medium mb-2">The tokens listed here represent our tokenlist</h2>
 							<p className="text-gray-400 text-sm">
@@ -171,7 +171,7 @@ const TokenListPage = () => {
 						</div>
 						<div className="flex items-center justify-center md:justify-end">
 							<div className="text-right">
-								<div className="text-3xl font-bold">${totalValueLocked}</div>
+								<div className="text-2xl sm:text-3xl font-bold">${totalValueLocked}</div>
 								<div className="text-sm text-gray-400">Total Value Locked</div>
 							</div>
 						</div>
