@@ -122,6 +122,14 @@ export const tokens = [
     "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/virtual.png"
   },
   {
+    "name": "Bitcoin Cash",
+    "symbol": "BCH",
+    "address": "0x8fF795a6F4D97E7887C79beA79aba5cc76444aDf",
+    "chainId": 8453,
+    "decimals": 18,
+    "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/bcbch.png"
+  },
+  {
     "name": "Shiba Inu",
     "symbol": "SHIB",
     "address": "0x2859e4544c4bb03966803b044a93563bd2d0dd4d",
