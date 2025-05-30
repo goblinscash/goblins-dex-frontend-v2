@@ -59,6 +59,7 @@ const Deposit = () => {
   const [token, setToken] = useState<Token | null>(null);
   const [amount0, setAmount0] = useState("");
   const [amount1, setAmount1] = useState("");
+  const [slippageTolerance, setSlippageTolerance] = useState('0.5');
   const [lowValue, setLowValue] = useState<number>(0);
   const [highValue, setHighValue] = useState<number>(0);
   const [pool, setPool] = useState<FormattedPool | null>(null);
@@ -305,10 +306,40 @@ const Deposit = () => {
       if (!amount0 || !amount1 || !token0 || !token1) return;
 
       handleLoad("addLiquidity", true);
-      const amount0Desired = toUnits(amount0, token0?.decimals);
-      const amount1Desired = toUnits(amount1, token1?.decimals);
-      const amount0Min = 0;
-      const amount1Min = 0;
+
+      const slippage = parseFloat(slippageTolerance);
+      if (isNaN(slippage) || slippage < 0 || slippage > 50) { // Basic validation
+        toast.warn("Invalid slippage tolerance. Please enter a value between 0 and 50.");
+        handleLoad("addLiquidity", false);
+        return;
+      }
+
+      const bnAmount0Desired = toUnits(amount0, token0?.decimals);
+      const bnAmount1Desired = toUnits(amount1, token1?.decimals);
+
+      let amount0MinBigNum = ethers.BigNumber.from(0);
+      let amount1MinBigNum = ethers.BigNumber.from(0);
+
+      // Only apply slippage for sAMM (stable) pools as per requirement
+      // For vAMM pools, the current UI/logic doesn't seem to use min amounts from user input directly for addLiquidity,
+      // but rather for minting NFTs which has a different flow.
+      // Sticking to the requirement of modifying addLiquidity for sAMM.
+      if (stable) { 
+        const slippageBps = ethers.BigNumber.from(Math.round(slippage * 100)); // e.g., 0.5% = 50 bps
+        const hundredPercentBps = ethers.BigNumber.from(10000); // 100% = 10,000 bps
+
+        amount0MinBigNum = bnAmount0Desired.mul(hundredPercentBps.sub(slippageBps)).div(hundredPercentBps);
+        amount1MinBigNum = bnAmount1Desired.mul(hundredPercentBps.sub(slippageBps)).div(hundredPercentBps);
+      } else {
+        // For non-stable (vAMM) pools, retain the previous behavior of effectively 0 slippage for addLiquidity,
+        // as the task focuses on sAMM for this specific slippage calculation.
+        // The 'mint' function handles vAMM liquidity differently (concentrated liquidity with price ranges).
+        // If vAMM also needs slippage on desired amounts, it would be a separate calculation.
+        // For now, to keep changes focused and avoid breaking vAMM:
+        amount0MinBigNum = ethers.BigNumber.from(0); // Or consider bnAmount0Desired if no slippage means exact amount
+        amount1MinBigNum = ethers.BigNumber.from(0); // Or consider bnAmount1Desired
+      }
+      
       const to = address;
       const deadline = Math.floor(Date.now() / 1000) + 600;
 
@@ -346,10 +377,10 @@ const Deposit = () => {
         token0.address,
         token1.address,
         stable,
-        amount0Desired,
-        amount1Desired,
-        amount0Min,
-        amount1Min,
+        bnAmount0Desired,
+        bnAmount1Desired,
+        amount0MinBigNum, // Use calculated BigNumber
+        amount1MinBigNum, // Use calculated BigNumber
         to,
         deadline,
         { gasLimit: 5000000 }
@@ -700,7 +731,7 @@ const Deposit = () => {
                             </button>
                           </div>
                         </div>
-                        <div className="bg-[#00000073] py-5 px-3 rounded-2xl border border-[#141414]">
+                        <div className="bg-[#00000073] py-5 px-3 rounded-2xl border border-[#141414] mb-3">
                           <div className="flex items-center justify-between gap-3">
                             <span className="font-medium text-base">For</span>
                             <span className="opacity-60 font-light text-xs">
@@ -732,6 +763,17 @@ const Deposit = () => {
                               className="form-control border-0 p-3 h-10 text-xs bg-transparent w-full"
                             />
                           </div>
+                        </div>
+                        <div className="mt-3">
+                          <label htmlFor="slippage" className="block text-sm font-medium text-gray-300 mb-1">Slippage Tolerance (%):</label>
+                          <input
+                            type="number"
+                            id="slippage"
+                            value={slippageTolerance}
+                            onChange={(e) => setSlippageTolerance(e.target.value)}
+                            placeholder="0.5"
+                            className="form-control w-24 text-xs p-2 rounded-md bg-transparent border border-[#2a2a2a] focus:border-green-500 focus:ring-green-500"
+                          />
                         </div>
                       </form>
                     </div>
