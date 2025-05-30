@@ -40,7 +40,7 @@ export type FormattedPool = {
     nfpm: string;
     alm: string;
     root: string;
-    poolBalance: number;
+    poolBalance: string;
     apr: number;
     volume: number;
     position?:number;
@@ -161,7 +161,7 @@ export const all = async (chainId: number, limit: number, offset: number, type?:
 
         const rates = await getUsdRates(chainId, tokens);
         pools.forEach((pool) => {
-            pool.poolBalance = `$${rates[pool.token0] * Number(fromUnits(pool.reserve0, Number(pool.decimals))) + rates[pool.token1] * Number(fromUnits(pool.reserve1, Number(pool.decimals)))}` as any;
+            pool.poolBalance = `$${rates[pool.token0] * Number(fromUnits(pool.reserve0, Number(pool.decimals))) + rates[pool.token1] * Number(fromUnits(pool.reserve1, Number(pool.decimals)))}`;
         });
 
         return pools;
