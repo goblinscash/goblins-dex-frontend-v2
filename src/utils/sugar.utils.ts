@@ -137,7 +137,7 @@ export const all = async (chainId: number, limit: number, offset: number, type?:
             factory: pool[18],
             emissions: formatValue(pool[19]),
             emissions_token: pool[20],
-            pool_fee: `${Number(formatValue(pool[21])) / 100}%`,
+            pool_fee: `${Number(formatValue(pool[21])) / (formatValue(pool[4]) == "1" ? 10000 : 100)}%`,
             unstaked_fee: formatValue(pool[22]),
             token0_fees: formatValue(pool[23]),
             token1_fees: formatValue(pool[24]),
