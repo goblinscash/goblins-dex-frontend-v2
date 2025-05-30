@@ -3,12 +3,12 @@ import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import SelectTokenPopup, { Token } from "@/components/modals/SelectTokenPopup";
 import Logo from "@/components/common/Logo";
-import { useChainId } from "wagmi";
+import { useAccount, useChainId } from "wagmi";
 import { useRouter, useSearchParams } from "next/navigation";
 import { getToken, tokens } from "@/utils/token.utils";
 import { stableTokens } from "@/utils/constant.utils";
 import ListLayout from "@/components/lockRow";
-import { fetchV2Pools } from "@/utils/web3.utils";
+import { erc20Balance, fetchV2Pools } from "@/utils/web3.utils";
 import Link from "next/link";
 
 type Column = {
@@ -110,7 +110,10 @@ const Pools = () => {
   const [tokenBeingSelected, setTokenBeingSelected] = useState<
     "token0" | "token1" | null
   >(null);
-  const [filteredTokenList, setFilteredTokenList] = useState([]);
+  const [filteredTokenList, setFilteredTokenList] = useState<Token[]>([]);
+  const [tokenListWithBalances, setTokenListWithBalances] = useState<Token[]>([]);
+
+  const { address } = useAccount();
 
   const handleTokenSelect = (token: Token) => {
     const newQueryParams = new URLSearchParams(searchParams.toString());
@@ -133,16 +136,45 @@ const Pools = () => {
 
   useEffect(() => {
     if (chainId) {
-      setInitialToken();
-    }
-  }, [chainId]);
+      let tokens_ = tokens.filter((item) => item.chainId == chainId);
+      tokens_ = [...tokens_, ...stableTokens(chainId)];
+      setFilteredTokenList(tokens_ as Token[]); // Keep original filtered list
 
-  const setInitialToken = () => {
-    let tokens_ = tokens.filter((item) => item.chainId == chainId);
-    tokens_ = [...tokens_, ...stableTokens(chainId)];
-    //@ts-expect-error ignore
-    setFilteredTokenList(tokens_);
-  };
+      if (address) {
+        const fetchBalancesForList = async () => {
+          const enrichedTokens = await Promise.all(
+            tokens_.map(async (token) => {
+              try {
+                const balanceStr = await erc20Balance(chainId, token.address, token.decimals, address);
+                return {
+                  ...token,
+                  balance: parseFloat(balanceStr) || 0,
+                };
+              } catch (error) {
+                console.error(`Failed to fetch balance for ${token.symbol} on chain ${chainId}`, error);
+                return {
+                  ...token,
+                  balance: 0, // Fallback balance
+                };
+              }
+            })
+          );
+          setTokenListWithBalances(enrichedTokens as Token[]);
+        };
+        fetchBalancesForList();
+      } else {
+        // If no address, set list with balances to 0
+        setTokenListWithBalances(tokens_.map(t => ({ ...t, balance: 0 } as Token)));
+      }
+    }
+  }, [chainId, address]);
+
+  // const setInitialToken = () => { // Logic moved into useEffect above
+  //   let tokens_ = tokens.filter((item) => item.chainId == chainId);
+  //   tokens_ = [...tokens_, ...stableTokens(chainId)];
+  //   //@ts-expect-error ignore
+  //   setFilteredTokenList(tokens_);
+  // };
 
   const fetchPools = async () => {
     if (!token0 || !token1) return;
@@ -178,7 +210,7 @@ const Pools = () => {
             onSelectToken={handleTokenSelect}
             onClose={() => setTokenBeingSelected(null)}
             chainId={chainId}
-            tokens={filteredTokenList}
+            tokens={tokenListWithBalances}
           />,
           document.body
         )}
