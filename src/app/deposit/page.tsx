@@ -59,8 +59,8 @@ const Deposit = () => {
   const [token, setToken] = useState<Token | null>(null);
   const [amount0, setAmount0] = useState("");
   const [amount1, setAmount1] = useState("");
-  const [lowValue, setLowValue] = useState<number>(0);
-  const [highValue, setHighValue] = useState<number>(0);
+  const [lowValue, setLowValue] = useState<number | string>('');
+  const [highValue, setHighValue] = useState<number | string>('');
   const [pool, setPool] = useState<FormattedPool | null>(null);
   const [ratio, setRatio] = useState<number | null>(null)
 
@@ -580,10 +580,12 @@ const Deposit = () => {
                                 <button
                                   className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600 mr-1"
                                   onClick={() => {
-                                    const currentValue = lowValue;
+                                    const currentValue = parseFloat(String(lowValue)); // Parse before use
                                     if (!isNaN(currentValue)) {
                                       const newVal = currentValue - 1;
                                       setLowValue(Number(newVal.toFixed(10)));
+                                    } else {
+                                      setLowValue(-1); // Or some default if current is empty/NaN
                                     }
                                   }}
                                 >
@@ -592,10 +594,12 @@ const Deposit = () => {
                                 <button
                                   className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600 mr-1"
                                   onClick={() => {
-                                    const currentValue = lowValue;
+                                    const currentValue = parseFloat(String(lowValue)); // Parse before use
                                     if (!isNaN(currentValue)) {
                                       const newVal = currentValue + 1;
                                       setLowValue(Number(newVal.toFixed(10)));
+                                    } else {
+                                      setLowValue(1); // Or some default if current is empty/NaN
                                     }
                                   }}
                                 >
@@ -603,7 +607,7 @@ const Deposit = () => {
                                 </button>
                                 <button
                                   className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600"
-                                  onClick={() => setLowValue(0)}
+                                  onClick={() => setLowValue('')}
                                 >
                                   <span>0</span>
                                 </button>
@@ -623,10 +627,13 @@ const Deposit = () => {
                                 <button
                                   className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600 mr-1"
                                   onClick={() => {
-                                    const currentValue = highValue;
+                                    const currentValue = parseFloat(String(highValue)); // Parse before use
                                     if (!isNaN(currentValue)) {
                                       const newVal = currentValue - 1;
                                       if (newVal >= 0) setHighValue(Number(newVal.toFixed(10)));
+                                      else setHighValue(''); // Or some other default like 0
+                                    } else {
+                                      setHighValue(-1); // Or some default if current is empty/NaN
                                     }
                                   }}
                                 >
@@ -635,10 +642,12 @@ const Deposit = () => {
                                 <button
                                   className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600 mr-1"
                                   onClick={() => {
-                                    const currentValue = highValue;
+                                    const currentValue = parseFloat(String(highValue)); // Parse before use
                                     if (!isNaN(currentValue)) {
                                       const newVal = currentValue + 1;
                                       setHighValue(Number(newVal.toFixed(10)));
+                                    } else {
+                                      setHighValue(1); // Or some default if current is empty/NaN
                                     }
                                   }}
                                 >
@@ -646,7 +655,7 @@ const Deposit = () => {
                                 </button>
                                 <button
                                   className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600"
-                                  onClick={() => setHighValue(0)}
+                                  onClick={() => setHighValue('')}
                                 >
                                   <span>∞</span>
                                 </button>
