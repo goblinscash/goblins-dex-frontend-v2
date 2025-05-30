@@ -613,9 +613,13 @@ const Deposit = () => {
                                 </button>
                               </div>
                             </div>
-                            <div className="text-xl md:text-2xl font-bold mb-1 break-all">
-                              {lowValue}
-                            </div>
+                            <input
+                              type="number"
+                              value={String(lowValue)}
+                              onChange={(e) => setLowValue(e.target.value)}
+                              placeholder="0"
+                              className="form-control text-xl md:text-2xl font-bold mb-1 bg-transparent border-b border-gray-500 p-1 w-full text-white focus:border-green-500 focus:ring-0 hide-arrows"
+                            />
                             <div className="text-right">
                               <span className="text-red-400 text-xs md:text-sm">~$2,475.81</span>
                             </div>
@@ -661,9 +665,13 @@ const Deposit = () => {
                                 </button>
                               </div>
                             </div>
-                            <div className="text-xl md:text-2xl font-bold mb-1 break-all">
-                              {highValue}
-                            </div>
+                            <input
+                              type="number"
+                              value={String(highValue)}
+                              onChange={(e) => setHighValue(e.target.value)}
+                              placeholder="0"
+                              className="form-control text-xl md:text-2xl font-bold mb-1 bg-transparent border-b border-gray-500 p-1 w-full text-white focus:border-green-500 focus:ring-0 hide-arrows"
+                            />
                             <div className="text-right">
                               <span className="text-red-400 text-xs md:text-sm">~$2,628.9</span>
                             </div>
