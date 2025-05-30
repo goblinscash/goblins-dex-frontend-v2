@@ -19,6 +19,7 @@ import { LockKeyhole } from 'lucide-react';
 // Define Maximum Expiry Constants
 // const MAX_EXPIRY_SECONDS = Math.floor(new Date('2029-12-31T23:59:59Z').getTime() / 1000); // Removed
 const FOUR_YEARS_IN_SECONDS = 4 * 365.25 * 24 * 3600; // Approximation
+const WEEK_IN_SECONDS = 7 * 24 * 3600;
 
 interface ExtendProps {
     tokenId: number;
@@ -69,16 +70,17 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
             // Apply 4-years-from-now cap
             const max_expiry_from_now_ts_calc = Math.floor(Date.now() / 1000) + FOUR_YEARS_IN_SECONDS;
             const capped_expiry_ts = Math.min(proposed_new_expiry_ts, max_expiry_from_now_ts_calc);
+            const aligned_capped_expiry_ts = Math.floor(capped_expiry_ts / WEEK_IN_SECONDS) * WEEK_IN_SECONDS;
 
-            if (capped_expiry_ts <= current_expiry_ts && duration > 0) { // duration > 0 means an extension was intended
+            if (aligned_capped_expiry_ts <= current_expiry_ts && duration > 0) { // duration > 0 means an extension was intended
                 // This case implies the lock is already past all caps or extension is too small to overcome current date if current is past caps.
                 // Or, the chosen duration makes it hit a cap that's <= current_expiry_ts.
                 // Display the most restrictive cap that is still a valid extension, or current if no valid extension.
                 // For simplicity, if it doesn't extend, show current, or a message.
                 // If current_expiry_ts is already > MAX_EXPIRY_SECONDS, it will show current_expiry_ts.
-                const effective_display_ts = Math.max(current_expiry_ts, capped_expiry_ts); // Show the later of the two if capped is somehow less.
+                const effective_display_ts = Math.max(current_expiry_ts, aligned_capped_expiry_ts); // Show the later of the two if capped is somehow less.
                 if (effective_display_ts <= current_expiry_ts && duration > 0) {
-                   setDisplayableNewExpiry(new Date(current_expiry_ts * 1000).toUTCString() + " (Cannot extend further/Max limit reached)");
+                   setDisplayableNewExpiry(new Date(current_expiry_ts * 1000).toUTCString() + " (Cannot extend further/Max limit reached or alignment negates extension)");
                 } else {
                    setDisplayableNewExpiry(new Date(effective_display_ts * 1000).toUTCString());
                 }
@@ -87,7 +89,7 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
                 setDisplayableNewExpiry(new Date(current_expiry_ts * 1000).toUTCString() + " (Current expiry)");
             }
              else if (current_expiry_ts) { // Valid extension
-               setDisplayableNewExpiry(new Date(capped_expiry_ts * 1000).toUTCString());
+               setDisplayableNewExpiry(new Date(aligned_capped_expiry_ts * 1000).toUTCString());
             } else {
                setDisplayableNewExpiry("N/A"); // Should not happen if lock is loaded
             }
@@ -113,9 +115,10 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
 
             const max_expiry_from_now_ts = Math.floor(Date.now() / 1000) + FOUR_YEARS_IN_SECONDS;
             const final_new_expiry_ts = Math.min(proposed_new_expiry_ts, max_expiry_from_now_ts);
+            const aligned_final_new_expiry_ts = Math.floor(final_new_expiry_ts / WEEK_IN_SECONDS) * WEEK_IN_SECONDS;
 
-            if (final_new_expiry_ts <= current_expiry_ts) {
-                toast.warn("New expiry date must be after the current expiry date and within limits.");
+            if (aligned_final_new_expiry_ts <= current_expiry_ts) {
+                toast.warn("New expiry date, after weekly alignment, must be after the current expiry date. Try a longer duration.");
                 handleLoad("extendLock", false);
                 return;
             }
@@ -128,7 +131,7 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
 
             const tx = await votingEscrow.increaseUnlockTime(
                 tokenId,
-                final_new_expiry_ts, // This is the new absolute target timestamp
+                aligned_final_new_expiry_ts, // This is the new absolute target timestamp
                 { gasLimit: 5000000 }
             );
 
