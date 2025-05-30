@@ -168,11 +168,18 @@ const Deposit = () => {
       let feeTier: (PoolConfig | null)[] = await fetchV3PoolsDetail(chainId, token0.address, token1.address)
       setV3PositionDetails(feeTier);
       if (fee) {
-       feeTier = feeTier.filter((item) => item?.fee == fee)
-       setSelectedFee(Number(feeTier[0]?.fee));
-        setLowValue(Number(feeTier[0]?.tickLower))
-        setHighValue(Number(feeTier[0]?.tickUpper))
-        setSelectedV3PositionDetails(feeTier[0])
+        const relevantTier = feeTier.find((item) => item?.fee == fee); // More robust than feeTier[0] after filter
+        if (relevantTier) {
+          setSelectedFee(Number(relevantTier.fee));
+          if (type > 0) { // Concentrated liquidity pool
+            setLowValue('');
+            setHighValue('');
+          } else {
+            setLowValue(Number(relevantTier.tickLower));
+            setHighValue(Number(relevantTier.tickUpper));
+          }
+          setSelectedV3PositionDetails(relevantTier);
+        }
       } 
     } catch (error) {
       console.log(error)
@@ -527,11 +534,15 @@ const Deposit = () => {
                               tier != null ? <button
                                 key={index}
                                 onClick={() => {
-                                  setSelectedV3PositionDetails(tier)
+                                  setSelectedV3PositionDetails(tier);
                                   setSelectedFee(Number(tier.fee));
-                                  setLowValue(Number(tier.tickLower));
-                                  setHighValue(Number(tier.tickUpper))
-
+                                  if (type > 0) { // Concentrated liquidity pool
+                                    setLowValue('');
+                                    setHighValue('');
+                                  } else {
+                                    setLowValue(Number(tier.tickLower));
+                                    setHighValue(Number(tier.tickUpper));
+                                  }
                                 }}
                                 className={`border p-3 rounded-lg text-sm transition-all duration-150 text-center whitespace-nowrap
                   ${selectedFee === Number(tier?.fee)
