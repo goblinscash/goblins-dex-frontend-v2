@@ -91,7 +91,6 @@ const Swap = () => {
   useEffect(() => {
     let tokens_ = tokens.filter((item) => item.chainId == chainId);
     tokens_ = [...tokens_, ...stableTokens(chainId)];
-    // @ts-expect-error ignore
     setFilteredTokenList(tokens_); // Keep original filtered list without balances if needed elsewhere
 
     if (address && chainId) {
