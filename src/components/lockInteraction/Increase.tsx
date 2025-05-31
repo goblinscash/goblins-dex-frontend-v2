@@ -11,7 +11,7 @@ import { aerodromeContracts } from '@/utils/config.utils';
 import votingEscrowAbi from "../../abi/aerodrome/votingEscrow.json";
 import Notify from '../common/Notify';
 import { gobV2 } from '@/utils/constant.utils';
-import { allowance, approve } from '@/utils/web3.utils';
+import { allowance, approve, erc20Balance } from '@/utils/web3.utils';
 import Progress from '../common/Progress';
 
 interface IncreaseProps {
@@ -22,6 +22,7 @@ const Increase: React.FC<IncreaseProps> = ({ tokenId }) => {
     const [lock, setLock] = useState<VeNFT | null>(null);
     const [load, setLoad] = useState<{ [key: string]: boolean }>({});
     const [amount, setAmount] = useState("");
+    const [userBalance, setUserBalance] = useState("0");
     const [status, setStatus] = useState<{ [key: string]: boolean }>({
         isAllowanceForToken: false,
         tokenLocked: false,
@@ -38,6 +39,17 @@ const Increase: React.FC<IncreaseProps> = ({ tokenId }) => {
     const handProgress = (action: string, status: boolean) => {
         setStatus((prev) => ({ ...prev, [action]: status }));
     };
+
+    const checkUserBalance = async (chainId: number) => {
+        if (!address) return;
+        const balance_ = await erc20Balance(
+            chainId,
+            gobV2[chainId]?.address,
+            gobV2[chainId]?.decimals,
+            address
+        );
+        setUserBalance(balance_);
+    }
 
     const checkAllownceStatus = async (chainId: number) => {
         if (!address) return;
@@ -59,6 +71,12 @@ const Increase: React.FC<IncreaseProps> = ({ tokenId }) => {
         //@ts-expect-error ignore
         setLock(locks_)
     }
+
+    useEffect(() => {
+        if (chainId) {
+          checkUserBalance(chainId);
+        }
+      }, [chainId]);
 
     useEffect(() => {
         if (chainId && tokenId) {
@@ -106,6 +124,7 @@ const Increase: React.FC<IncreaseProps> = ({ tokenId }) => {
             await fetchLocksById()
             Notify({ chainId, txhash: tx.hash });
             handleLoad("increase", false);
+            checkUserBalance(chainId);
             handProgress("tokenLocked", true);
         } catch (error) {
             console.log(error);
@@ -118,7 +137,7 @@ const Increase: React.FC<IncreaseProps> = ({ tokenId }) => {
             <section className="py-8 relative">
                 <div className="container">
                     <div className="grid gap-3 grid-cols-12">
-                    
+
                         <div className="md:col-span-6 col-span-12">
                             <div className="cardCstm p-3 md:p-10 rounded-2xl bg-[#000e0e] relative border border-[#2a2a2a]">
                                 <div className="space-y-12">
@@ -221,13 +240,23 @@ const Increase: React.FC<IncreaseProps> = ({ tokenId }) => {
                                         </div>
                                     </div>
                                     <div className="space-y-3">
-                                        <label
-                                            className="font-medium dark:text-gray-300 text-xs text-accent-50"
-                                            data-testid="flowbite-label"
-                                            htmlFor="toAddress"
-                                        >
-                                            Enter amount to lock
-                                        </label>
+                                        <div className="flex justify-between items-center">  {/* Added flex container for labels */}
+                                            <label
+                                                className="font-medium dark:text-gray-300 text-xs text-accent-50"
+                                                data-testid="flowbite-label"
+                                                htmlFor="toAddress"
+                                            >
+                                                Enter amount to lock
+                                            </label>
+                                            <label
+                                                className="font-medium dark:text-gray-300 text-xs text-accent-50 opacity-60 font-light text-xs cursor-pointer hover:text-[#00ff4e] transition-colors"
+                                                data-testid="flowbite-label"
+                                                htmlFor="toAddress"
+                                                onClick={() => setAmount(userBalance)}
+                                            >
+                                                Balance : {userBalance} {gobV2[chainId || 8453]?.symbol}
+                                            </label>
+                                        </div>
                                         <div className="flex">
                                             <div className="relative w-full">
                                                 <input
@@ -244,7 +273,7 @@ const Increase: React.FC<IncreaseProps> = ({ tokenId }) => {
                                         <div className="flex p-4 rounded-xl itmes-center gap-2 bg-[#1c1d2a] text-[#a55e10]">
                                             <span className="icn">{inforicn}</span>
                                             <p className="m-0">
-                                            Locking will give you an NFT, referred to as a veNFT. You can increase the lock amount or extend the lock time at any time afterward.
+                                                Locking will give you an NFT, referred to as a veNFT. You can increase the lock amount or extend the lock time at any time afterward.
                                             </p>
                                         </div>
                                     </div>
