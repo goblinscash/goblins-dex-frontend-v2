@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import DocumentationModal from '@/components/modals/DocumentationModal';
 import DepositCard from './DepositCard';
 import LockCard from './LockCard';
@@ -156,8 +156,6 @@ const Dashboard = () => {
         {liquidityPoolsAndRewardsContent} {/* Append general pool info */}
       </>
     );
-
-import { useCallback } from 'react'; // Ensure useCallback is imported
 
 // ... other imports ...
 
