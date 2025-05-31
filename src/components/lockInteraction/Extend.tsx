@@ -30,6 +30,7 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
     const [displayableNewExpiry, setDisplayableNewExpiry] = useState("");
     const [load, setLoad] = useState<{ [key: string]: boolean }>({});
     const [duration, setDuration] = useState(1); // Initial duration set to 1 day
+    const [activeSlider, setActiveSlider] = useState<boolean>(true);
     const [status, setStatus] = useState<{ [key: string]: boolean }>({
         extendCompleted: false,
     });
@@ -78,18 +79,18 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
                 // If current_expiry_ts is already > MAX_EXPIRY_SECONDS, it will show current_expiry_ts.
                 const effective_display_ts = Math.max(current_expiry_ts, capped_expiry_ts); // Show the later of the two if capped is somehow less.
                 if (effective_display_ts <= current_expiry_ts && duration > 0) {
-                   setDisplayableNewExpiry(new Date(current_expiry_ts * 1000).toUTCString() + " (Cannot extend further/Max limit reached)");
+                    setDisplayableNewExpiry(new Date(current_expiry_ts * 1000).toUTCString() + " (Cannot extend further/Max limit reached)");
                 } else {
-                   setDisplayableNewExpiry(new Date(effective_display_ts * 1000).toUTCString());
+                    setDisplayableNewExpiry(new Date(effective_display_ts * 1000).toUTCString());
                 }
 
             } else if (duration === 0 && current_expiry_ts) { // No duration selected yet, or duration is 0
                 setDisplayableNewExpiry(new Date(current_expiry_ts * 1000).toUTCString() + " (Current expiry)");
             }
-             else if (current_expiry_ts) { // Valid extension
-               setDisplayableNewExpiry(new Date(capped_expiry_ts * 1000).toUTCString());
+            else if (current_expiry_ts) { // Valid extension
+                setDisplayableNewExpiry(new Date(capped_expiry_ts * 1000).toUTCString());
             } else {
-               setDisplayableNewExpiry("N/A"); // Should not happen if lock is loaded
+                setDisplayableNewExpiry("N/A"); // Should not happen if lock is loaded
             }
         } else if (lock && lock.expires_at) {
             // Initial state or invalid duration, show current expiry
@@ -263,10 +264,11 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
                                                 <Switch
                                                     checked={enabled}
                                                     onChange={() => {
-                                                        console.log(enabled, "lllll");
-                                                        setEnabled(!enabled);
-                                                        console.log(enabled)
+
+                                                        setEnabled((prevState) => !prevState);
+
                                                         setDuration(enabled == false && 1460 || 1)
+                                                        setActiveSlider(enabled == false && true);
                                                     }}
                                                     className={`${enabled ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}
               relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none`}
@@ -290,6 +292,7 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
                                         <RangeSlider
                                             value={duration}
                                             onChange={setDuration}
+                                            activeSlider={activeSlider}
                                             title="Extending to"
                                             currentLockExpiresAt={lock ? Number(lock.expires_at) : 0} // Pass current lock expiry, or 0 if lock is null
                                         />
