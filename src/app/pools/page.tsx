@@ -154,7 +154,7 @@ const Pools = () => {
                   priceRate: rates[token.address] || 0, // Use the fetched rate or fallback to 0
                 };
               } catch (error) {
-                console.error(`Failed to fetch balance for ${token.symbol} on chain ${chainId}`, error);
+                 console.error(`Failed to fetch balance for ${token.symbol} onchain ${chainId}`, error);
                 return {
                   ...token,
                   balance: 0, // Fallback balance

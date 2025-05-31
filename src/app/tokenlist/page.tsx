@@ -1,10 +1,11 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { tokens } from "@/utils/token.utils";
+import { tokens as allTokens } from "@/utils/token.utils";
 import { useAccount, useChainId } from "wagmi";
 import Logo from '@/components/common/Logo';
 import TableLayout from '@/components/tableLayout';
 import { erc20Balance } from '@/utils/web3.utils';
+import { getUsdRates } from '@/utils/price.utils';
 import styled from 'styled-components';
 
 interface Token {
@@ -19,7 +20,7 @@ interface Token {
 
 // Define styled components
 const TokenBanner = styled.div`
-	background: linear-gradient(90deg, #061c5d 0%, #1544d8 100%);
+	background: var(--backgroundColor2);
 `;
 
 interface FilterButtonProps {
@@ -51,34 +52,46 @@ const TokenListPage = () => {
 		const getTokens = async () => {
 			setLoading(true);
 			try {
-				const filteredTokens = tokens.filter((token: Token) => token.chainId === chainId);
+				// Filter tokens by chainId first
+				const baseTokensForChain = allTokens.filter((token: Token) => token.chainId === chainId);
 				
-				// Add placeholders for TVL and price data
-				const tokensWithData = await Promise.all(
-					filteredTokens.map(async (token) => {
+				// Fetch balances
+				let tokensWithBalances = await Promise.all(
+					baseTokensForChain.map(async (token) => {
 						let balance = 0;
 						if (address) {
-							// Convert the result to a number
 							balance = Number(await erc20Balance(chainId, token.address, token.decimals, address));
 						}
-						
-						// Mock data for demonstration
-						const tvl = Math.random() * 10000000;
-						const price = Math.random() * 5;
-						
-						return {
-							...token,
-							balance: Number(balance),
-							tvl,
-							price
-						};
+						return { ...token, balance: Number(balance) };
 					})
 				);
+
+				// Fetch prices using getUsdRates
+				const tokenAddresses = tokensWithBalances.map(t => t.address);
+				let prices: Record<string, number> = {};
+				if (tokenAddresses.length > 0) {
+					prices = await getUsdRates(chainId, tokenAddresses);
+				}
+
+				// Combine with fetched prices and mock TVL (TVL logic will be updated later if needed)
+				const tokensWithData = tokensWithBalances.map(token => {
+					// Mock data for TVL (as per existing logic, until TVL source is confirmed/changed)
+					const tvl = Math.random() * 10000000;
+
+					return {
+						...token,
+						tvl, // Keep existing mock TVL for now
+						price: prices[token.address] !== undefined ? prices[token.address] : 0, // Use fetched price, fallback to 0
+					};
+				});
 				
 				setTokenList(tokensWithData);
-				setFilteredTokens(tokensWithData);
+				setFilteredTokens(tokensWithData); // Also update filteredTokens
 			} catch (error) {
-				console.error("Error fetching tokens:", error);
+				console.error("Error fetching token data:", error);
+				// Potentially set tokens to an empty list or show an error state
+				setTokenList([]);
+				setFilteredTokens([]);
 			} finally {
 				setLoading(false);
 			}
@@ -87,7 +100,7 @@ const TokenListPage = () => {
 		if (chainId) {
 			getTokens();
 		}
-	}, [chainId, address]);
+	}, [chainId, address]); // Keep existing dependencies
 
 	// Filter tokens when search query changes or filter selection changes
 	useEffect(() => {
@@ -109,6 +122,46 @@ const TokenListPage = () => {
 		setFilteredTokens(result);
 	}, [searchQuery, tokenList, selectedFilter]);
 
+	// New useEffect for periodic price refresh
+	useEffect(() => {
+		if (!chainId || tokenList.length === 0) {
+			return; // Don't start interval if no chainId or no tokens
+		}
+
+		const intervalId = setInterval(async () => {
+			console.log("Refreshing prices..."); // For debugging
+			try {
+				const tokenAddresses = tokenList.map(t => t.address);
+				if (tokenAddresses.length === 0) return;
+
+				const newPrices = await getUsdRates(chainId, tokenAddresses);
+
+				// Update tokenList
+				setTokenList(currentTokens =>
+					currentTokens.map(token => ({
+						...token,
+						price: newPrices[token.address] !== undefined ? newPrices[token.address] : token.price, // Keep old price if new one is undefined
+					}))
+				);
+
+				// Update filteredTokens as well
+				setFilteredTokens(currentFilteredTokens =>
+					currentFilteredTokens.map(token => ({
+						...token,
+						price: newPrices[token.address] !== undefined ? newPrices[token.address] : token.price,
+					}))
+				);
+
+			} catch (error) {
+				console.error("Error refreshing prices:", error);
+			}
+		}, 30000); // Refresh every 30 seconds
+
+		return () => {
+			clearInterval(intervalId); // Cleanup interval on unmount or when dependencies change
+		};
+	}, [chainId, tokenList]);
+
 	const column = [
 		{
 			head: "",
@@ -128,7 +181,7 @@ const TokenListPage = () => {
 			accessor: "tvl",
 			component: (rowData: Token) => (
 				<div className="text-right">
-					<div className="text-red-400">-${(rowData.tvl || 0).toLocaleString('en-US', { maximumFractionDigits: 2 })}</div>
+					<div className="text-red-300">-${(rowData.tvl || 0).toLocaleString('en-US', { maximumFractionDigits: 2 })}</div>
 					<div className="text-xs text-gray-500">TVL</div>
 				</div>
 			),
@@ -138,8 +191,8 @@ const TokenListPage = () => {
 			accessor: "price",
 			component: (rowData: Token) => (
 				<div className="text-right">
-					<div className="text-gray-300">-${(rowData.price || 0).toLocaleString('en-US', { maximumFractionDigits: 4 })}</div>
-					<div className="text-xs text-gray-500">Orcham Price</div>
+					<div className="text-gray-300">${(rowData.price || 0).toLocaleString('en-US', { maximumFractionDigits: 4 })}</div>
+					<div className="text-xs text-gray-500">USD Price</div>
 				</div>
 			),
 		},
@@ -166,7 +219,7 @@ const TokenListPage = () => {
 							<p className="text-gray-400 text-sm">
 								The liquidity pools for these tokens receive emissions and incentives, 
 								are fetched directly from our smart contracts, and the price for every 
-								token is fetched from our on-chain oracle in real-time.
+								token is fetched from our onchain oracle in real-time.
 							</p>
 						</div>
 						<div className="flex items-center justify-center md:justify-end">
@@ -212,7 +265,7 @@ const TokenListPage = () => {
 										placeholder="Symbol or address..."
 										value={searchQuery}
 										onChange={(e) => setSearchQuery(e.target.value)}
-										className="bg-[var(--backgroundColor2)] border-0 rounded pl-8 pr-4 py-1 text-sm w-full"
+										className="bg-[var(--backgroundColor2)] border-0 rounded pl-8 pr-4 py-1 text-sm w-full placeholder-gray-400"
 									/>
 									<span className="absolute left-2 top-1/2 -translate-y-1/2">
 										<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
