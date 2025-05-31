@@ -8,6 +8,7 @@ import relaySugarAbi from "../abi/sugar/relaySugar.json"
 
 import { formatValue, fromUnits } from "./math.utils";
 import { getUsdRate, getUsdRates } from "./price.utils";
+import { calculateAPR, calculateVolume } from "./pool.utils";
 
 export type FormattedPool = {
     chainId: number;
@@ -46,6 +47,7 @@ export type FormattedPool = {
     position?:number;
     tickLower?:string;
     tickUpper?:string;
+    url: string;
 };
 
 export type LpVote = {
@@ -138,7 +140,7 @@ export const all = async (chainId: number, limit: number, offset: number, type?:
             factory: pool[18],
             emissions: formatValue(pool[19]),
             emissions_token: pool[20],
-            pool_fee: `${Number(formatValue(pool[21])) / (formatValue(pool[4]) == "1" ? 10000 : 100)}%`,
+            pool_fee: Number(formatValue(pool[21])) / (formatValue(pool[4]) == "1" ? 10000 : 100),
             unstaked_fee: formatValue(pool[22]),
             token0_fees: formatValue(pool[23]),
             token1_fees: formatValue(pool[24]),
@@ -147,8 +149,8 @@ export const all = async (chainId: number, limit: number, offset: number, type?:
             root: pool[27],
             // Custom fields
             poolBalance: `$${Number(fromUnits(pool[8], Number(pool[2]))) + Number(fromUnits(pool[11], Number(pool[2])))}`,
-            apr: 0,
-            volume: 0,
+            apr: calculateAPR(pool),
+            volume: calculateVolume(pool),
             url: `/deposit?id=${index}&token0=${pool[7]}&token1=${pool[10]}&type=${Number(pool.type)}&fee=${pool.pool_fee}`
         })) as FormattedPool[];
 

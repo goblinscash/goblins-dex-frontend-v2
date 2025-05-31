@@ -9,6 +9,8 @@ import Logo from "@/components/common/Logo";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getToken } from "@/utils/token.utils";
 import { CircularLoader } from "@/components/common";
+import { fromUnits } from "@/utils/math.utils";
+
 const Nav = styled.div`
   button {
     &:after {
@@ -38,22 +40,11 @@ type Tab = {
 type Column = {
   head: string;
   accessor: string;
-  component?: (item: Data, key: number) => React.ReactNode; // Optional component property
+  component?: (item: FormattedPool, key: number) => React.ReactNode; // Optional component property
   isComponent?: boolean; // For columns with specific components (like a switch)
   hasFixedHeight?: boolean; // Optional fixed height constraint
 };
 
-type Data = {
-  chainId: number;
-  token0: string;
-  token1: string;
-  symbol: string;
-  volume: string;
-  apr: string;
-  pool_fee: string;
-  poolBalance: string;
-  url: string;
-};
 
 const tabs: Tab[] = [
   {
@@ -78,7 +69,7 @@ const column: Column[] = [
   {
     head: "Liquidity Pool",
     accessor: "Liquidity",
-    component: (item: Data, key: number) => {
+    component: (item: FormattedPool, key: number) => {
       return (
         <div key={key} className="flex items-center gap-3">
           <ul className="list-none pl-3 mb-0 flex-shrink-0 flex items-center">
@@ -115,19 +106,48 @@ const column: Column[] = [
     head: "Volume",
     accessor: "volume",
     isComponent: true,
+    component: (item: FormattedPool) => {
+      return (
+        <>
+          {item.apr}
+        </>
+      )
+    }
   },
   {
     head: "Pool Fee",
     accessor: "pool_fee",
+    component: (item: FormattedPool) => {
+      return (
+        <>
+          {item.pool_fee}%
+        </>
+      )
+    }
   },
   {
     head: "Pool Balance",
     accessor: "poolBalance",
+    component: (item: FormattedPool) => {
+      const token0Meta = getToken(item.token0);
+      const token1Meta = getToken(item.token1);
+  
+      if (!token0Meta || !token1Meta) return <>...</>;
+  
+      const reserve0 = fromUnits(item.reserve0, token0Meta.decimals);
+      const reserve1 = fromUnits(item.reserve1, token1Meta.decimals);
+  
+      return (
+        <>
+          {Number(reserve0) + Number(reserve1)}
+        </>
+      );
+    }
   },
   {
     head: "",
     accessor: "action",
-    component: (item: Data) => {
+    component: (item: FormattedPool) => {
       const url = item.url || "/deposit";
       return (
         <>
@@ -167,6 +187,7 @@ const tabFilter = {
   2: 0,
   3: 1,
 } as const;
+
 
 const Liquidity = () => {
   const [activeTab, setActiveTab] = useState<number>(0);
@@ -253,7 +274,7 @@ const Liquidity = () => {
 
     // Show loading while fetching next page data
     setIsLoading(true);
-    
+
     // Check next page data first
     all(chainId, pagination.count, offset, type).then((result) => {
       if (result && result.length > 0) {
@@ -290,7 +311,7 @@ const Liquidity = () => {
         });
     }
   }, [chainId, type]);
-  console.log(pools,"poolspools")
+  console.log(pools, "poolspools")
   return (
     <section className="Liquidity py-5 relative">
       <div className="container ">

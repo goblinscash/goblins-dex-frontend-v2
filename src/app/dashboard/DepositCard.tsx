@@ -181,7 +181,7 @@ const DepositCard: React.FC<DepositCardProps> = ({
             <div className="ml-2 sm:ml-3">
               <div className="flex items-center">
                 <span className="text-white text-sm sm:text-base font-medium">{tokenPair.token0Name} / {tokenPair.token1Name}</span>
-                <span className="ml-2 text-gray-500 text-xs">{tokenPair.fee}</span>
+                <span className="ml-2 text-gray-500 text-xs">{tokenPair.fee}%</span>
               </div>
               <div className="text-neon-green text-xs">{tokenPair.type}</div>
             </div>
