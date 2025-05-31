@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import StakeSlider from './StakeSlider';
 import TokenAmountCard from './TokenAmountCard';
 import PoolInfoCard from './PoolInfoCard';
@@ -88,17 +88,17 @@ const StakePage = () => {
   const [stakeDetails, setStakeDetails] = useState<StakeDetails>();
 
 
-  const fetchUserPosition = async (chainId: number, index: number) => {
-    if (!address) return
+  const fetchUserPosition = useCallback(async (currentChainId: number, currentId: number) => {
+    if (!address) return;
     let _activeStake: ActiveStakeInfo;
+    const localPosition = Number(searchParams.get("position")); // Use searchParams from useCallback dependency
 
-
-    if (_position > 0) {
-      console.log("*************", _position, typeof(_position))
-      const v3Position: LiquidityPosition = await fetchV3Position(chainId, Number(searchParams.get("position")));
+    if (localPosition > 0) {
+      console.log("*************", localPosition, typeof(localPosition));
+      const v3Position: LiquidityPosition = await fetchV3Position(currentChainId, localPosition);
       //@ts-expect-error ignore
-      const [pool]: [FormattedPool] = await Promise.all([byIndex(chainId, index)]);
-      console.log(v3Position, "resulkt", pool);
+      const [pool]: [FormattedPool] = await Promise.all([byIndex(currentChainId, currentId)]);
+      console.log(v3Position, "result", pool);
       setActiveStakeInfo((prevState) => ({
         ...prevState,
         position: v3Position,
@@ -114,10 +114,10 @@ const StakePage = () => {
     }
     else {
       //@ts-expect-error ignore
-      const [pool, position]: [FormattedPool, Position[]] = await Promise.all([byIndex(chainId, index), positions(chainId, 100, 0, address)]);
-      console.log(pool, "poolpool", position)
+      const [pool, position]: [FormattedPool, Position[]] = await Promise.all([byIndex(currentChainId, currentId), positions(currentChainId, 100, 0, address)]);
+      console.log(pool, "poolpool", position);
       //@ts-expect-error ignore
-      const position_: Position = position.find((position_: Position) => position_.lp === pool.lp)
+      const position_: Position = position.find((position_: Position) => position_.lp === pool.lp);
       setActiveStakeInfo((prevState) => ({
         ...prevState,
         position: position_,
@@ -143,7 +143,7 @@ const StakePage = () => {
       _activeStake.pool!.token1,
       _activeStake.pool!.emissions_token
     ].filter(Boolean);
-    const rates = await getUsdRates(chainId, [...new Set(tokensToFetch)]);
+    const rates = await getUsdRates(currentChainId, [...new Set(tokensToFetch)]);
 
     const token0Amount = parseFloat(_activeStake?.activeVersion == "v3" ? fromUnits(_activeStake?.pool.reserve0, token0.decimals) : String(Number(_activeStake.position?.amount0 || 0)/  10**token0.decimals));
     const token1Amount = parseFloat(_activeStake?.activeVersion == "v3" ? fromUnits(_activeStake?.pool.reserve1, token1.decimals) : String(Number(_activeStake.position?.amount1 || 0) / 10**token1.decimals));
@@ -175,25 +175,22 @@ const StakePage = () => {
       gauge_liquidity: _activeStake.pool!.gauge_liquidity
     } as StakeDetails;
 
-    setStakeDetails(stakeInfo)
-  }
+    setStakeDetails(stakeInfo);
+  }, [address, searchParams, setActiveStakeInfo, setStakeDetails]); // Added setActiveStakeInfo and setStakeDetails for completeness, though they are stable
 
 
   useEffect(() => {
     if (chainId && id && address) {
-      fetchUserPosition(chainId, Number(id))
+      fetchUserPosition(chainId, Number(id));
     }
 
     if (Boolean(searchParams.get("withdraw"))) {
       setStakingAction("withdraw");
-
     }
     if (Boolean(searchParams.get("stake"))) {
       setStakingAction("stake");
-
     }
-
-  }, [searchParams, chainId, id, address]);
+  }, [searchParams, chainId, id, address, fetchUserPosition]);
 
   console.log(stakingAction, "stakingAction")
   const handleLoad = (action: string, status: boolean) => {

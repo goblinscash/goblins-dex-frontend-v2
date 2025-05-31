@@ -7,7 +7,7 @@ import ClaimCard from './ClaimCard';
 import Link from 'next/link';
 import { VeNFT, locksByAccount, positions, all, Position, FormattedPool, PoolTypeMap } from '@/utils/sugar.utils';
 import { useChainId, useAccount } from 'wagmi';
-import { calculateRebaseAPR, formatLockedFor, fromUnits, toUnits } from '@/utils/math.utils';
+import { calculateRebaseAPR, formatLockedFor, fromUnits } from '@/utils/math.utils';
 import { getToken } from '@/utils/token.utils';
 import { v3PositionByAddress } from '@/utils/web3.utils';
 import { getUsdRates } from '@/utils/price.utils';
@@ -84,7 +84,7 @@ const Dashboard = () => {
     const [allDepositsExpanded, setAllDepositsExpanded] = useState(false);
     const [expandedDepositStates, setExpandedDepositStates] = useState<{ [key: number]: boolean }>({});
     const [open, setOpen] = useState(false);
-    const [v3PositionData, setV3PositionData] = useState<NFTPosition[]>([]);
+    // const [v3PositionData, setV3PositionData] = useState<NFTPosition[]>([]);
 
     const [isLiquidityRewardsModalOpen, setIsLiquidityRewardsModalOpen] = useState(false);
     const [isLocksModalOpen, setIsLocksModalOpen] = useState(false);
@@ -167,14 +167,14 @@ const Dashboard = () => {
             fetchLocksByAccount()
             fetchv3PositionByAddress().then(() => fetchDepositsByAccount());
         }
-    }, [chainId, address]);
+    }, [chainId, address, fetchLocksByAccount, fetchv3PositionByAddress, fetchDepositsByAccount]);
 
     const fetchLocksByAccount = async () => {
         if (!address) return
         const locks_ = await locksByAccount(chainId, address)
         console.log("Locks by account: ", locks_)
 
-        const lockTokenAddresses = [...new Set(locks_.map(lock => lock.token))];
+        const lockTokenAddresses = [...new Set(locks_.map((lock: VeNFT) => lock.token))];
         const lockTokenRates = await getUsdRates(chainId, lockTokenAddresses);
 
         setLocks(locks_.map((lock: VeNFT) => ({
@@ -195,12 +195,12 @@ const Dashboard = () => {
     async function fetchv3PositionByAddress() {
         const v3Position = await v3PositionByAddress(chainId, address!);
 
-        setV3PositionData(v3Position.map((item) => {
-            //@ts-expect-error ignore
-            item.lp = item?.position.lp;
-            return item;
-        }
-        ));
+        // setV3PositionData(v3Position.map((item) => {
+        //     //@ts-expect-error ignore
+        //     item.lp = item?.position.lp;
+        //     return item;
+        // }
+        // ));
     }
 
     const fetchDepositsByAccount = async () => {

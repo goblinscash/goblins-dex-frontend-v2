@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useAccount, useChainId } from "wagmi";
 import { allRelay, locksByAccount, Relay, VeNFT } from "@/utils/sugar.utils";
 import ListLayout from "@/components/lockRow";
@@ -85,18 +85,11 @@ const Locks = () => {
   const [relay, setRelay] = useState<Relay[] | null>(null)
   const [isCopied, setIsCopied] = useState(false)
 
-  useEffect(() => {
-    if (chainId && address) {
-      fetchLocksByAccount()
-      fetchRelay()
-    }
-  }, [chainId, address]);
-
-  const fetchLocksByAccount = async () => {
-    if (!address) return
-    const locks_ = await locksByAccount(chainId, address)
+  const fetchLocksByAccount = useCallback(async () => {
+    if (!address || !chainId) return; // Added chainId check
+    const locks_ = await locksByAccount(chainId, address);
     if (locks_ && locks_.length > 0) {
-      const lockTokenAddresses = [...new Set(locks_.map(lock => lock.token))];
+      const lockTokenAddresses = [...new Set(locks_.map((lock: VeNFT) => lock.token))];
       const lockTokenRates = await getUsdRates(chainId, lockTokenAddresses);
 
       const enrichedLocks = locks_.map(lock => {
@@ -112,14 +105,22 @@ const Locks = () => {
       });
       setLocks(enrichedLocks);
     } else {
-      setLocks([]); // Set to empty array if no locks
+      setLocks([]);
     }
-  }
+  }, [address, chainId]); // Added chainId to useCallback deps
 
-  const fetchRelay = async () => {
-    const relay_ = await allRelay(chainId, address as string)
-    setRelay(relay_)
-  }
+  const fetchRelay = useCallback(async () => {
+    if (!address || !chainId) return; // Added chainId check
+    const relay_ = await allRelay(chainId, address as string);
+    setRelay(relay_);
+  }, [address, chainId]); // Added chainId to useCallback deps
+
+  useEffect(() => {
+    if (chainId && address) {
+      fetchLocksByAccount();
+      fetchRelay();
+    }
+  }, [chainId, address, fetchLocksByAccount, fetchRelay]);
 
   const copy = (addr: string) => {
     navigator.clipboard.writeText(addr);

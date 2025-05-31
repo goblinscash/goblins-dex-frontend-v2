@@ -54,7 +54,7 @@ const Swap = () => {
   const [token1, setToken1] = useState<Token | null>(null);
   const [amount0, setAmount0] = useState<string>("");
 
-  const [filteredTokenList, setFilteredTokenList] = useState<Token[]>([]); // Keep for original list if needed elsewhere
+  // const [filteredTokenList, setFilteredTokenList] = useState<Token[]>([]); // Keep for original list if needed elsewhere
   const [tokenListWithBalances, setTokenListWithBalances] = useState<Token[]>([]);
 
   const handleTokenSelect = (token: Token) => {
@@ -85,14 +85,14 @@ const Swap = () => {
     handleChange(amount0, newToken0, newToken1)
   };
 
-  const handleLoad = (action: string, status: boolean) => {
+  const handleLoad = useCallback((action: string, status: boolean) => {
     setLoad((prev) => ({ ...prev, [action]: status }));
-  };
+  }, []);
 
   useEffect(() => {
     let tokens_ = tokens.filter((item) => item.chainId == chainId);
     tokens_ = [...tokens_, ...stableTokens(chainId)];
-    setFilteredTokenList(tokens_); // Keep original filtered list without balances if needed elsewhere
+    // setFilteredTokenList(tokens_); // Keep original filtered list without balances if needed elsewhere
 
     if (address && chainId) {
       const fetchBalancesForList = async () => {
@@ -148,54 +148,45 @@ const Swap = () => {
       setToken0(null);
       setToken1(null);
     }
-  }, [chainId, address]); // Add address to dependencies
+  }, [chainId, address, searchParams]);
 
   useEffect(() => {
     if (chainId && amount0 && token0) {
       checkAllownceStatus(chainId);
     }
-  }, [amount0, token0]);
+  }, [amount0, token0, chainId, checkAllownceStatus]);
 
   useEffect(() => {
     if (chainId && token0?.address && token1?.address && address) {
-      fetchTokenBalance()
+      fetchTokenBalance();
     }
+  }, [token0?.address, token1?.address, address, chainId, fetchTokenBalance]);
 
-  }, [token0?.address, token1?.address, address]);
-
-
-  const fetchQuote = async (
-    tokenOne: string,
-    tokenTwo: string,
-    amount: number,
-    decimals: number
-  ) => {
+  const fetchQuote = useCallback(async (tokenOneAddr: string, tokenTwoAddr: string, amount: number, decimals: number) => {
+    if (!chainId) return null;
     // const params = {
-    //   token0: tokenOne,
-    //   token1: tokenTwo,
+    //   token0: tokenOneAddr,
+    //   token1: tokenTwoAddr,
     //   chainId: chainId,
     //   amount: amount,
     // };
-
-    return await quoteForSwap(chainId, tokenOne, tokenTwo, amount, decimals)
-
     try {
-      // const response = await axios.get(ROUTE_API_URI, { params });
-      // return response.data;
+      return await quoteForSwap(chainId, tokenOneAddr, tokenTwoAddr, amount, decimals);
     } catch (err) {
       console.error("Error fetching quote:", err);
+      return null;
     }
-  };
+  }, [chainId]);
 
   const fetchToken = useCallback(
     debounce(async (tokenOne: Token, tokenTwo: Token, value: number) => {
       handleLoad("FetchRoute", true);
       try {
         const quote = await fetchQuote(
-          tokenOne.address,
-          tokenTwo.address,
-          value,
-          tokenOne.decimals
+            tokenOne.address,
+            tokenTwo.address,
+            value,
+            tokenOne.decimals
         );
         if (quote?.data != null) {
           if (tokenOne.address === tokenTwo.address) {
@@ -204,23 +195,7 @@ const Swap = () => {
             setQuoteData(quote);
           }
           else if (quote.command_type === "V2_SWAP_EXACT_IN") {
-            // const outAmount = await fetchAmountsOut(
-            //   chainId,
-            //   value,
-            //   tokenOne.decimals,
-            //   tokenTwo.decimals,
-            //   quote?.data
-            // );
-
-            // setAmountOut(outAmount.toString());
-
-
-
-
-
-
-            
-            const out = fromUnits(quote.amountOut, tokenTwo.decimals)
+            const out = fromUnits(quote.amountOut, tokenTwo.decimals);
             setAmountOut(String(out ?? "0"));
             //@ts-expect-error ignore
             setQuoteData(quote);
@@ -241,10 +216,10 @@ const Swap = () => {
         handleLoad("FetchRoute", false);
       }
     }, 500),
-    []
+    [handleLoad, fetchQuote, amount0, setAmountOut, setQuoteData]
   );
 
-  const handleChange = (value: string, token0_: Token, token1_: Token) => {
+  const handleChange = useCallback((value: string, token0_: Token, token1_: Token) => {
     setAmount0(value);
     if (!token0_ || !token1_) {
       console.error("Token0 or Token1 is missing");
@@ -254,40 +229,29 @@ const Swap = () => {
     if (parseFloat(value) > 0) {
       fetchToken(token0_, token1_, parseFloat(value));
     }
-  };
+  }, [fetchToken]);
 
-  const checkAllownceStatus = async (chainId: number) => {
-    if (!token0?.address || !address || !amount0) return
+  const checkAllownceStatus = useCallback(async (currentChainId: number) => {
+    if (!token0?.address || !address || !amount0) return;
     const status0_ = await allowance(
-      chainId,
+      currentChainId,
       token0?.address,
       address,
-      aerodromeContracts[chainId].universalRouter,
+      aerodromeContracts[currentChainId].universalRouter,
       Number(amount0),
       token0?.decimals
     );
-    handleLoad(token0?.symbol, status0_);
-  };
+    handleLoad(token0?.symbol || 'unknown', status0_);
+  }, [token0, address, amount0, handleLoad]);
 
-  const fetchTokenBalance = async () => {
-    if (!token0?.address || !token1?.address || !address) return
-    const balance0 = await erc20Balance(chainId, token0?.address, token0?.decimals, address)
-    const balance1 = await erc20Balance(chainId, token1?.address, token1?.decimals, address)
+  const fetchTokenBalance = useCallback(async () => {
+    if (!token0?.address || !token1?.address || !address || !chainId) return; // Added chainId check
+    const balance0 = await erc20Balance(chainId, token0?.address, token0?.decimals, address);
+    const balance1 = await erc20Balance(chainId, token1?.address, token1?.decimals, address);
 
-    if (token0 && token0.address) {
-      setToken0({
-        ...token0,
-        balance: Number(balance0),
-      });
-    }
-
-    if (token1 && token1.address) {
-      setToken1({
-        ...token1,
-        balance: Number(balance1),
-      });
-    }
-  }
+    setToken0(prevToken0 => prevToken0 ? {...prevToken0, balance: Number(balance0)} : null);
+    setToken1(prevToken1 => prevToken1 ? {...prevToken1, balance: Number(balance1)} : null);
+  }, [token0?.address, token1?.address, address, chainId]);
 
 
   //@ts-expect-error ignore

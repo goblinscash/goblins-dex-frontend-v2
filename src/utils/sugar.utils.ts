@@ -7,7 +7,7 @@ import rewardSugarAbi from "../abi/sugar/rewardSugar.json"
 import relaySugarAbi from "../abi/sugar/relaySugar.json"
 
 import { formatValue, fromUnits } from "./math.utils";
-import { getUsdRate, getUsdRates } from "./price.utils";
+import { getUsdRates } from "./price.utils";
 
 export type FormattedPool = {
     chainId: number;
