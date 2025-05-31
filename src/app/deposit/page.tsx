@@ -687,7 +687,7 @@ const Deposit = () => {
                       <form action="">
                         <div className="bg-[#00000073] py-5 px-3 rounded-2xl border border-[#141414]">
                           <div className="flex items-center justify-between gap-3">
-                            <span className="font-medium text-base">Swap</span>
+                            <span className="font-medium text-base">Amount</span>
                             <span className="opacity-60 font-light text-xs">
                               Balance {token0?.balance} {token0?.symbol}
                             </span>
@@ -730,7 +730,7 @@ const Deposit = () => {
                         </div>
                         <div className="bg-[#00000073] py-5 px-3 rounded-2xl border border-[#141414]">
                           <div className="flex items-center justify-between gap-3">
-                            <span className="font-medium text-base">For</span>
+                            <span className="font-medium text-base">Amount</span>
                             <span className="opacity-60 font-light text-xs">
                               Balance {token1?.balance} {token1?.symbol}
                             </span>
