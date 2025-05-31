@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import styled from "styled-components";
 import TableLayout from "@/components/tableLayout";
 import { useChainId } from "wagmi";
@@ -178,6 +178,56 @@ const Liquidity = () => {
     current_page: 1
   });
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [minPoolBalance, setMinPoolBalance] = useState<string>("");
+  const [minVolume, setMinVolume] = useState<string>("");
+  const [minApr, setMinApr] = useState<string>("");
+
+  // Helper function to parse poolBalance string like "$1,234.56" or "N/A" to number
+  const parsePoolBalance = (balanceStr: string): number | null => {
+    if (!balanceStr || balanceStr.toLowerCase() === "n/a") {
+      return null;
+    }
+    // Remove $ and , then parse
+    const numericStr = balanceStr.replace(/\$|,/g, "");
+    const val = parseFloat(numericStr);
+    return isNaN(val) ? null : val;
+  };
+
+  const filteredPools = useMemo(() => {
+    return pools.filter((pool) => {
+      const parsedMinPoolBalance = minPoolBalance ? parseFloat(minPoolBalance) : null;
+      const parsedMinVolume = minVolume ? parseFloat(minVolume) : null;
+      const parsedMinApr = minApr ? parseFloat(minApr) : null;
+
+      // Pool Balance Filter
+      if (parsedMinPoolBalance !== null) {
+        const poolBalanceNum = parsePoolBalance(pool.poolBalance);
+        if (poolBalanceNum === null || poolBalanceNum < parsedMinPoolBalance) {
+          return false;
+        }
+      }
+
+      // Volume Filter
+      // Assuming pool.volume is a number as per FormattedPool. If it's a string, it needs parsing too.
+      // For now, direct comparison. If it's formatted like "$x,xxx", it will need parsing similar to poolBalance.
+      // From FormattedPool, volume is number.
+      if (parsedMinVolume !== null) {
+        if (pool.volume < parsedMinVolume) {
+          return false;
+        }
+      }
+
+      // APR Filter
+      // From FormattedPool, apr is number.
+      if (parsedMinApr !== null) {
+        if (pool.apr < parsedMinApr) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [pools, minPoolBalance, minVolume, minApr]);
 
   const showTab = (tab: number) => {
     setActiveTab(tab);
@@ -260,6 +310,46 @@ const Liquidity = () => {
               </form>
             </div>
           </div>
+          <div className="col-span-12 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label htmlFor="minPoolBalance" className="block text-sm font-medium text-gray-300 mb-1">Min. Pool Balance</label>
+                <input
+                  type="number"
+                  name="minPoolBalance"
+                  id="minPoolBalance"
+                  value={minPoolBalance}
+                  onChange={(e) => setMinPoolBalance(e.target.value)}
+                  placeholder="e.g., 1000"
+                  className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm p-2.5"
+                />
+              </div>
+              <div>
+                <label htmlFor="minVolume" className="block text-sm font-medium text-gray-300 mb-1">Min. Volume (24h)</label>
+                <input
+                  type="number"
+                  name="minVolume"
+                  id="minVolume"
+                  value={minVolume}
+                  onChange={(e) => setMinVolume(e.target.value)}
+                  placeholder="e.g., 10000"
+                  className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm p-2.5"
+                />
+              </div>
+              <div>
+                <label htmlFor="minApr" className="block text-sm font-medium text-gray-300 mb-1">Min. APR (%)</label>
+                <input
+                  type="number"
+                  name="minApr"
+                  id="minApr"
+                  value={minApr}
+                  onChange={(e) => setMinApr(e.target.value)}
+                  placeholder="e.g., 5"
+                  className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm p-2.5"
+                />
+              </div>
+            </div>
+          </div>
           <div className="col-span-12">
             <div className="w-full">
               <Nav
@@ -286,11 +376,11 @@ const Liquidity = () => {
                   </div>
                 ) : (
                   <>
-                    <TableLayout column={column} data={pools} />
+                    <TableLayout column={column} data={filteredPools} />
                     <div className="flex items-center justify-center gap-4 mt-4">
                       <button
                         onClick={() => handlePagination("left")}
-                        disabled={pagination.current_page === 1}
+                        disabled={pagination.current_page === 1 && filteredPools.length === 0}
                         className="p-2 rounded-full border border-gray-700 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
                       >
                         <ChevronLeft size={20} />
@@ -302,7 +392,7 @@ const Liquidity = () => {
 
                       <button
                         onClick={() => handlePagination("right")}
-                        disabled={pools.length < pagination.count}
+                        disabled={filteredPools.length < pagination.count}
                         className="p-2 rounded-full border border-gray-700 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
                       >
                         <ChevronRight size={20} />
