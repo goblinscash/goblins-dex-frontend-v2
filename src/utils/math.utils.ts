@@ -44,7 +44,7 @@ export const fromUnits = (value: string | number | bigint, decimals: number): st
 
 export const toUnits = (value: string | number, decimals: number): bigint => {
   const str = value.toString()
-  const [ integer, fraction = "" ] = str.split(".")
+  const [integer, fraction = ""] = str.split(".")
 
   // Truncate fraction to at most `decimals` digits
   const truncatedFraction = fraction.slice(0, decimals)
@@ -60,38 +60,42 @@ export const toUnits = (value: string | number, decimals: number): bigint => {
 export const formatValue = (value: bigint | string | number | boolean | null | undefined) => (typeof value === "bigint" ? value.toString() : value);
 
 export const formatTimestamp = (timestamp: number) => {
-  const now = Math.floor(Date.now() / 1000);
-  const diff = timestamp - now; // Positive if in the future, negative if in the past
-  const secondsInMinute = 60;
-  const secondsInHour = 3600;
-  const secondsInDay = 86400;
-  const secondsInMonth = 2592000;
-  const secondsInYear = 31536000;
+  const now = new Date();
+  const future = new Date(timestamp * 1000);
 
-  const getTimeString = (value: number, unit: string) =>
-    `${value} ${unit}${value !== 1 ? "s" : ""}`;
+  const isFuture = future > now;
+  const from = isFuture ? now : future;
+  const to = isFuture ? future : now;
 
-  let result = "";
+  let years = to.getFullYear() - from.getFullYear();
+  let months = to.getMonth() - from.getMonth();
+  let days = to.getDate() - from.getDate();
 
-  if (Math.abs(diff) < secondsInHour) {
-    const minutes = Math.floor(Math.abs(diff) / secondsInMinute);
-    result = getTimeString(minutes, "minute");
-  } else if (Math.abs(diff) < secondsInDay) {
-    const hours = Math.floor(Math.abs(diff) / secondsInHour);
-    result = getTimeString(hours, "hour");
-  } else if (Math.abs(diff) < secondsInMonth) {
-    const days = Math.floor(Math.abs(diff) / secondsInDay);
-    result = getTimeString(days, "day");
-  } else if (Math.abs(diff) < secondsInYear) {
-    const months = Math.floor(Math.abs(diff) / secondsInMonth);
-    result = getTimeString(months, "month");
-  } else {
-    const years = Math.floor(Math.abs(diff) / secondsInYear);
-    result = getTimeString(years, "year");
+  if (days < 0) {
+    months--;
+    const daysInPrevMonth = new Date(to.getFullYear(), to.getMonth(), 0).getDate();
+    days += daysInPrevMonth;
   }
 
-  return diff > 0 ? `Unlocks in ${result}` : `Unlocked ${result} ago`;
+  if (months < 0) {
+    years--;
+    months += 12;
+  }
+
+  const parts = [];
+  if (years > 0) parts.push(`${years} year${years > 1 ? "s" : ""}`);
+  if (months > 0) parts.push(`${months} month${months > 1 ? "s" : ""}`);
+  if (days > 0) parts.push(`${days} day${days > 1 ? "s" : ""}`);
+
+  if (parts.length === 0) {
+    return isFuture ? "Unlocks in less than a day" : "Unlocked just now";
+  }
+
+  const label = parts.slice(0, 2).join(" "); // optional: limit to 2 parts max
+
+  return isFuture ? `Unlocks in ${label}` : `Unlocked ${label} ago`;
 };
+
 
 export const formatLockedFor = (expiresAt: number) => {
   if (expiresAt === 0) {
@@ -99,37 +103,46 @@ export const formatLockedFor = (expiresAt: number) => {
   }
 
   const now = Math.floor(Date.now() / 1000);
-  const diff = expiresAt - now; // Positive if in the future, negative if in the past
+  let diff = expiresAt - now;
+
+  const isFuture = diff > 0;
+  diff = Math.abs(diff);
+
   const secondsInMinute = 60;
   const secondsInHour = 3600;
   const secondsInDay = 86400;
-  const secondsInMonth = 2592000;
+  const secondsInMonth = 2592000; // approx
   const secondsInYear = 31536000;
 
-  const getTimeString = (value: number, unit: string) =>
-    `${value} ${unit}${value !== 1 ? "s" : ""}`;
+  const years = Math.floor(diff / secondsInYear);
+  diff %= secondsInYear;
 
-  let result = "";
+  const months = Math.floor(diff / secondsInMonth);
+  diff %= secondsInMonth;
 
-  if (Math.abs(diff) < secondsInHour) {
-    const minutes = Math.floor(Math.abs(diff) / secondsInMinute);
-    result = getTimeString(minutes, "minute");
-  } else if (Math.abs(diff) < secondsInDay) {
-    const hours = Math.floor(Math.abs(diff) / secondsInHour);
-    result = getTimeString(hours, "hour");
-  } else if (Math.abs(diff) < secondsInMonth) {
-    const days = Math.floor(Math.abs(diff) / secondsInDay);
-    result = getTimeString(days, "day");
-  } else if (Math.abs(diff) < secondsInYear) {
-    const months = Math.floor(Math.abs(diff) / secondsInMonth);
-    result = getTimeString(months, "month");
-  } else {
-    const years = Math.floor(Math.abs(diff) / secondsInYear);
-    result = getTimeString(years, "year");
+  const days = Math.floor(diff / secondsInDay);
+  diff %= secondsInDay;
+
+  const hours = Math.floor(diff / secondsInHour);
+  diff %= secondsInHour;
+
+  const minutes = Math.floor(diff / secondsInMinute);
+
+  const parts = [];
+  if (years) parts.push(`${years} year${years > 1 ? "s" : ""}`);
+  if (months) parts.push(`${months} month${months > 1 ? "s" : ""}`);
+  if (days) parts.push(`${days} day${days > 1 ? "s" : ""}`);
+  if (hours) parts.push(`${hours} hour${hours > 1 ? "s" : ""}`);
+  if (minutes) parts.push(`${minutes} minute${minutes > 1 ? "s" : ""}`);
+
+  if (parts.length === 0) {
+    return isFuture ? "locked for less than a minute" : "unlocked just now";
   }
 
-  return diff > 0 ? `locked for ${result}` : `unlocked ${result} ago`;
+  const result = parts.slice(0, 3).join(" "); // first 3 parts only
+  return isFuture ? `locked for ${result}` : `unlocked ${result} ago`;
 };
+
 
 export const getTimeSince = (timestamp: number): TimeResult => {
   const date = new Date(timestamp * 1000);

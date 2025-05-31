@@ -37,7 +37,7 @@ const Deposit = () => {
   const [amount, setAmount] = useState("");
   const [duration, setDuration] = useState(1);
   const [lock, setLock] = useState<VeNFT | null>(null);
-  const [userBalance, setUserBalance]= useState("0");
+  const [userBalance, setUserBalance] = useState("0");
 
   const [status, setStatus] = useState<{ [key: string]: boolean }>({
     isAllowanceForToken: false,
@@ -78,7 +78,7 @@ const Deposit = () => {
     setLoad((prev) => ({ ...prev, [action]: status }));
   };
 
-  const checkUserBalance = async (chainId:number)=>{
+  const checkUserBalance = async (chainId: number) => {
     if (!address) return;
     const balance_ = await erc20Balance(
       chainId,
@@ -212,7 +212,7 @@ const Deposit = () => {
                                 </span>
                                 <div className="content text-xs text-gray-400">
                                   <p className="m-0">
-                                  Your lock will be available on the dashboard.
+                                    Your lock will be available on the dashboard.
                                   </p>
                                 </div>
                               </li>
@@ -241,7 +241,7 @@ const Deposit = () => {
                             <span className="font-medium text-base">
                               Amount to lock
                             </span>
-                            <span 
+                            <span
                               className="opacity-60 font-light text-xs cursor-pointer hover:text-[#00ff4e] transition-colors"
                               onClick={() => setAmount(userBalance)}
                             >
@@ -288,12 +288,13 @@ const Deposit = () => {
                           </div>
                           <div className="py-2">
                             <RangeSlider currentLockExpiresAt={lock?.expires_at} value={duration} onChange={setDuration} title="Locking for" />
+                            {/* <SliderRange  currentLockExpiresAt={lock?.expires_at} value={duration} onChange={setDuration} title="Locking for" /> */}
                           </div>
                           <div className="py-2">
                             <div className="flex p-4 rounded-xl itmes-center gap-2 bg-[#1c1d2a] text-[#a55e10]">
                               <span className="icn">{inforicn}</span>
                               <p className="m-0">
-                              Locking will give you an NFT, referred to as a veNFT. You can increase the lock amount or extend the lock time at any time afterward.
+                                Locking will give you an NFT, referred to as a veNFT. You can increase the lock amount or extend the lock time at any time afterward.
                               </p>
                             </div>
                           </div>
