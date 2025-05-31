@@ -6,7 +6,7 @@ interface TokenAmountCardProps {
   token: string;
   tokenSymbol: string;
   amount: string | number;
-  // usdValue: string;
+  usdValue?: string;
   iconColor: string;
 }
 
@@ -15,7 +15,7 @@ const TokenAmountCard: React.FC<TokenAmountCardProps> = ({
   token,
   tokenSymbol,
   amount,
-  // usdValue,
+  usdValue,
   iconColor
 }) => {
   return (
@@ -29,9 +29,11 @@ const TokenAmountCard: React.FC<TokenAmountCardProps> = ({
             height={28}
           />
         </div>
-        <span className="text-white font-medium">{amount} {tokenSymbol}</span>
+        <p className="text-base font-medium text-white"> {/* Adjusted text size from xl to base to better fit card */}
+          {Number(amount).toFixed(4)} {tokenSymbol}
+          {usdValue && <span className="text-sm text-gray-400 ml-1">({usdValue})</span>} {/* Adjusted margin */}
+        </p>
       </div>
-      {/* <div className="text-gray-400 text-sm mt-2">{usdValue}</div> */}
     </div>
   );
 };

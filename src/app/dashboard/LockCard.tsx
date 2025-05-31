@@ -16,6 +16,8 @@ interface LockData {
   rebaseApr: string;
   rebaseAmount: string;
   logoUri: string;
+  amountUsd: string;
+  rebaseAmountUsd: string;
 }
 
 interface LockCardProps {
@@ -77,7 +79,7 @@ const LockCard: React.FC<LockCardProps> = ({ lock }) => {
                   <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"></path>
                 </svg>
               </div>
-              <div className="text-gray-500 text-xs">{lock.amount} {lock.tokenSymbol} {lock.lockedFor}</div>
+              <div className="text-gray-500 text-xs">{lock.amount} {lock.tokenSymbol} ({lock.amountUsd}) {lock.lockedFor}</div>
             </div>
           </div>
 
@@ -90,7 +92,7 @@ const LockCard: React.FC<LockCardProps> = ({ lock }) => {
 
             <div className="text-right">
               <div className="text-gray-500 text-xs">Rebases</div>
-              <div className="text-white text-base font-medium">{lock.rebaseAmount} {lock.tokenSymbol}</div>
+              <div className="text-white text-base font-medium">{lock.rebaseAmount} {lock.tokenSymbol} ({lock.rebaseAmountUsd})</div>
             </div>
           </div>
         </div>

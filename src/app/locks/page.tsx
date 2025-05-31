@@ -7,23 +7,25 @@ import Link from "next/link";
 import { calculateRebaseAPR, formatTimestamp, fromUnits, getTimeSince, shortenPubkey } from "@/utils/math.utils";
 import LockInteraction from "@/components/lockInteraction/LockInteraction";
 import { Tooltip } from 'react-tooltip'
+import { getUsdRates } from '@/utils/price.utils';
+import { getToken } from '@/utils/token.utils';
 import Image from "next/image";
 import logo from "@/assets/Images/logo.png"
 import { gobV2 } from "@/utils/constant.utils";
 
 type Column = {
   accessor: string;
-  component?: (item: VeNFT, key: number) => React.ReactNode;
+  component?: (item: VeNFT & { amountUsd: string; rebaseAmountUsd: string; tokenSymbol: string; }, key: number) => React.ReactNode;
   isComponent?: boolean;
 };
 
 const column: Column[] = [
   {
     accessor: "Lock",
-    component: (item: VeNFT) => <LockInteraction item={item} />
+    component: (item) => <LockInteraction item={item} /> // Type inference should handle item here if ListLayout is generic or item is any
   },
   {
-    accessor: "apr", component: (item: VeNFT) => {
+    accessor: "apr", component: (item) => { // item type updated by Column def
       return (
         <>
           <p className="m-0 text-gray-500 text-xs">Rebase APR </p>
@@ -36,12 +38,13 @@ const column: Column[] = [
   },
   {
     accessor: "Locked Amount",
-    component: (item: VeNFT) => {
-      const amount = parseFloat(item.amount) / 10 ** parseInt(item.decimals)
+    component: (item) => { // item type updated by Column def
+      const amount = parseFloat(item.amount) / 10 ** parseInt(item.decimals);
       return (
         <>
           <p className="m-0 text-gray-500 text-xs">Locked Amount </p>
-          <p className="m-0 text-base text-white">{amount.toFixed(5)} GOB
+          <p className="m-0 text-base text-white">
+            {amount.toFixed(5)} {item.tokenSymbol} ({item.amountUsd})
           </p>
         </>
       );
@@ -49,8 +52,8 @@ const column: Column[] = [
   },
   {
     accessor: "Voting Power",
-    component: (item: VeNFT) => {
-      const votingPower = parseFloat(item.voting_amount) / 10 ** parseInt(item.decimals)
+    component: (item) => { // item type updated by Column def
+      const votingPower = parseFloat(item.voting_amount) / 10 ** parseInt(item.decimals);
       return (
         <>
           <p className="m-0 text-gray-500 text-xs">Voting Power</p>
@@ -62,7 +65,7 @@ const column: Column[] = [
   },
   {
     accessor: "Unlock Date",
-    component: (item: VeNFT) => {
+    component: (item) => { // item type updated by Column def
       const formattedDate = item.expires_at === "0" ? "-" : formatTimestamp(Number(item.expires_at));
       return (
         <>
@@ -78,7 +81,7 @@ const column: Column[] = [
 const Locks = () => {
   const chainId = useChainId();
   const { address } = useAccount();
-  const [locks, setLocks] = useState<VeNFT | null>(null);
+  const [locks, setLocks] = useState<(VeNFT & { amountUsd: string; rebaseAmountUsd: string; tokenSymbol: string; })[] | null>(null);
   const [relay, setRelay] = useState<Relay[] | null>(null)
   const [isCopied, setIsCopied] = useState(false)
 
@@ -92,7 +95,25 @@ const Locks = () => {
   const fetchLocksByAccount = async () => {
     if (!address) return
     const locks_ = await locksByAccount(chainId, address)
-    setLocks(locks_)
+    if (locks_ && locks_.length > 0) {
+      const lockTokenAddresses = [...new Set(locks_.map(lock => lock.token))];
+      const lockTokenRates = await getUsdRates(chainId, lockTokenAddresses);
+
+      const enrichedLocks = locks_.map(lock => {
+        const tokenDetails = getToken(lock.token);
+        const amount = parseFloat(lock.amount) / 10 ** parseInt(lock.decimals);
+        const rebaseAmount = parseFloat(lock.rebase_amount) / 10 ** parseInt(lock.decimals);
+        return {
+          ...lock,
+          tokenSymbol: tokenDetails?.symbol || '',
+          amountUsd: `$${(amount * (lockTokenRates[lock.token] || 0)).toFixed(2)}`,
+          rebaseAmountUsd: `$${(rebaseAmount * (lockTokenRates[lock.token] || 0)).toFixed(2)}`,
+        };
+      });
+      setLocks(enrichedLocks);
+    } else {
+      setLocks([]); // Set to empty array if no locks
+    }
   }
 
   const fetchRelay = async () => {

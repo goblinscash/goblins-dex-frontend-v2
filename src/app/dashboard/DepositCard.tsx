@@ -31,6 +31,13 @@ interface TokenPair {
   tradingFees1: string;
   depositedUsd: string;
   poolTotalUsd: string;
+  token0AmountUsd: string;
+  token1AmountUsd: string;
+  unstaked0AmountUsd: string;
+  unstaked1AmountUsd: string;
+  emissionsAmountUsd: string;
+  tradingFees0Usd: string;
+  tradingFees1Usd: string;
   position?: number;
   tickUpper?: string;
   tickLower?: string;
@@ -232,10 +239,10 @@ const DepositCard: React.FC<DepositCardProps> = ({
             <div className="p-3 sm:p-4">
               <div className="text-gray-400 text-xs mb-2">Staked</div>
               <div className="text-white text-sm font-medium">
-                {tokenPair.token0Amount} {tokenPair.token0Name}
+                {tokenPair.token0Amount} {tokenPair.token0Name} ({tokenPair.token0AmountUsd})
               </div>
               <div className="text-white text-sm font-medium">
-                {tokenPair.token1Amount} {tokenPair.token1Name}
+                {tokenPair.token1Amount} {tokenPair.token1Name} ({tokenPair.token1AmountUsd})
               </div>
             </div>
 
@@ -243,10 +250,10 @@ const DepositCard: React.FC<DepositCardProps> = ({
             <div className="p-3 sm:p-4">
               <div className="text-gray-400 text-xs mb-2">Unstaked</div>
               <div className="text-white text-sm font-medium">
-                {tokenPair.unstaked0Amount} {tokenPair.token0Name}
+                {tokenPair.unstaked0Amount} {tokenPair.token0Name} ({tokenPair.unstaked0AmountUsd})
               </div>
               <div className="text-white text-sm font-medium">
-                {tokenPair.unstaked1Amount} {tokenPair.token1Name}
+                {tokenPair.unstaked1Amount} {tokenPair.token1Name} ({tokenPair.unstaked1AmountUsd})
               </div>
               <div className="flex gap-2 mt-4">
                 <button onClick={() => navigate("stake")}>
@@ -271,8 +278,8 @@ const DepositCard: React.FC<DepositCardProps> = ({
             {/* Emissions Column */}
             <div className="p-3 sm:p-4">
               <div className="text-gray-400 text-xs mb-2">Emissions</div>
-              <div className="text-white text-sm font-bold">
-                {tokenPair.emissionsAmount} {tokenPair.emissionsToken}
+              <div className="text-white text-sm font-medium">
+                {tokenPair.emissionsAmount} {tokenPair.emissionsToken} ({tokenPair.emissionsAmountUsd})
               </div>
               <div className="flex mt-4">
                 <button
@@ -287,11 +294,11 @@ const DepositCard: React.FC<DepositCardProps> = ({
             {/* Trading Fees Column */}
             <div className="p-3 sm:p-4">
               <div className="text-gray-400 text-xs mb-2">Trading Fees</div>
-              <div className="text-white text-sm font-bold">
-                {tokenPair.tradingFees0} {tokenPair.token0Name}
+              <div className="text-white text-sm font-medium">
+                {tokenPair.tradingFees0} {tokenPair.token0Name} ({tokenPair.tradingFees0Usd})
               </div>
-              <div className="text-white text-sm font-bold">
-                {tokenPair.tradingFees1} {tokenPair.token1Name}
+              <div className="text-white text-sm font-medium">
+                {tokenPair.tradingFees1} {tokenPair.token1Name} ({tokenPair.tradingFees1Usd})
               </div>
               <div className="flex mt-4">
                 <button

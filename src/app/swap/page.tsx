@@ -111,7 +111,7 @@ const Swap = () => {
               return {
                 ...token,
                 balance: 0, // Fallback balance
-                price: 0,
+                priceRate: 0,
               };
             }
           })

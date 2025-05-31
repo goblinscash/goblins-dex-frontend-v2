@@ -16,7 +16,7 @@ const DepositInfoCard: React.FC<DepositInfoCardProps> = ({
           <span className="flex items-center justify-center w-6 h-6 bg-blue-600 text-white rounded-full text-xs">$</span>
           <span className="text-white text-base font-medium">Deposit #{depositId}</span>
         </div>
-        <div className="text-white text-base font-medium">{depositValue}</div>
+        <p className="text-xl font-bold text-white">{depositValue}</p>
       </div>
       
       <div className="flex items-center justify-between mt-4">

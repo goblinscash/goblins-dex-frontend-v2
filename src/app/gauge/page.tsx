@@ -21,6 +21,7 @@ import Notify from '@/components/common/Notify';
 import aerodromeRouterAbi from "@/abi/aerodrome/router.json"
 import nfpmAbi from "@/abi/aerodrome/nfpm.json"
 import clGaugeAbi from "@/abi/aerodrome/clGauge.json"
+import { getUsdRates } from '@/utils/price.utils';
 
 const feeNoticeMessage = "10% of fees generated from unstaked deposits is distributed to pool voters.";
 type LiquidityPosition = {
@@ -60,6 +61,9 @@ type StakeDetails = {
   gauge: string;
   gauge_alive: boolean;
   gauge_liquidity: number;
+  token0AmountUsd: string;
+  token1AmountUsd: string;
+  emissionsAmountUsd: string;
 };
 type ActiveStakeInfo = {
   activeVersion?: string;
@@ -134,6 +138,17 @@ const StakePage = () => {
     const token1 = getToken(_activeStake?.pool!.token1)!;
     const rewardToken = getToken(_activeStake.pool!.emissions_token);
 
+    const tokensToFetch = [
+      _activeStake.pool!.token0,
+      _activeStake.pool!.token1,
+      _activeStake.pool!.emissions_token
+    ].filter(Boolean);
+    const rates = await getUsdRates(chainId, [...new Set(tokensToFetch)]);
+
+    const token0Amount = parseFloat(_activeStake?.activeVersion == "v3" ? fromUnits(_activeStake?.pool.reserve0, token0.decimals) : String(Number(_activeStake.position?.amount0 || 0)/  10**token0.decimals));
+    const token1Amount = parseFloat(_activeStake?.activeVersion == "v3" ? fromUnits(_activeStake?.pool.reserve1, token1.decimals) : String(Number(_activeStake.position?.amount1 || 0) / 10**token1.decimals));
+    const emissionsAmount = rewardToken ? parseFloat(String(Number(_activeStake.position?.emissions_earned || 0) / 10 ** rewardToken.decimals)) : 0;
+
     const stakeInfo = {
       lp: _activeStake.pool!.lp,
       liquidity: Number(_activeStake.position!.liquidity) / 10 ** 18,
@@ -141,19 +156,20 @@ const StakePage = () => {
       token1: token1,
       fee: _activeStake.pool!.fee || "",
       type: PoolTypeMap[String(_activeStake.pool!.type)],
-      //@ts-expect-error ignore
-      token0Amount: _activeStake?.activeVersion == "v3" ? fromUnits(_activeStake?.pool.reserve0, token0.decimals) : String(Number(_activeStake.position?.amount0 || 0)/  10**token0.decimals),
-      //@ts-expect-error ignore
-      token1Amount: _activeStake?.activeVersion == "v3" ? fromUnits(_activeStake?.pool.reserve1, token1.decimals) : String(Number(_activeStake.position?.amount1 || 0) / 10**token1.decimals),
+      token0Amount: String(token0Amount),
+      token1Amount: String(token1Amount),
       unstaked0Amount: fromUnits(_activeStake.position?.staked0 || 0, token0.decimals),
       unstaked1Amount: fromUnits(_activeStake.position?.staked1 || 0, token1.decimals),
       apr: `${_activeStake.pool!.apr}%`,
       emissionsToken: rewardToken?.symbol ?? "",
-      emissionsAmount: rewardToken ? String(Number(_activeStake.position?.emissions_earned || 0) / 10 ** rewardToken.decimals) : "",
+      emissionsAmount: String(emissionsAmount),
       tradingFees0: String(Number(_activeStake.position?.unstaked_earned0 || 0) / 10 ** token0.decimals),
       tradingFees1: String(Number(_activeStake.position?.unstaked_earned1 || 0) / 10 ** token1.decimals),
       depositedUsd: `$${(parseFloat(String(_activeStake.pool!.poolBalance).replace("$", "")) * Number(_activeStake.position!.liquidity) / _activeStake.pool!.liquidity).toFixed(2)}`,
       poolTotalUsd: `${_activeStake.pool!.poolBalance}`,
+      token0AmountUsd: `$${(token0Amount * (rates[_activeStake.pool!.token0] || 0)).toFixed(2)}`,
+      token1AmountUsd: `$${(token1Amount * (rates[_activeStake.pool!.token1] || 0)).toFixed(2)}`,
+      emissionsAmountUsd: `$${(emissionsAmount * (rates[_activeStake.pool!.emissions_token] || 0)).toFixed(2)}`,
       gauge: _activeStake.pool!.gauge,
       gauge_alive: _activeStake.pool!.gauge_alive,
       gauge_liquidity: _activeStake.pool!.gauge_liquidity
@@ -415,8 +431,8 @@ const StakePage = () => {
 
           {/* Deposit Info Card Component */}
           <DepositInfoCard
-            depositId={0}
-            depositValue="~$0.07565"
+            depositId={0} // Or a relevant ID if available
+            depositValue={stakeDetails?.depositedUsd ?? "~$0.00"} // Use fetched value
           />
         </div>
 
@@ -440,7 +456,7 @@ const StakePage = () => {
               token={stakeDetails.token0.address}
               tokenSymbol={stakeDetails?.token0.name}
               amount={(Number(stakeDetails.token0Amount) * stakePercentage) / 100}
-              // usdValue={'0'}
+              usdValue={stakeDetails.token0AmountUsd}
               iconColor="purple-600"
             />}
 
@@ -449,7 +465,7 @@ const StakePage = () => {
               token={stakeDetails.token1.address}
               tokenSymbol={stakeDetails?.token1.name}
               amount={(Number(stakeDetails.token1Amount) * stakePercentage) / 100}
-              // usdValue={'0'}
+              usdValue={stakeDetails.token1AmountUsd}
               iconColor="yellow-500"
             />}
           </div>

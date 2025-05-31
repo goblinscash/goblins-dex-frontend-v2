@@ -10,6 +10,7 @@ import { useChainId, useAccount } from 'wagmi';
 import { calculateRebaseAPR, formatLockedFor, fromUnits, toUnits } from '@/utils/math.utils';
 import { getToken } from '@/utils/token.utils';
 import { v3PositionByAddress } from '@/utils/web3.utils';
+import { getUsdRates } from '@/utils/price.utils';
 import { zeroAddr } from '@/utils/config.utils';
 interface PositionType {
     nonce: string;
@@ -39,6 +40,8 @@ type LockItem = {
     rebaseApr: string;
     rebaseAmount: string;
     logoUri: string;
+    amountUsd: string;
+    rebaseAmountUsd: string;
 };
 
 type DepositItem = {
@@ -67,6 +70,13 @@ type DepositItem = {
         tradingFees1: string;
         depositedUsd: string;
         poolTotalUsd: string;
+        token0AmountUsd: string;
+        token1AmountUsd: string;
+        unstaked0AmountUsd: string;
+        unstaked1AmountUsd: string;
+        emissionsAmountUsd: string;
+        tradingFees0Usd: string;
+        tradingFees1Usd: string;
     };
 };
 
@@ -163,6 +173,10 @@ const Dashboard = () => {
         if (!address) return
         const locks_ = await locksByAccount(chainId, address)
         console.log("Locks by account: ", locks_)
+
+        const lockTokenAddresses = [...new Set(locks_.map(lock => lock.token))];
+        const lockTokenRates = await getUsdRates(chainId, lockTokenAddresses);
+
         setLocks(locks_.map((lock: VeNFT) => ({
             id: lock.id,
             amount: String(parseFloat(lock.amount) / 10 ** parseInt(lock.decimals)),
@@ -172,6 +186,8 @@ const Dashboard = () => {
             logoUri: getToken(lock.token)!.logoURI,
             rebaseApr: `${calculateRebaseAPR(lock.rebase_amount, lock.amount, lock.decimals)}%`,
             rebaseAmount: String(parseFloat(lock.rebase_amount) / 10 ** parseInt(lock.decimals)),
+            amountUsd: `$${(parseFloat(String(parseFloat(lock.amount) / 10 ** parseInt(lock.decimals))) * (lockTokenRates[lock.token] || 0)).toFixed(2)}`,
+            rebaseAmountUsd: `$${(parseFloat(String(parseFloat(lock.rebase_amount) / 10 ** parseInt(lock.decimals))) * (lockTokenRates[lock.token] || 0)).toFixed(2)}`,
         } as LockItem)
         ))
     }
@@ -196,6 +212,9 @@ const Dashboard = () => {
 
         const depositsExtended = [...deposits_, ...v3Position];
 
+        const allTokenAddresses = [...new Set(pools.flatMap(p => [p.token0, p.token1, p.emissions_token].filter(Boolean)) )];
+        const rates = await getUsdRates(chainId, allTokenAddresses);
+
         //@ts-expect-error ignore
         const updatedDeposits = depositsExtended.map((deposit: Position, index: number) => {
 
@@ -218,6 +237,15 @@ const Dashboard = () => {
             const token1 = getToken(pool.token1)!;
             const rewardToken = getToken(pool.emissions_token);
 
+            const token0AmountNum = parseFloat(pool.type > 0 ? fromUnits(pool.reserve0, token0.decimals) : String(Number(deposit.amount0) / 10 ** token0.decimals));
+            const token1AmountNum = parseFloat(pool.type > 0 ? fromUnits(pool.reserve1, token1.decimals) :  String(Number(deposit.amount1) / 10 ** token1.decimals));
+            const unstaked0AmountNum = parseFloat(pool.type > 0 ? fromUnits(pool.staked0, token0.decimals) : String(Number(deposit.staked0) / 10 ** token0.decimals));
+            const unstaked1AmountNum = parseFloat(pool.type > 0 ? fromUnits(pool.staked1, token1.decimals) : String(Number(deposit.staked1) / 10 ** token1.decimals)); // Corrected token1.decimals
+            const emissionsAmountNum = rewardToken ? parseFloat(String(Number(deposit.emissions_earned) / 10 ** rewardToken.decimals)) : 0;
+            const tradingFees0Num = parseFloat(pool.type > 0 ? fromUnits(pool.token0_fees, token0.decimals) : String(Number(deposit.unstaked_earned0) / 10 ** token0.decimals));
+            const tradingFees1Num = parseFloat(pool.type > 0 ? fromUnits(pool.token1_fees, token1.decimals) : String(Number(deposit.unstaked_earned1) / 10 ** token1.decimals)); // Corrected token1.decimals
+
+
             const depositInfo = {
                 id: pool.type > 0 ? Number(deposit.id) : index+ 1,
                 tokenPair: {
@@ -233,23 +261,28 @@ const Dashboard = () => {
                     token1Name: token1?.symbol,
                     fee: pool.pool_fee || "",
                     type: PoolTypeMap[String(pool.type)],
-                    token0Amount: pool.type > 0 ? fromUnits(pool.reserve0, token0.decimals) : String(Number(deposit.amount0) / 10 ** token0.decimals),
-                    token1Amount: pool.type > 0 ? fromUnits(pool.reserve1, token1.decimals) :  String(Number(deposit.amount1) / 10 ** token1.decimals),
-                    unstaked0Amount: pool.type > 0 ? fromUnits(pool.staked0, token0.decimals) : String(Number(deposit.staked0) / 10 ** token0.decimals),
-                    unstaked1Amount:pool.type > 0 ? fromUnits(pool.staked1, token0.decimals) : String(Number(deposit.staked1) / 10 ** token1.decimals),
+                    token0Amount: String(token0AmountNum),
+                    token1Amount: String(token1AmountNum),
+                    unstaked0Amount: String(unstaked0AmountNum),
+                    unstaked1Amount: String(unstaked1AmountNum),
                     apr: `${pool.apr}%`,
                     emissionsToken: rewardToken?.symbol ?? "",
-                    emissionsAmount: rewardToken
-                        ? String(Number(deposit.emissions_earned) / 10 ** rewardToken.decimals)
-                        : "",
-                    tradingFees0: pool.type > 0 ? fromUnits(pool.token0_fees, token0.decimals) : String(Number(deposit.unstaked_earned0) / 10 ** token0.decimals),
-                    tradingFees1: pool.type > 0 ? fromUnits(pool.token1_fees, token0.decimals) : String(Number(deposit.unstaked_earned1) / 10 ** token1.decimals),
+                    emissionsAmount: String(emissionsAmountNum),
+                    tradingFees0: String(tradingFees0Num),
+                    tradingFees1: String(tradingFees1Num),
                     depositedUsd: `$${(
                         (parseFloat(String(pool.poolBalance).replace("$", "")) *
                             Number(deposit.liquidity || deposit.position?.liquidity)) /
                         pool.liquidity
                     ).toFixed(2)}`,
-                    poolTotalUsd: `${pool.poolBalance}`
+                    poolTotalUsd: `${pool.poolBalance}`,
+                    token0AmountUsd: `$${(token0AmountNum * (rates[pool.token0] || 0)).toFixed(2)}`,
+                    token1AmountUsd: `$${(token1AmountNum * (rates[pool.token1] || 0)).toFixed(2)}`,
+                    unstaked0AmountUsd: `$${(unstaked0AmountNum * (rates[pool.token0] || 0)).toFixed(2)}`,
+                    unstaked1AmountUsd: `$${(unstaked1AmountNum * (rates[pool.token1] || 0)).toFixed(2)}`,
+                    emissionsAmountUsd: `$${(emissionsAmountNum * (rates[pool.emissions_token] || 0)).toFixed(2)}`,
+                    tradingFees0Usd: `$${(tradingFees0Num * (rates[pool.token0] || 0)).toFixed(2)}`,
+                    tradingFees1Usd: `$${(tradingFees1Num * (rates[pool.token1] || 0)).toFixed(2)}`,
                 }
             } as DepositItem;
 
