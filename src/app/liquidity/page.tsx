@@ -1,12 +1,12 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import styled from "styled-components";
 import TableLayout from "@/components/tableLayout";
 import { useChainId } from "wagmi";
 import { all, FormattedPool } from "@/utils/sugar.utils";
 import Link from "next/link";
 import Logo from "@/components/common/Logo";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from "lucide-react";
 import { getToken } from "@/utils/token.utils";
 import { CircularLoader } from "@/components/common";
 const Nav = styled.div`
@@ -35,12 +35,14 @@ type Tab = {
   content: React.ReactNode; // This can be any JSX element
 };
 
+// Update Column type to allow ReactNode for headers
 type Column = {
-  head: string;
+  head: React.ReactNode; // Changed from string to ReactNode
   accessor: string;
   component?: (item: Data, key: number) => React.ReactNode; // Optional component property
   isComponent?: boolean; // For columns with specific components (like a switch)
   hasFixedHeight?: boolean; // Optional fixed height constraint
+  sortable?: boolean; // Optional: identify sortable columns
 };
 
 type Data = {
@@ -170,7 +172,6 @@ const tabFilter = {
 
 const Liquidity = () => {
   const [activeTab, setActiveTab] = useState<number>(0);
-  // const [pools, setPools] = useState([]);
   const [pools, setPools] = useState<FormattedPool[]>([]);
   const [type, setType] = useState<number | undefined>(undefined);
   const [pagination, setPagination] = useState({
@@ -178,6 +179,111 @@ const Liquidity = () => {
     current_page: 1
   });
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [minPoolBalance, setMinPoolBalance] = useState<string>("");
+  const [minVolume, setMinVolume] = useState<string>("");
+  const [minApr, setMinApr] = useState<string>("");
+
+  // Sorting state
+  const [sortColumnKey, setSortColumnKey] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
+  // Helper function to parse poolBalance string like "$1,234.56" or "N/A" to number
+  const parsePoolBalance = (balanceStr: string): number | null => {
+    if (!balanceStr || balanceStr.toLowerCase() === "n/a") {
+      return null;
+    }
+    // Remove $ and , then parse
+    const numericStr = balanceStr.replace(/\$|,/g, "");
+    const val = parseFloat(numericStr);
+    return isNaN(val) ? null : val;
+  };
+
+  const filteredPools = useMemo(() => {
+    let sortedPools = [...pools];
+
+    // Apply filtering
+    sortedPools = sortedPools.filter((pool) => {
+      const parsedMinPoolBalance = minPoolBalance ? parseFloat(minPoolBalance) : null;
+      const parsedMinVolume = minVolume ? parseFloat(minVolume) : null;
+      const parsedMinApr = minApr ? parseFloat(minApr) : null;
+
+      // Pool Balance Filter
+      if (parsedMinPoolBalance !== null) {
+        const poolBalanceNum = parsePoolBalance(pool.poolBalance);
+        if (poolBalanceNum === null || poolBalanceNum < parsedMinPoolBalance) {
+          return false;
+        }
+      }
+
+      // Volume Filter
+      // Assuming pool.volume is a number as per FormattedPool. If it's a string, it needs parsing too.
+      // For now, direct comparison. If it's formatted like "$x,xxx", it will need parsing similar to poolBalance.
+      // From FormattedPool, volume is number.
+      if (parsedMinVolume !== null) {
+        if (pool.volume < parsedMinVolume) {
+          return false;
+        }
+      }
+
+      // APR Filter
+      // From FormattedPool, apr is number.
+      if (parsedMinApr !== null) {
+        if (pool.apr < parsedMinApr) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    // Apply sorting
+    if (sortColumnKey) {
+      sortedPools.sort((a, b) => {
+        let valA, valB;
+
+        switch (sortColumnKey) {
+          case 'apr':
+            valA = a.apr;
+            valB = b.apr;
+            break;
+          case 'volume':
+            valA = a.volume;
+            valB = b.volume;
+            break;
+          case 'poolBalance':
+            valA = parsePoolBalance(a.poolBalance);
+            valB = parsePoolBalance(b.poolBalance);
+            // Handle cases where parsing might return null (e.g., "N/A")
+            if (valA === null) valA = sortDirection === 'asc' ? Infinity : -Infinity;
+            if (valB === null) valB = sortDirection === 'asc' ? Infinity : -Infinity;
+            break;
+          default:
+            return 0;
+        }
+
+        if (valA === null || valB === null) return 0; // Should be handled by Infinity assignment for poolBalance
+
+        if (valA < valB) {
+          return sortDirection === 'asc' ? -1 : 1;
+        }
+        if (valA > valB) {
+          return sortDirection === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+
+    return sortedPools;
+  }, [pools, minPoolBalance, minVolume, minApr, sortColumnKey, sortDirection]);
+
+  const handleSort = (accessor: string) => {
+    if (sortColumnKey === accessor) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumnKey(accessor);
+      setSortDirection('asc');
+    }
+  };
 
   const showTab = (tab: number) => {
     setActiveTab(tab);
@@ -241,6 +347,107 @@ const Liquidity = () => {
     }
   }, [chainId, type]);
   console.log(pools,"poolspools")
+
+  // Define columns with sortable headers
+  // This needs to be defined within the component or passed `sortColumnKey`, `sortDirection`, and `handleSort`
+  // if defined outside. For simplicity, defining it inside or making it dependent on these states.
+  // Let's redefine it inside useMemo or pass dependencies if it's outside.
+  // For now, this is a static definition, but head will be dynamic.
+  // The `column` definition needs to be memoized or defined inside the component to use `handleSort`, `sortColumnKey`, `sortDirection`.
+  // Let's move it inside or make it a function that returns the array based on sort state.
+  // For this task, I will modify the existing `column` array structure.
+  // The `column` variable is defined outside `Liquidity`. This is problematic for dynamic headers.
+  // It should be part of the component's state or props, or created dynamically within the render scope.
+  // I will adjust the structure so that the `head` property can be a function that TableLayout will call with sort info,
+  // or more simply, make `TableLayout` aware of sortable columns and handle rendering.
+  // Given the constraint of editing only this file, I'll make the `head` dynamic within the `Liquidity` component's scope.
+
+  const tableColumns: Column[] = useMemo(() => [
+    {
+      head: "Liquidity Pool",
+      accessor: "Liquidity",
+      component: (item: Data, key: number) => {
+        return (
+          <div key={key} className="flex items-center gap-3">
+            <ul className="list-none pl-3 mb-0 flex-shrink-0 flex items-center">
+              <li className="" style={{ marginLeft: -10 }}>
+                <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
+                  <Logo chainId={item.chainId} token={item.token0} margin={0} height={20} />{" "}
+                </div>
+              </li>
+              <li className="" style={{ marginLeft: -10 }}>
+                <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
+                  <Logo chainId={item.chainId} token={item.token1} margin={0} height={20} />{" "}
+                </div>
+              </li>
+            </ul>
+            <div className="content">
+              <p className="m-0 text-muted">{item?.symbol || `cAMM-${getToken(item!.token0)!.symbol}/${getToken(item!.token1)!.symbol}`}</p>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      head: (
+        <button onClick={() => handleSort('apr')} className="flex items-center gap-1 hover:text-gray-300">
+          APR
+          {sortColumnKey === 'apr' && (sortDirection === 'asc' ? <ChevronUp size={16} /> : <ChevronDown size={16} />)}
+        </button>
+      ),
+      accessor: "apr",
+      sortable: true
+    },
+    {
+      head: (
+        <button onClick={() => handleSort('volume')} className="flex items-center gap-1 hover:text-gray-300">
+          Volume
+          {sortColumnKey === 'volume' && (sortDirection === 'asc' ? <ChevronUp size={16} /> : <ChevronDown size={16} />)}
+        </button>
+      ),
+      accessor: "volume",
+      isComponent: true, // This seems to be for cell content, not header. Keep for now.
+      sortable: true
+    },
+    {
+      head: "Pool Fee",
+      accessor: "pool_fee",
+    },
+    {
+      head: (
+        <button onClick={() => handleSort('poolBalance')} className="flex items-center gap-1 hover:text-gray-300">
+          Pool Balance
+          {sortColumnKey === 'poolBalance' && (sortDirection === 'asc' ? <ChevronUp size={16} /> : <ChevronDown size={16} />)}
+        </button>
+      ),
+      accessor: "poolBalance",
+      sortable: true
+    },
+    {
+      head: "",
+      accessor: "action",
+      component: (item: Data) => {
+        const url = item.url || "/deposit";
+        return (
+          <>
+            <details className="dropdown dropdown-end relative">
+              <summary className="border-0 cursor-pointer p-0 flex items-center m-1">{moreIcn}</summary>
+              <ul className="menu dropdown-content z-[1] bg-base-100 bg-white rounded-box w-48 sm:w-52 p-2 shadow-md text-dark absolute right-0 mt-2">
+                <li className="border-b border-dashed border-[#000] py-1">
+                  <Link href={url} className="flex items-center text-black font-medium ">Deposit</Link>
+                </li>
+                <li className="py-1">
+                  <Link href={url} className="flex items-center text-black font-medium ">Withdraw</Link>
+                </li>
+              </ul>
+            </details>
+          </>
+        );
+      },
+      hasFixedHeight: false
+    },
+  ], [sortColumnKey, sortDirection, handleSort]); // Dependencies for useMemo
+
   return (
     <section className="Liquidity py-5 relative">
       <div className="container ">
@@ -258,6 +465,46 @@ const Liquidity = () => {
                   </Link>
                 </div>
               </form>
+            </div>
+          </div>
+          <div className="col-span-12 mb-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label htmlFor="minPoolBalance" className="block text-sm font-medium text-gray-300 mb-1">Min. Pool Balance</label>
+                <input
+                  type="number"
+                  name="minPoolBalance"
+                  id="minPoolBalance"
+                  value={minPoolBalance}
+                  onChange={(e) => setMinPoolBalance(e.target.value)}
+                  placeholder="e.g., 1000"
+                  className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm p-2.5"
+                />
+              </div>
+              <div>
+                <label htmlFor="minVolume" className="block text-sm font-medium text-gray-300 mb-1">Min. Volume (24h)</label>
+                <input
+                  type="number"
+                  name="minVolume"
+                  id="minVolume"
+                  value={minVolume}
+                  onChange={(e) => setMinVolume(e.target.value)}
+                  placeholder="e.g., 10000"
+                  className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm p-2.5"
+                />
+              </div>
+              <div>
+                <label htmlFor="minApr" className="block text-sm font-medium text-gray-300 mb-1">Min. APR (%)</label>
+                <input
+                  type="number"
+                  name="minApr"
+                  id="minApr"
+                  value={minApr}
+                  onChange={(e) => setMinApr(e.target.value)}
+                  placeholder="e.g., 5"
+                  className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm p-2.5"
+                />
+              </div>
             </div>
           </div>
           <div className="col-span-12">
@@ -286,11 +533,11 @@ const Liquidity = () => {
                   </div>
                 ) : (
                   <>
-                    <TableLayout column={column} data={pools} />
+                    <TableLayout column={tableColumns} data={filteredPools} />
                     <div className="flex items-center justify-center gap-4 mt-4">
                       <button
                         onClick={() => handlePagination("left")}
-                        disabled={pagination.current_page === 1}
+                        disabled={pagination.current_page === 1 && filteredPools.length === 0}
                         className="p-2 rounded-full border border-gray-700 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
                       >
                         <ChevronLeft size={20} />
@@ -302,7 +549,7 @@ const Liquidity = () => {
 
                       <button
                         onClick={() => handlePagination("right")}
-                        disabled={pools.length < pagination.count}
+                        disabled={filteredPools.length < pagination.count}
                         className="p-2 rounded-full border border-gray-700 hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition"
                       >
                         <ChevronRight size={20} />
