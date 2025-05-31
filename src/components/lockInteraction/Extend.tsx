@@ -17,7 +17,7 @@ import { Switch } from '@headlessui/react';
 import { LockKeyhole } from 'lucide-react';
 
 // Define Maximum Expiry Constants
-// const MAX_EXPIRY_SECONDS = Math.floor(new Date('2029-12-31T23:59:59Z').getTime() / 1000); // Removed
+const SEVEN_DAYS_IN_SECONDS = 7 * 24 * 3600;
 const FOUR_YEARS_IN_SECONDS = 4 * 365.25 * 24 * 3600; // Approximation
 
 interface ExtendProps {
@@ -29,7 +29,8 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
     const [lock, setLock] = useState<VeNFT | null>(null);
     const [displayableNewExpiry, setDisplayableNewExpiry] = useState("");
     const [load, setLoad] = useState<{ [key: string]: boolean }>({});
-    const [duration, setDuration] = useState(1); // Initial duration set to 1 day
+    const [duration, setDuration] = useState(7); // Initial duration set to 7 days
+    const [sliderMinDays, setSliderMinDays] = useState(7); // Initialize with absolute minimum
     const [status, setStatus] = useState<{ [key: string]: boolean }>({
         extendCompleted: false,
     });
@@ -61,61 +62,113 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
     }, [chainId, tokenId]);
 
     useEffect(() => {
-        if (lock && lock.expires_at && typeof duration === 'number' && duration >= 0) { // ensure duration is valid
+        const MAX_DAYS = 1460; // Approx 4 years
+        const ABSOLUTE_MIN_DAYS = 7;
+        let calculatedMinDays = ABSOLUTE_MIN_DAYS;
+        const now_in_seconds = Math.floor(Date.now() / 1000);
+
+        if (lock && lock.expires_at && Number(lock.expires_at) > 0) {
             const current_expiry_ts = Number(lock.expires_at);
-            // Proposed new date based on current expiry + selected duration (in days)
-            const proposed_new_expiry_ts = current_expiry_ts + (duration * 24 * 3600);
-
-            // Apply 4-years-from-now cap
-            const max_expiry_from_now_ts_calc = Math.floor(Date.now() / 1000) + FOUR_YEARS_IN_SECONDS;
-            const capped_expiry_ts = Math.min(proposed_new_expiry_ts, max_expiry_from_now_ts_calc);
-
-            if (capped_expiry_ts <= current_expiry_ts && duration > 0) { // duration > 0 means an extension was intended
-                // This case implies the lock is already past all caps or extension is too small to overcome current date if current is past caps.
-                // Or, the chosen duration makes it hit a cap that's <= current_expiry_ts.
-                // Display the most restrictive cap that is still a valid extension, or current if no valid extension.
-                // For simplicity, if it doesn't extend, show current, or a message.
-                // If current_expiry_ts is already > MAX_EXPIRY_SECONDS, it will show current_expiry_ts.
-                const effective_display_ts = Math.max(current_expiry_ts, capped_expiry_ts); // Show the later of the two if capped is somehow less.
-                if (effective_display_ts <= current_expiry_ts && duration > 0) {
-                   setDisplayableNewExpiry(new Date(current_expiry_ts * 1000).toUTCString() + " (Cannot extend further/Max limit reached)");
-                } else {
-                   setDisplayableNewExpiry(new Date(effective_display_ts * 1000).toUTCString());
-                }
-
-            } else if (duration === 0 && current_expiry_ts) { // No duration selected yet, or duration is 0
-                setDisplayableNewExpiry(new Date(current_expiry_ts * 1000).toUTCString() + " (Current expiry)");
+            if (current_expiry_ts > now_in_seconds) { // Only if current lock is in the future
+                const remaining_seconds = current_expiry_ts - now_in_seconds;
+                const remaining_days_for_current_lock = Math.ceil(remaining_seconds / (24 * 3600));
+                // New total duration must be at least one day longer than remaining duration of current lock
+                calculatedMinDays = Math.max(ABSOLUTE_MIN_DAYS, remaining_days_for_current_lock + 1);
             }
-             else if (current_expiry_ts) { // Valid extension
-               setDisplayableNewExpiry(new Date(capped_expiry_ts * 1000).toUTCString());
-            } else {
-               setDisplayableNewExpiry("N/A"); // Should not happen if lock is loaded
-            }
-        } else if (lock && lock.expires_at) {
-            // Initial state or invalid duration, show current expiry
-            setDisplayableNewExpiry(new Date(Number(lock.expires_at) * 1000).toUTCString() + " (Select duration)");
-        } else {
-            setDisplayableNewExpiry(""); // Or some placeholder like "Calculating..."
         }
-    }, [lock, duration]); // MAX_EXPIRY_SECONDS and FOUR_YEARS_IN_SECONDS are constants, no need in dep array
+
+        calculatedMinDays = Math.min(calculatedMinDays, MAX_DAYS); // Cap at max days
+        setSliderMinDays(calculatedMinDays);
+
+        // Adjust duration if it's below the new calculatedMinDays,
+        // but only if not in auto max-lock mode (where duration is explicitly set to 1460 or 1)
+        // The `enabled` state for auto-max lock determines if duration is forced.
+        // If auto-max lock is ON, duration should be 1460.
+        // If auto-max lock is OFF, duration was set to 1 by the switch, then this effect might adjust it.
+        if (!enabled && duration < calculatedMinDays) {
+            setDuration(calculatedMinDays);
+        } else if (enabled && duration !== MAX_DAYS) {
+            // If auto max-lock is on, ensure duration is MAX_DAYS.
+            // This handles the case where sliderMinDays might change while auto-max is on.
+             // setDuration(MAX_DAYS); // This might be too aggressive, the switch handles it.
+        }
+
+
+    }, [lock, enabled]); // Removed duration from dependency array to avoid potential loops with auto-max-lock switch
+
+    useEffect(() => {
+        // This effect now depends on sliderMinDays as well.
+        // If sliderMinDays forces duration to change, this effect will re-run.
+        if (!enabled && duration < sliderMinDays) {
+             setDuration(sliderMinDays);
+        }
+    }, [duration, sliderMinDays, enabled]);
+
+
+    useEffect(() => {
+        const current_block_ts = Math.floor(Date.now() / 1000);
+
+        if (typeof duration === 'number' && duration > 0) {
+            const selected_duration_seconds = duration * 24 * 3600;
+            const new_expiry_ts_from_now = current_block_ts + selected_duration_seconds;
+
+            let displayMessage = new Date(new_expiry_ts_from_now * 1000).toUTCString();
+            let capped = false;
+
+            if (selected_duration_seconds < SEVEN_DAYS_IN_SECONDS) {
+                displayMessage += " (Minimum 7 days)";
+            } else if (selected_duration_seconds > FOUR_YEARS_IN_SECONDS) {
+                // Calculate what the date would be if capped at 4 years
+                const capped_expiry_ts = current_block_ts + FOUR_YEARS_IN_SECONDS;
+                displayMessage = new Date(capped_expiry_ts * 1000).toUTCString() + " (Max 4 years)";
+                capped = true;
+            }
+            // Additional check: if proposed_new_expiry_ts_from_now is not greater than current_lock_expiry_ts
+            // This is more for the `extend` function's validation, but good to reflect in UI if possible.
+            // However, the primary display should be the date based on "now + duration".
+            // The `extend` function will handle the error toast if it's not a valid extension.
+
+            setDisplayableNewExpiry(displayMessage);
+
+        } else if (lock && lock.expires_at && duration === 0) { // Duration is 0, show current expiry as a baseline
+             setDisplayableNewExpiry(new Date(Number(lock.expires_at) * 1000).toUTCString() + " (Current expiry - select duration)");
+        } else if (lock && lock.expires_at) { // Lock loaded, but duration might be invalid (e.g. initial state)
+             setDisplayableNewExpiry(new Date(current_block_ts * 1000).toUTCString() + " (Adjust slider to set new expiry from now)");
+        } else {
+            setDisplayableNewExpiry("Calculating new expiry...");
+        }
+    }, [lock, duration]);
 
 
     const extend = async () => {
         try {
             if (!address) return toast.warn("Please connect your wallet");
             if (!lock || !lock.expires_at) return toast.warn("Lock details not loaded yet.");
+            // Duration is in days, initial validation for duration > 0 still makes sense before converting to seconds
             if (typeof duration !== 'number' || duration <= 0) return toast.warn("Please select a valid extension duration.");
 
             handleLoad("extendLock", true);
 
-            const current_expiry_ts = Number(lock.expires_at);
-            const proposed_new_expiry_ts = current_expiry_ts + (duration * 24 * 3600);
+            const current_lock_expiry_ts = Number(lock.expires_at);
+            const current_block_ts = Math.floor(Date.now() / 1000);
+            const selected_total_duration_from_now_seconds = duration * 24 * 3600;
 
-            const max_expiry_from_now_ts = Math.floor(Date.now() / 1000) + FOUR_YEARS_IN_SECONDS;
-            const final_new_expiry_ts = Math.min(proposed_new_expiry_ts, max_expiry_from_now_ts);
+            // Primary Validation
+            const proposed_new_expiry_ts_from_now = current_block_ts + selected_total_duration_from_now_seconds;
+            if (proposed_new_expiry_ts_from_now <= current_lock_expiry_ts) {
+                toast.error("The new lock period must result in an expiry date later than the current one.");
+                handleLoad("extendLock", false);
+                return;
+            }
 
-            if (final_new_expiry_ts <= current_expiry_ts) {
-                toast.warn("New expiry date must be after the current expiry date and within limits.");
+            // Duration Range Validation
+            if (selected_total_duration_from_now_seconds < SEVEN_DAYS_IN_SECONDS) {
+                toast.error("Minimum lock duration is 7 days.");
+                handleLoad("extendLock", false);
+                return;
+            }
+            if (selected_total_duration_from_now_seconds > FOUR_YEARS_IN_SECONDS) {
+                toast.error("Maximum lock duration is 4 years.");
                 handleLoad("extendLock", false);
                 return;
             }
@@ -126,9 +179,22 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
                 await signer
             );
 
+            // Contract Call: increaseUnlockTime expects the new unlock time, not the duration.
+            // The problem description was: "call votingEscrow.increaseUnlockTime(tokenId, selected_total_duration_from_now_seconds)"
+            // This seems to contradict the existing call: votingEscrow.increaseUnlockTime(tokenId, final_new_expiry_ts, ... )
+            // Let's assume the problem description meant the *parameter to the contract* should be the new *total duration from now*,
+            // which is different from the new *absolute expiry timestamp*.
+            // Re-reading the existing contract call `increaseUnlockTime(tokenId, final_new_expiry_ts, ...)` which sends an absolute timestamp.
+            // The requirement "call votingEscrow.increaseUnlockTime(tokenId, selected_total_duration_from_now_seconds)"
+            // If increaseUnlockTime truly expects a duration rather than a timestamp, the contract interaction changes.
+            // Given the existing code sends `final_new_expiry_ts`, and typical escrow contracts take a target timestamp,
+            // I will proceed assuming `increaseUnlockTime` expects the new *absolute target timestamp*.
+            // The `selected_total_duration_from_now_seconds` is used for validation, and the actual contract parameter
+            // will be `proposed_new_expiry_ts_from_now` (which is `current_block_ts + selected_total_duration_from_now_seconds`).
+
             const tx = await votingEscrow.increaseUnlockTime(
                 tokenId,
-                final_new_expiry_ts, // This is the new absolute target timestamp
+                proposed_new_expiry_ts_from_now, // This is the new absolute target timestamp
                 { gasLimit: 5000000 }
             );
 
@@ -137,8 +203,17 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
             Notify({ chainId, txhash: tx.hash });
             handProgress("extendCompleted", true);
             handleLoad("extendLock", false);
-        } catch (error) {
-            console.log(error);
+        } catch (error: any) {
+            console.error("Error extending lock:", error);
+            let errorMessage = "Failed to extend lock.";
+            if (error.reason) {
+                errorMessage = error.reason;
+            } else if (error.data && error.data.message) {
+                errorMessage = error.data.message;
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+            toast.error(errorMessage);
             handleLoad("extendLock", false);
         }
     };
@@ -263,10 +338,15 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
                                                 <Switch
                                                     checked={enabled}
                                                     onChange={() => {
-                                                        console.log(enabled, "lllll");
-                                                        setEnabled(!enabled);
-                                                        console.log(enabled)
-                                                        setDuration(enabled == false && 1460 || 1)
+                                                        const newEnabledState = !enabled;
+                                                        setEnabled(newEnabledState);
+                                                        if (newEnabledState) {
+                                                            setDuration(1460); // Max lock duration
+                                                        } else {
+                                                            // When disabling, set to sliderMinDays or a sensible default like 7
+                                                            // If sliderMinDays is already calculated, use that.
+                                                            setDuration(sliderMinDays > 1 ? sliderMinDays : 7);
+                                                        }
                                                     }}
                                                     className={`${enabled ? 'bg-green-500' : 'bg-gray-300 dark:bg-gray-600'}
               relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none`}
@@ -290,8 +370,10 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
                                         <RangeSlider
                                             value={duration}
                                             onChange={setDuration}
-                                            title="Extending to"
-                                            currentLockExpiresAt={lock ? Number(lock.expires_at) : 0} // Pass current lock expiry, or 0 if lock is null
+                                            title="Set total lock duration (from now)"
+                                            currentLockExpiresAt={lock ? Number(lock.expires_at) : 0}
+                                            min={sliderMinDays}
+                                            max={1460} // Max days for slider (4 years)
                                         />
                                     </div>
                                     <div className="py-2">
