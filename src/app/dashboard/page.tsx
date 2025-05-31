@@ -157,71 +157,155 @@ const Dashboard = () => {
       </>
     );
 
+import { useCallback } from 'react'; // Ensure useCallback is imported
+
+// ... other imports ...
+
+const Dashboard = () => {
+    const [allDepositsExpanded, setAllDepositsExpanded] = useState(false);
+    const [expandedDepositStates, setExpandedDepositStates] = useState<{ [key: number]: boolean }>({});
+    const [open, setOpen] = useState(false);
+    // const [v3PositionData, setV3PositionData] = useState<NFTPosition[]>([]);
+
+    const [isLiquidityRewardsModalOpen, setIsLiquidityRewardsModalOpen] = useState(false);
+    const [isLocksModalOpen, setIsLocksModalOpen] = useState(false);
+    const [isVotingRewardsModalOpen, setIsVotingRewardsModalOpen] = useState(false);
+
+    const liquidityPoolsAndRewardsContent = (
+      <>
+        <h4>Understanding Liquidity Pools in Goblins Cash V2</h4>
+        <p>The core functionality of Goblins Cash V2 is to allow users to exchange tokens in a secure way, with low fees and low slippage.</p>
+        <p>Slippage is the difference between the current market price of a token and the price at which the actual exchange/swap is executed...</p>
+        <p>To provide access to the best rates on the market, Goblins Cash V2 utilizes different types of tokens:<ul><li><strong>Correlated tokens:</strong> Assets expected to trade closely in price (e.g., stablecoins like $USDC, $DAI).</li><li><strong>Uncorrelated tokens:</strong> Assets whose prices are not expected to move closely (e.g., $GOB, $BTC).</li></ul></p>
+        <p>Goblins Cash V2 offers different liquidity pool types... primarily Stable Pools and Volatile Pools...</p>
+        <p>The protocol&apos;s router evaluates pool types... uses time-weighted average prices (TWAPs)...</p>
+        <p>The deeper the liquidity... the smaller the slippage...</p>
+        <h5>Pool Types:</h5>
+        <p><strong>Stable Pools:</strong> Designed for tokens with little to no volatility relative to each other. Common formula: <code>x³y + y³x ≥ k</code></p>
+        <p><strong>Volatile Pools:</strong> Designed for tokens with higher price volatility. Common formula: <code>x × y ≥ k</code></p>
+        <p><strong>Concentrated Liquidity (CL) Pools:</strong> Allow LPs to deposit assets within a specific price range... using &quot;ticks&quot;...</p>
+        <ul>
+          <li><strong>Tick Spacing:</strong> Minimum price movement between ranges. Examples: Stable tokens (0.01%-0.5%), Volatile tokens (2%+).</li>
+          <li><strong>CL Pool Symbols:</strong> Often indicate nature, e.g., <code>CL1-wstETH/WETH</code>.</li>
+          <li><strong>CL Pool Fees:</strong> Can be adjusted flexibly.</li>
+        </ul>
+        <h4>Understanding Rewards & APR Calculation in Goblins Cash V2</h4>
+        <p>Providing liquidity... can earn rewards from transaction fees and potential token incentives (emissions).</p>
+        <h5>Calculating APRs (Annual Percentage Rate):</h5>
+        <p><strong>For Basic Pools:</strong> APR generally based on rewards earned / total value of staked liquidity.</p>
+        <p><strong>For Concentrated Liquidity (CL) Pools:</strong> APR calculation is nuanced, considering rewards for liquidity in the active trading price range.</p>
+      </>
+    );
+
+    const votingRewardsContent = (
+      <>
+        <h4>Fees</h4>
+        <p>Token pairs in Goblins Cash V2 capture fees from the trading volume enabled by the liquidity in each pool.</p>
+        <p>The fees collected by staked Liquidity Providers (LPs) in the previous epoch are often deposited as incentives for the current voting epoch.</p>
+        <p>Fee rewards are distributed in the same tokens as the liquidity pool tokens from which they originate. For example, if the pool is a Goblins Cash V2 AMM pool for GOB/USDC, the distributed fee tokens would be $GOB and $USDC.</p>
+        <p>Fee rewards that are part of direct LP earnings are typically distributed as accrued and can be claimed at any time. Fee rewards deposited as voter incentives are usually available for claim after the epoch changes (e.g., Thursday 00:00 UTC) and are distributed proportionally to the voting power cast by a voter (e.g., $veGOB).</p>
+
+        <h4>Incentives</h4>
+        <p>In addition to fee rewards, liquidity pools can receive external voter rewards from protocols or other participants (these are often known as incentives).</p>
+        <p>Incentives can be deposited for whitelisted tokens and are distributed only to voters on that specific pool, proportionally to their share of pool votes.</p>
+        <p>These rewards are typically available for claim after the epoch changes (e.g., Thursday 00:00 UTC) and are distributed proportionally to the voting power cast by a voter (e.g., $veGOB).</p>
+
+        <h4>Rewards Claim</h4>
+        <p>Rebase rewards, if applicable within the Goblins Cash V2 system, are typically claimable after a new epoch has started (e.g., Thursday 00:00 UTC).</p>
+        <p><strong>An example of incentives, voting, and rewards claim timeline:</strong></p>
+        <ul>
+          <li>A new epoch starts (e.g., Thursday 00:00 UTC).</li>
+          <li>Incentives are deposited by projects or individuals at any point during the epoch.</li>
+          <li>Voters use their voting power (e.g., $veGOB) to vote for their preferred pools.</li>
+          <li>Once the next epoch arrives (e.g., the following Thursday 00:00 UTC), users are able to claim the rewards earned from the concluded epoch.</li>
+        </ul>
+      </>
+    );
+
+    const locksContent = (
+      <>
+        <h4>Understanding Locks (veNFTs) in Goblins Cash V2</h4>
+        <p>Locking your GOB tokens (or other designated tokens) allows you to participate in protocol governance and earn a share of protocol fees and emissions. These locks are often represented as veNFTs (Vote-Escrowed Non-Fungible Tokens).</p>
+        <p><strong>Key Aspects of Locks:</strong></p>
+        <ul>
+          <li><strong>Voting Power:</strong> The longer you lock your tokens, and the greater the amount, the more voting power (e.g., veGOB) you receive.</li>
+          <li><strong>Rewards:</strong> This voting power is then used to vote on which liquidity pools receive token emissions. As a voter, you typically earn a share of the transaction fees from the pools you vote for, plus a portion of the emissions.</li>
+          <li><strong>Boosties:</strong> Some systems allow locks to boost the rewards earned from liquidity provision.</li>
+        </ul>
+        <p>The APR for rewards earned via locks and voting is influenced by the total rewards distributed and the total voting power participating.</p>
+        <br/>
+        {liquidityPoolsAndRewardsContent} {/* Append general pool info */}
+      </>
+    );
+
     const chainId = useChainId();
     const { address } = useAccount();
     const [locks, setLocks] = useState<LockItem[] | null>(null);
     const [deposits, setDeposits] = useState<DepositItem[]>([]);
 
-    useEffect(() => {
-        if (chainId && address) {
-            fetchLocksByAccount()
-            fetchv3PositionByAddress().then(() => fetchDepositsByAccount());
+    const fetchLocksByAccount = useCallback(async () => {
+        if (!address || !chainId) return;
+        const locksRaw = await locksByAccount(chainId, address);
+        // console.log("Locks by account raw: ", locksRaw);
+
+        if (locksRaw && locksRaw.length > 0) {
+            const lockTokenAddresses = [...new Set(locksRaw.map((lock: VeNFT) => lock.token))];
+            const lockTokenRates = await getUsdRates(chainId, lockTokenAddresses);
+
+            const enrichedLocks = locksRaw.map((lock: VeNFT) => {
+                const tokenDetails = getToken(lock.token);
+                const amountString = String(parseFloat(lock.amount) / 10 ** parseInt(lock.decimals));
+                const rebaseAmountString = String(parseFloat(lock.rebase_amount) / 10 ** parseInt(lock.decimals));
+
+                return {
+                    id: lock.id,
+                    amount: amountString,
+                    lockedFor: formatLockedFor(Number(lock.expires_at)),
+                    type: "locked",
+                    tokenSymbol: tokenDetails?.symbol || '',
+                    logoUri: tokenDetails?.logoURI || '',
+                    rebaseApr: `${calculateRebaseAPR(lock.rebase_amount, lock.amount, lock.decimals)}%`,
+                    rebaseAmount: rebaseAmountString,
+                    amountUsd: `$${(parseFloat(amountString) * (lockTokenRates[lock.token] || 0)).toFixed(2)}`,
+                    rebaseAmountUsd: `$${(parseFloat(rebaseAmountString) * (lockTokenRates[lock.token] || 0)).toFixed(2)}`,
+                } as LockItem; // Ensure it matches LockItem structure
+            });
+            setLocks(enrichedLocks);
+        } else {
+            setLocks([]);
         }
-    }, [chainId, address, fetchLocksByAccount, fetchv3PositionByAddress, fetchDepositsByAccount]);
+    }, [address, chainId]);
 
-    const fetchLocksByAccount = async () => {
-        if (!address) return
-        const locks_ = await locksByAccount(chainId, address)
-        console.log("Locks by account: ", locks_)
+    const fetchv3PositionByAddress = useCallback(async () => {
+        if (!address || !chainId) return;
+        // This function's primary purpose (setting v3PositionData state) was removed.
+        // It's kept if other parts of the system expect its existence for the useEffect chain,
+        // or if v3PositionByAddress (the util) has other side effects.
+        // For now, it can be a deliberate no-op or call the util if its result is needed by something else implicitly.
+        // await v3PositionByAddress(chainId, address!); // Example: if direct call needed for other reasons
+    }, [address, chainId]);
 
-        const lockTokenAddresses = [...new Set(locks_.map((lock: VeNFT) => lock.token))];
-        const lockTokenRates = await getUsdRates(chainId, lockTokenAddresses);
+    const fetchDepositsByAccount = useCallback(async () => {
+        if (!address || !chainId) return;
 
-        setLocks(locks_.map((lock: VeNFT) => ({
-            id: lock.id,
-            amount: String(parseFloat(lock.amount) / 10 ** parseInt(lock.decimals)),
-            lockedFor: formatLockedFor(Number(lock.expires_at)),
-            type: "locked",
-            tokenSymbol: getToken(lock.token)!.symbol,
-            logoUri: getToken(lock.token)!.logoURI,
-            rebaseApr: `${calculateRebaseAPR(lock.rebase_amount, lock.amount, lock.decimals)}%`,
-            rebaseAmount: String(parseFloat(lock.rebase_amount) / 10 ** parseInt(lock.decimals)),
-            amountUsd: `$${(parseFloat(String(parseFloat(lock.amount) / 10 ** parseInt(lock.decimals))) * (lockTokenRates[lock.token] || 0)).toFixed(2)}`,
-            rebaseAmountUsd: `$${(parseFloat(String(parseFloat(lock.rebase_amount) / 10 ** parseInt(lock.decimals))) * (lockTokenRates[lock.token] || 0)).toFixed(2)}`,
-        } as LockItem)
-        ))
-    }
+        const [depositsData, poolsData, v3PositionsData] = await Promise.all([
+            positions(chainId, 100, 0, address),
+            all(chainId, 100, 0, undefined),
+            v3PositionByAddress(chainId, address!)
+        ]);
 
-    async function fetchv3PositionByAddress() {
-        const v3Position = await v3PositionByAddress(chainId, address!);
+        // console.log("v3PositionsData:", v3PositionsData, "depositsData:", depositsData);
 
-        // setV3PositionData(v3Position.map((item) => {
-        //     //@ts-expect-error ignore
-        //     item.lp = item?.position.lp;
-        //     return item;
-        // }
-        // ));
-    }
+        const depositsExtended: (Position | NFTPosition)[] = [...depositsData, ...v3PositionsData];
 
-    const fetchDepositsByAccount = async () => {
-        if (!address) return
-        const [deposits_, pools] = await Promise.all([positions(chainId, 100, 0, address), all(chainId, 100, 0, undefined)]);
-
-        const v3Position: NFTPosition[] = await v3PositionByAddress(chainId, address!);
-        console.log(v3Position, "v3Position", deposits_)
-
-        const depositsExtended = [...deposits_, ...v3Position];
-
-        const allTokenAddresses = [...new Set(pools.flatMap(p => [p.token0, p.token1, p.emissions_token].filter(Boolean)) )];
+        const allTokenAddresses = [...new Set(poolsData.flatMap(p => [p.token0, p.token1, p.emissions_token].filter(Boolean)))];
         const rates = await getUsdRates(chainId, allTokenAddresses);
 
-        //@ts-expect-error ignore
-        const updatedDeposits = depositsExtended.map((deposit: Position, index: number) => {
+        const updatedDeposits = depositsExtended.map((deposit, index: number) => {
+            const isV3NFTPosition = 'nftId' in deposit && deposit.nftId !== undefined; // Heuristic to check type
+            const lpAddress = isV3NFTPosition ? (deposit as NFTPosition).position?.lp : (deposit as Position).lp;
 
-            const lpAddress = deposit?.lp ?? deposit?.position?.lp;
-
-
-            const pool = pools.find((pool: FormattedPool) => pool.lp === lpAddress);
+            const pool = poolsData.find((p: FormattedPool) => p.lp === lpAddress);
             if (!pool) {
                 console.warn("No pool matched for lp:", lpAddress);
                 return null;
@@ -237,17 +321,24 @@ const Dashboard = () => {
             const token1 = getToken(pool.token1)!;
             const rewardToken = getToken(pool.emissions_token);
 
-            const token0AmountNum = parseFloat(pool.type > 0 ? fromUnits(pool.reserve0, token0.decimals) : String(Number(deposit.amount0) / 10 ** token0.decimals));
-            const token1AmountNum = parseFloat(pool.type > 0 ? fromUnits(pool.reserve1, token1.decimals) :  String(Number(deposit.amount1) / 10 ** token1.decimals));
-            const unstaked0AmountNum = parseFloat(pool.type > 0 ? fromUnits(pool.staked0, token0.decimals) : String(Number(deposit.staked0) / 10 ** token0.decimals));
-            const unstaked1AmountNum = parseFloat(pool.type > 0 ? fromUnits(pool.staked1, token1.decimals) : String(Number(deposit.staked1) / 10 ** token1.decimals)); // Corrected token1.decimals
-            const emissionsAmountNum = rewardToken ? parseFloat(String(Number(deposit.emissions_earned) / 10 ** rewardToken.decimals)) : 0;
-            const tradingFees0Num = parseFloat(pool.type > 0 ? fromUnits(pool.token0_fees, token0.decimals) : String(Number(deposit.unstaked_earned0) / 10 ** token0.decimals));
-            const tradingFees1Num = parseFloat(pool.type > 0 ? fromUnits(pool.token1_fees, token1.decimals) : String(Number(deposit.unstaked_earned1) / 10 ** token1.decimals)); // Corrected token1.decimals
+            let v2Deposit = deposit as Position;
+            let v3PositionInfo = isV3NFTPosition ? (deposit as NFTPosition).position : null;
 
+            // Amounts logic based on pool type and deposit type
+            const token0AmountNum = parseFloat(pool.type > 0 ? fromUnits(pool.reserve0, token0.decimals) : String(Number(v2Deposit.amount0 || 0) / 10 ** token0.decimals));
+            const token1AmountNum = parseFloat(pool.type > 0 ? fromUnits(pool.reserve1, token1.decimals) :  String(Number(v2Deposit.amount1 || 0) / 10 ** token1.decimals));
 
-            const depositInfo = {
-                id: pool.type > 0 ? Number(deposit.id) : index+ 1,
+            const unstaked0AmountNum = parseFloat(String(Number(v2Deposit.staked0 || 0) / 10 ** token0.decimals));
+            const unstaked1AmountNum = parseFloat(String(Number(v2Deposit.staked1 || 0) / 10 ** token1.decimals));
+
+            const emissionsAmountNum = rewardToken ? parseFloat(String(Number(v2Deposit.emissions_earned || 0) / 10 ** rewardToken.decimals)) : 0;
+            const tradingFees0Num = parseFloat(String(Number(v2Deposit.unstaked_earned0 || 0) / 10 ** token0.decimals));
+            const tradingFees1Num = parseFloat(String(Number(v2Deposit.unstaked_earned1 || 0) / 10 ** token1.decimals));
+
+            const currentLiquidity = isV3NFTPosition ? v3PositionInfo?.liquidity : v2Deposit.liquidity;
+
+            const depositInfo: DepositItem = {
+                id: isV3NFTPosition ? (deposit as NFTPosition).nftId : Number(v2Deposit.id),
                 tokenPair: {
                     position,
                     tickUpper,
@@ -272,8 +363,8 @@ const Dashboard = () => {
                     tradingFees1: String(tradingFees1Num),
                     depositedUsd: `$${(
                         (parseFloat(String(pool.poolBalance).replace("$", "")) *
-                            Number(deposit.liquidity || deposit.position?.liquidity)) /
-                        pool.liquidity
+                            Number(currentLiquidity || 0)) / // Handle currentLiquidity potentially being 0 or undefined
+                        (pool.liquidity || 1) // Avoid division by zero if pool.liquidity is 0
                     ).toFixed(2)}`,
                     poolTotalUsd: `${pool.poolBalance}`,
                     token0AmountUsd: `$${(token0AmountNum * (rates[pool.token0] || 0)).toFixed(2)}`,
@@ -289,9 +380,14 @@ const Dashboard = () => {
             return depositInfo;
         });
         setDeposits(updatedDeposits.filter((d): d is DepositItem => d !== null));
+    }, [address, chainId]);
 
-
-    }
+    useEffect(() => {
+        if (chainId && address) {
+            fetchLocksByAccount();
+            fetchv3PositionByAddress().then(() => fetchDepositsByAccount());
+        }
+    }, [chainId, address, fetchLocksByAccount, fetchv3PositionByAddress, fetchDepositsByAccount]);
 
     const toggleExpandAllDeposits = () => {
         const newExpandedState = !allDepositsExpanded;
