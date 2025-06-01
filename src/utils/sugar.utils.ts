@@ -44,9 +44,9 @@ export type FormattedPool = {
     poolBalance: string;
     apr: number;
     volume: number;
-    position?:number;
-    tickLower?:string;
-    tickUpper?:string;
+    position?: number;
+    tickLower?: string;
+    tickUpper?: string;
     url: string;
 };
 

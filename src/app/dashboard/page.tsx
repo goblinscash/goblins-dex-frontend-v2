@@ -192,7 +192,7 @@ const Dashboard = () => {
         const [deposits_, pools] = await Promise.all([positions(chainId, 100, 0, address), all(chainId, 100, 0, undefined)]);
 
         const v3Position: NFTPosition[] = await v3PositionByAddress(chainId, address!);
-        console.log(v3Position, "v3Position", deposits_)
+        console.log(v3Position, "v3Position", deposits_ , "pools" ,pools)
 
         const depositsExtended = [...deposits_, ...v3Position];
 
@@ -255,6 +255,8 @@ const Dashboard = () => {
 
             return depositInfo;
         });
+
+        console.log(updatedDeposits,"updatedDeposits")
         setDeposits(updatedDeposits.filter((d): d is DepositItem => d !== null));
 
 

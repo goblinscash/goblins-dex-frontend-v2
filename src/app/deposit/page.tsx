@@ -26,7 +26,7 @@ import clFactoryAbi from "@/abi/aerodrome/clFactory.json"
 import { encodeSqrtRatioX96 } from "@uniswap/v3-sdk"
 import { getMaxTick, getMinTick } from "@/utils/constant.utils";
 import { toast } from "react-toastify";
-import { set } from "lodash";
+import { isNumber, set } from "lodash";
 
 
 
@@ -86,18 +86,8 @@ const Deposit = () => {
     const { name, value } = e.target
     if (name === "amount0") {
       setAmount0(value)
-      // if (ratio != null && value !== "" && !isNaN(+value)) {
-      //   setAmount1((+value).toString())
-      // } else {
-      //   setAmount1("")
-      // }
     } else if (name === "amount1") {
       setAmount1(value)
-      // if (ratio != null && value !== "" && !isNaN(+value)) {
-      //   setAmount0((+value).toString())
-      // } else {
-      //   setAmount0("")
-      // }
     }
   }
 
@@ -118,10 +108,14 @@ const Deposit = () => {
     if (chainId && amount0 && amount1 && token0 && token1) {
       checkAllownceStatus(chainId);
     }
+
+  }, [chainId, amount0, amount1, token0]);
+
+  useEffect(() => {
     if (token0?.address && token1?.address) {
       fetchPoolFeeTierDetails(token0, token1)
     }
-  }, [chainId, amount0, amount1, token0]);
+  }, [chainId, token0])
 
   useEffect(() => {
     if (
@@ -168,20 +162,33 @@ const Deposit = () => {
     try {
       const allFeeTiers: (PoolConfig | null)[] = await fetchV3PoolsDetail(chainId, token0.address, token1.address);
       setV3PositionDetails(allFeeTiers);
+      if (allFeeTiers[0] != null) {
+  
+        //@ts-expect-error ignore
+        setSelectedFee(allFeeTiers[0]?.fee);
+        setSelectedV3PositionDetails(allFeeTiers[0]);
+      }
+
+      console.log(allFeeTiers, "Number(relevantTier?.tickLower)")
       if (fee) { // fee is from URL param
         const relevantTier = allFeeTiers.find((item) => item?.fee == fee);
+        console.log(relevantTier, "Number(relevantTier?.tickLower)Number(relevantTier?.tickLower)")
         if (relevantTier) {
           setSelectedFee(Number(relevantTier.fee));
-          if (type > 0) { // Concentrated liquidity pool
+          if (Number(type) <= 0) { // Concentrated liquidity pool
             setLowValue('');
             setHighValue('');
           } else {
-            setLowValue(Number(relevantTier.tickLower));
-            setHighValue(Number(relevantTier.tickUpper));
+            setLowValue(Number(relevantTier?.tickLower));
+            setHighValue(Number(relevantTier?.tickUpper));
           }
+          console.log(Number(relevantTier?.tickLower), Number(relevantTier?.tickUpper), "Number(relevantTier?.tickLower)")
           setSelectedV3PositionDetails(relevantTier);
         }
-      } 
+      } else {
+        setLowValue(allFeeTiers.length ? Number(allFeeTiers[0]?.tickLower) : 0);
+        setHighValue(allFeeTiers.length ? Number(allFeeTiers[0]?.tickUpper) : 0);
+      }
     } catch (error) {
       console.log(error)
     }
@@ -374,11 +381,18 @@ const Deposit = () => {
     }
   };
 
+  console.log(selectedV3PositionDetails, "selectedV3PositionDetails")
   const mint = async () => {
+
+
     try {
       if (!address) return toast.warn("Please connect your wallet");
       if (!amount0 || !amount1 || !token0 || !token1) return toast.warn("Enter the amounts for token0 and token1");
-      if (!selectedV3PositionDetails?.fee) return toast.warn("Select a fee tier")
+      if (!selectedV3PositionDetails?.fee || !selectedFee) return toast.warn("Select a fee tier")
+      const tick_upper = highValue == '∞' ? selectedV3PositionDetails.tickUpper : Number(highValue);
+      const tick_lower = Number(lowValue) >= 0 ? lowValue : selectedV3PositionDetails.tickLower;
+      console.log(tick_lower, "tickLower11111111111111");
+      console.log(tick_upper, "tickLower11111111111111");
 
       handleLoad("mint", true);
       const amount0Desired = toUnits(amount0, token0?.decimals);
@@ -435,13 +449,14 @@ const Deposit = () => {
         await signer
       );
 
+
       const tx = await aerodromeNfpm.mint(
         {
           token0: token0.address,
           token1: token1.address,
           tickSpacing: selectedV3PositionDetails.tickSpacing,
-          tickLower: selectedV3PositionDetails.tickLower,
-          tickUpper: selectedV3PositionDetails.tickUpper,
+          tickLower: tick_lower,
+          tickUpper: tick_upper,
           amount0Desired,
           amount1Desired,
           amount0Min,
@@ -537,10 +552,10 @@ const Deposit = () => {
                                 onClick={() => {
                                   setSelectedV3PositionDetails(tier);
                                   setSelectedFee(Number(tier.fee));
-                                  if (type > 0) { // Concentrated liquidity pool
+                                  if (type <= 0) { // Basic liquidity pool
                                     setLowValue('');
                                     setHighValue('');
-                                  } else {
+                                  } else { // Concentrated liquidity pool
                                     setLowValue(Number(tier.tickLower));
                                     setHighValue(Number(tier.tickUpper));
                                   }
@@ -581,12 +596,12 @@ const Deposit = () => {
                                 <button
                                   className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600 mr-1"
                                   onClick={() => {
-                                    const currentValue = parseFloat(String(lowValue)); // Parse before use
+                                    const currentValue = parseFloat(String(lowValue));
                                     if (!isNaN(currentValue)) {
                                       const newVal = currentValue - 1;
                                       setLowValue(Number(newVal.toFixed(10)));
                                     } else {
-                                      setLowValue(-1); // Or some default if current is empty/NaN
+                                      setLowValue(-1);
                                     }
                                   }}
                                 >
@@ -608,7 +623,7 @@ const Deposit = () => {
                                 </button>
                                 <button
                                   className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600"
-                                  onClick={() => setLowValue('')}
+                                  onClick={() => setLowValue(0)}
                                 >
                                   <span>0</span>
                                 </button>
@@ -650,7 +665,8 @@ const Deposit = () => {
                                     const currentValue = parseFloat(String(highValue)); // Parse before use
                                     if (!isNaN(currentValue)) {
                                       const newVal = currentValue + 1;
-                                      setHighValue(Number(newVal.toFixed(10)));
+                                      if (isNumber(newVal)) { setHighValue(Number(newVal.toFixed(10))); }
+
                                     } else {
                                       setHighValue(1); // Or some default if current is empty/NaN
                                     }
@@ -660,16 +676,18 @@ const Deposit = () => {
                                 </button>
                                 <button
                                   className="w-8 h-8 flex items-center justify-center bg-[#333] rounded hover:bg-gray-600"
-                                  onClick={() => setHighValue('')}
+                                  onClick={() => { setHighValue('∞') }}
                                 >
                                   <span>∞</span>
                                 </button>
                               </div>
                             </div>
                             <input
-                              type="number"
-                              value={String(highValue)}
-                              onChange={(e) => setHighValue(e.target.value)}
+                              type="text"
+                              value={highValue}
+                              onChange={(e) => {
+                                if (Number(e.target.value) || e.target.value == '') { setHighValue(e.target.value) }
+                              }}
                               placeholder="0"
                               className="form-control text-xl md:text-2xl font-bold mb-1 bg-transparent border-b border-gray-500 p-1 w-full text-white focus:border-green-500 focus:ring-0 hide-arrows"
                             />
