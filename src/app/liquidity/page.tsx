@@ -254,7 +254,7 @@ const Liquidity = () => {
 
   // Create a header component with sort indicators
   const createSortableHeader = (title: string, key: string, dataType: SortableDataType) => {
-    return () => (
+    const SortableHeader = () => (
       <div className="flex items-center gap-1 hover:text-[#00ff4e]">
         <span>{title}</span>
         {sortConfig.key === key && sortConfig.direction && (
@@ -267,7 +267,10 @@ const Liquidity = () => {
         )}
       </div>
     );
+    SortableHeader.displayName = `SortableHeader(${key})`;
+    return SortableHeader;
   };
+  
 
   const filteredPools = useMemo(() => {
     return pools.filter((pool) => {
@@ -452,7 +455,7 @@ const Liquidity = () => {
       const columnConfig = column.find(col => col.accessor === sortConfig.key);
       if (!columnConfig) return 0;
 
-      let aValue: any, bValue: any;
+      let aValue, bValue;
       
       // Handle special cases for different columns
       if (sortConfig.key === 'poolBalance') {
@@ -474,8 +477,10 @@ const Liquidity = () => {
       
       // Determine sort direction
       if (sortConfig.direction === 'asc') {
+        //@ts-expect-error ignore
         return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
       } else {
+        //@ts-expect-error ignore
         return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
       }
     });
