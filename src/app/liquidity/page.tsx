@@ -10,6 +10,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { getToken } from "@/utils/token.utils";
 import { CircularLoader } from "@/components/common";
 import { fromUnits } from "@/utils/math.utils";
+import VolumeCell from "@/components/listData/PoolVolume";
 
 const Nav = styled.div`
   button {
@@ -106,13 +107,7 @@ const column: Column[] = [
     head: "Volume (24h)",
     accessor: "volume",
     isComponent: true,
-    component: (item: FormattedPool) => {
-      return (
-        <>
-          {item.apr}
-        </>
-      )
-    }
+    component: (item: FormattedPool) => <VolumeCell item={item} />,
   },
   {
     head: "Pool Fee",
