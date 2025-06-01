@@ -41,7 +41,7 @@ const column: Column[] = [
       return (
         <>
           <p className="m-0 text-gray-500 text-xs">Locked Amount </p>
-          <p className="m-0 text-base text-white">{amount.toFixed(5)} GOB
+          <p className="m-0 text-base text-white">{amount.toFixed(5)} GOBV2
           </p>
         </>
       );
