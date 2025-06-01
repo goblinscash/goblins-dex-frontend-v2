@@ -36,12 +36,27 @@ const FilterButton = styled.button<FilterButtonProps>`
 	}
 `;
 
+// Styled component for sort indicator
+const SortIndicator = styled.span`
+  display: inline-block;
+  margin-left: 4px;
+`;
+
+type SortDirection = 'asc' | 'desc' | 'none';
+
+interface SortState {
+  column: string;
+  direction: SortDirection;
+}
+
 const TokenListPage = () => {
 	const [tokenList, setTokenList] = useState<Token[]>([]);
 	const [filteredTokens, setFilteredTokens] = useState<Token[]>([]);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [loading, setLoading] = useState(true);
 	const [selectedFilter, setSelectedFilter] = useState("All");
+	// Add sort state
+	const [sortState, setSortState] = useState<SortState>({ column: '', direction: 'none' });
 	const chainId = useChainId();
 	const { address } = useAccount();
 	// const [totalValueLocked, setTotalValueLocked] = useState("984.10M");
@@ -89,7 +104,7 @@ const TokenListPage = () => {
 		}
 	}, [chainId, address]);
 
-	// Filter tokens when search query changes or filter selection changes
+	// Filter and sort tokens when search query, filter selection, or sort state changes
 	useEffect(() => {
 		let result = tokenList;
 		
@@ -106,13 +121,64 @@ const TokenListPage = () => {
 			);
 		}
 		
+		// Apply sorting if a column is selected
+		if (sortState.column && sortState.direction !== 'none') {
+			result = [...result].sort((a, b) => {
+				const aValue = a[sortState.column as keyof Token];
+				const bValue = b[sortState.column as keyof Token];
+				
+				// Handle undefined values
+				if (aValue === undefined && bValue === undefined) return 0;
+				if (aValue === undefined) return sortState.direction === 'asc' ? 1 : -1;
+				if (bValue === undefined) return sortState.direction === 'asc' ? -1 : 1;
+				
+				// Sort based on value type
+				if (typeof aValue === 'string' && typeof bValue === 'string') {
+					return sortState.direction === 'asc' 
+						? aValue.localeCompare(bValue) 
+						: bValue.localeCompare(aValue);
+				}
+				
+				// For numbers
+				return sortState.direction === 'asc' 
+					? (aValue as number) - (bValue as number) 
+					: (bValue as number) - (aValue as number);
+			});
+		}
+		
 		setFilteredTokens(result);
-	}, [searchQuery, tokenList, selectedFilter]);
+	}, [searchQuery, tokenList, selectedFilter, sortState]);
+
+	// Function to handle column header click for sorting
+	const handleSort = (columnName: string) => {
+		setSortState(prevState => {
+			// If clicking on the same column, cycle through sort directions
+			if (prevState.column === columnName) {
+				const nextDirection: SortDirection = 
+					prevState.direction === 'none' ? 'asc' :
+					prevState.direction === 'asc' ? 'desc' : 'none';
+				return { column: columnName, direction: nextDirection };
+			}
+			// If clicking on a new column, start with ascending sort
+			return { column: columnName, direction: 'asc' };
+		});
+	};
+
+	// Function to render sort indicator
+	const renderSortIndicator = (columnName: string) => {
+		if (sortState.column !== columnName) return null;
+		
+		return (
+			<SortIndicator>
+				{sortState.direction === 'asc' ? '↑' : sortState.direction === 'desc' ? '↓' : ''}
+			</SortIndicator>
+		);
+	};
 
 	const column = [
 		{
-			head: "",
-			accessor: "logo",
+			head: "Token",
+			accessor: "symbol",
 			component: (rowData: Token) => (
 				<div className="flex items-center gap-2">
 					<Logo chainId={rowData.chainId} token={rowData.address} margin={0} height={30} />
@@ -120,6 +186,12 @@ const TokenListPage = () => {
 						<div className="font-medium">{rowData.symbol}</div>
 						<div className="text-xs text-gray-500">{`0x${rowData.address.substring(2, 6)}...${rowData.address.substring(rowData.address.length - 4)}`}</div>
 					</div>
+				</div>
+			),
+			onHeaderClick: () => handleSort('symbol'),
+			headerComponent: () => (
+				<div className="flex items-center cursor-pointer hover:text-[#00ff4e]" onClick={() => handleSort('symbol')}>
+					Token {renderSortIndicator('symbol')}
 				</div>
 			),
 		},
@@ -132,6 +204,13 @@ const TokenListPage = () => {
 					<div className="text-xs text-gray-500">TVL</div>
 				</div>
 			),
+			className: "text-right",
+			onHeaderClick: () => handleSort('tvl'),
+			headerComponent: () => (
+				<div className="flex items-center justify-end cursor-pointer hover:text-[#00ff4e]" onClick={() => handleSort('tvl')}>
+					TVL {renderSortIndicator('tvl')}
+				</div>
+			),
 		},
 		{
 			head: "Price",
@@ -142,6 +221,13 @@ const TokenListPage = () => {
 					<div className="text-xs text-gray-500">Orcham Price</div>
 				</div>
 			),
+			className: "text-right",
+			onHeaderClick: () => handleSort('price'),
+			headerComponent: () => (
+				<div className="flex items-center justify-end cursor-pointer hover:text-[#00ff4e]" onClick={() => handleSort('price')}>
+					Price {renderSortIndicator('price')}
+				</div>
+			),
 		},
 		{
 			head: "Balance",
@@ -150,6 +236,13 @@ const TokenListPage = () => {
 				<div className="text-right">
 					<div className="text-gray-300">{rowData.balance ? rowData.balance.toLocaleString('en-US', { maximumFractionDigits: 6 }) : '0.0'} {rowData.symbol}</div>
 					<div className="text-xs text-gray-500">Balance</div>
+				</div>
+			),
+			className: "text-right",
+			onHeaderClick: () => handleSort('balance'),
+			headerComponent: () => (
+				<div className="flex items-center justify-end cursor-pointer hover:text-[#00ff4e]" onClick={() => handleSort('balance')}>
+					Balance {renderSortIndicator('balance')}
 				</div>
 			),
 		},
@@ -227,9 +320,7 @@ const TokenListPage = () => {
 						{loading ? (
 							<div className="text-center py-10">Loading tokens...</div>
 						) : (
-							// <TableLayout column={column} data={filteredTokens} hideHeaders={true} />
 							<TableLayout column={column} data={filteredTokens}/>
-
 						)}
 					</div>
 				</div>

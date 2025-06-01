@@ -14,9 +14,11 @@ const TableLayout = ({ column, data}) => {
                 column.map((item, index) => (
                   <th
                     key={index}
-                    className="font-semibold p-3 border-0 text-left"
+                    className={`font-semibold p-3 border-0 ${item.className ? item.className : 'text-left'}`}
+                    onClick={item.onHeaderClick}
+                    style={item.onHeaderClick ? {cursor: 'pointer'} : {}}
                   >
-                    {item.head}
+                    {item.headerComponent ? item.headerComponent() : item.head}
                   </th>
                 ))}
             </tr>

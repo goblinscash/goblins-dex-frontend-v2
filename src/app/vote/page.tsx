@@ -216,16 +216,28 @@ const Vote = () => {
       head: "Fees",
       accessor: "fees",
       component: (item: FormattedPool) => {
-        const symbol = item.symbol?.split("-")[1]?.split("/");
+        let symbol = ["Token0", "Token1"]; // Default fallback
+        
+        try {
+          const splitSymbol = item.symbol?.split("-")[1]?.split("/");
+          if (splitSymbol && splitSymbol.length >= 2) {
+            symbol = splitSymbol;
+          } else {
+            console.warn("Unexpected symbol format:", item.symbol);
+          }
+        } catch (err) {
+          console.error("Failed to parse symbol:", err);
+        }
+      
         return (
-          <div className="rounded p-3 bg-[#091616] text-xs h-full flex flex-col justify-between pb-5 text-right">
+          <div className="rounded p-3 bg-[#091616] text-xs h-full flex flex-col justify-between pb-5 text-right min-height-[180px]">
             <p className="m-0 pb-3 border-b border-[#2a2a2a] text-white">~$ --</p>
             <div className="pt-3">
-              <p className="m-0 text-white ">
+              <p className="m-0 text-white">
                 {fromUnits(Number(item.token0_fees), Number(item.decimals))} {symbol[0]}
               </p>
-              <p className="m-0 text-white ">
-              {fromUnits(Number(item.token1_fees), Number(item.decimals))} {symbol[1]}
+              <p className="m-0 text-white">
+                {fromUnits(Number(item.token1_fees), Number(item.decimals))} {symbol[1]}
               </p>
             </div>
           </div>
@@ -237,7 +249,7 @@ const Vote = () => {
       accessor: "incentives",
       component: () => {
         return (
-          <div className="rounded p-3 bg-[#091616] text-xs h-full flex flex-col justify-between pb-5 text-right">
+          <div className="rounded p-3 bg-[#091616] text-xs h-full flex flex-col justify-between pb-5 text-right min-height-[180px]">
             <p className="m-0 pb-3 border-b border-[#2a2a2a]">
               No available incentives
             </p>
@@ -253,7 +265,7 @@ const Vote = () => {
       accessor: "Total_Reward",
       component: () => {
         return (
-          <div className="rounded p-3 bg-[#091616] text-xs h-full flex flex-col justify-between pb-5 text-right">
+          <div className="rounded p-3 bg-[#091616] text-xs h-full flex flex-col justify-between pb-5 text-right min-height-[180px]">
             <p className="m-0 pb-3 border-b border-[#2a2a2a] text-white">
               No available incentives
             </p>
@@ -268,7 +280,7 @@ const Vote = () => {
       component: (item: FormattedPool) => {
         return (
           <>
-            <div className="rounded p-3 bg-[#091616] text-xs h-full flex flex-col justify-between pb-5 text-right">
+            <div className="rounded p-3 bg-[#091616] text-xs h-full flex flex-col justify-between pb-5 text-right min-height-[180px]">
               <p className="m-0 pb-3 border-b border-[#2a2a2a] text-white">7.35852%</p>
               <div className="pt-3">
                 <p className="m-0 text-white">

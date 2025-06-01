@@ -1,3 +1,4 @@
+import Tooltip from '@/components/common/Tooltip';
 import React from 'react';
 
 interface ClaimCardProps {
@@ -5,6 +6,43 @@ interface ClaimCardProps {
     wstETHAmount: string;
     lockId?: string; // Optional prop for lock ID
 }
+
+  // Tooltip content component
+  const TooltipContent = () => (
+    <div className="flex flex-col gap-3">
+      <div>
+        <div className="text-gray-400 text-xs mb-1">Pool Address</div>
+        <div className="flex items-center justify-between">
+          <div className="text-white text-xs font-medium">0xBd1F...B8780</div>
+          <button 
+            className="text-white hover:text-neon-green"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigator.clipboard.writeText('0xBd1F...B8780');
+            }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+          </button>
+        </div>
+      </div>
+      
+      <div>
+        <div className="text-gray-400 text-xs mb-1">Gauge Address</div>
+        <div className="flex items-center justify-between">
+          <div className="text-white text-xs font-medium">0xBd1F...B8780</div>
+          <button 
+            className="text-white hover:text-neon-green"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigator.clipboard.writeText('0xBd1F...B8780');
+            }}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
 const ClaimCard: React.FC<ClaimCardProps> = ({ fBOMBAmount, wstETHAmount, lockId = "68969" }) => {
     return (
@@ -20,10 +58,19 @@ const ClaimCard: React.FC<ClaimCardProps> = ({ fBOMBAmount, wstETHAmount, lockId
                     </div>
 
                     <div>
-                        <div className="flex items-center gap-2 text-sm font-semibold">
+                        <div className="flex items-center gap-2 text-xs font-semibold">
                             WETH / USDC
                             <span className="text-xs bg-[#1E2233] text-gray-300 px-1.5 py-0.5 rounded">0.0405%</span>
                             <span className="text-xs bg-[#1E2233] text-gray-400 px-1.5 py-0.5 rounded">ALM</span>
+                            <Tooltip
+                                content={<TooltipContent />}
+                                placement="top"
+                                contentClassName="w-64"
+                            >
+                                <div className='ml-2 cursor-pointer'>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-ellipsis-vertical size-4"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+                                </div>
+                            </Tooltip>
                         </div>
                         <div className="text-sm text-[#00ff4e] hover:underline cursor-pointer">
                             Concentrated Volatile 100

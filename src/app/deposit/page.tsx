@@ -26,6 +26,7 @@ import clFactoryAbi from "@/abi/aerodrome/clFactory.json"
 import { encodeSqrtRatioX96 } from "@uniswap/v3-sdk"
 import { getMaxTick, getMinTick } from "@/utils/constant.utils";
 import { toast } from "react-toastify";
+import { set } from "lodash";
 
 
 
@@ -688,8 +689,8 @@ const Deposit = () => {
                         <div className="bg-[#00000073] py-5 px-3 rounded-2xl border border-[#141414]">
                           <div className="flex items-center justify-between gap-3">
                             <span className="font-medium text-base">Amount</span>
-                            <span className="opacity-60 font-light text-xs">
-                              Balance {token0?.balance} {token0?.symbol}
+                            <span className="opacity-60 font-light text-xs cursor-pointer hover:text-[#00ff4e]" onClick={() => setAmount0(token0?.balance?.toString() || "")}>
+                              Balance: {token0?.balance} {token0?.symbol}
                             </span>
                           </div>
                           <div className="flex rounded mt-1">
@@ -731,8 +732,8 @@ const Deposit = () => {
                         <div className="bg-[#00000073] py-5 px-3 rounded-2xl border border-[#141414]">
                           <div className="flex items-center justify-between gap-3">
                             <span className="font-medium text-base">Amount</span>
-                            <span className="opacity-60 font-light text-xs">
-                              Balance {token1?.balance} {token1?.symbol}
+                            <span className="opacity-60 font-light text-xs cursor-pointer hover:text-[#00ff4e] " onClick={() => setAmount1(token1?.balance?.toString() || "")}>
+                              Balance: {token1?.balance} {token1?.symbol}
                             </span>
                           </div>
                           <div className="flex rounded mt-1">
