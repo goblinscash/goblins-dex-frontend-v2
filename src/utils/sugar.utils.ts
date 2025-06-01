@@ -140,7 +140,7 @@ export const all = async (chainId: number, limit: number, offset: number, type?:
             factory: pool[18],
             emissions: formatValue(pool[19]),
             emissions_token: pool[20],
-            pool_fee: Number(formatValue(pool[21])) / (formatValue(pool[4]) == "1" ? 10000 : 100),
+            pool_fee: Number(formatValue(pool[21])) / (Number(formatValue(pool?.[4])) > 0 ? 10000 : 100),
             unstaked_fee: formatValue(pool[22]),
             token0_fees: formatValue(pool[23]),
             token1_fees: formatValue(pool[24]),
@@ -150,7 +150,7 @@ export const all = async (chainId: number, limit: number, offset: number, type?:
             // Custom fields
             poolBalance: `$${Number(fromUnits(pool[8], Number(pool[2]))) + Number(fromUnits(pool[11], Number(pool[2])))}`,
             apr: calculateAPR(pool),
-            volume: calculateVolume(pool),
+            volume: 0,
             url: `/deposit?id=${index}&token0=${pool[7]}&token1=${pool[10]}&type=${Number(pool.type)}&fee=${pool.pool_fee}`
         })) as FormattedPool[];
 

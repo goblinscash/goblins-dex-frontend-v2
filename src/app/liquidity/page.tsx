@@ -10,6 +10,7 @@ import { ChevronLeft, ChevronRight, ArrowDown, ArrowUp } from "lucide-react";
 import { getToken } from "@/utils/token.utils";
 import { CircularLoader } from "@/components/common";
 import { fromUnits } from "@/utils/math.utils";
+import VolumeCell from "@/components/listData/PoolVolume";
 
 const Nav = styled.div`
   button {
@@ -70,6 +71,116 @@ const tabs: Tab[] = [
   {
     title: "Concentrated",
     content: <></>,
+  },
+];
+
+const column: Column[] = [
+  {
+    head: "Liquidity Pool",
+    accessor: "Liquidity",
+    component: (item: FormattedPool, key: number) => {
+      return (
+        <div key={key} className="flex items-center gap-3">
+          <ul className="list-none pl-3 mb-0 flex-shrink-0 flex items-center">
+            <li className="" style={{ marginLeft: -10 }}>
+              <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
+                <Logo
+                  chainId={item.chainId}
+                  token={item.token0}
+                  margin={0}
+                  height={20}
+                />{" "}
+              </div>
+            </li>
+            <li className="" style={{ marginLeft: -10 }}>
+              <div className="flex-shrink-0 flex items-center shadow-sm border border-gray-800 justify-center rounded-full bg-[#000] p-1">
+                <Logo
+                  chainId={item.chainId}
+                  token={item.token1}
+                  margin={0}
+                  height={20}
+                />{" "}
+              </div>
+            </li>
+          </ul>
+          <div className="content">
+            <p className="m-0 text-muted">{item?.symbol || `cAMM-${getToken(item!.token0)!.symbol}/${getToken(item!.token1)!.symbol}`}</p>
+          </div>
+        </div>
+      );
+    },
+  },
+  { head: "APR", accessor: "apr" },
+  {
+    head: "Volume (24h)",
+    accessor: "volume",
+    isComponent: true,
+    component: (item: FormattedPool) => <VolumeCell item={item} />,
+  },
+  {
+    head: "Pool Fee",
+    accessor: "pool_fee",
+    component: (item: FormattedPool) => {
+      return (
+        <>
+          {item.pool_fee}%
+        </>
+      )
+    }
+  },
+  {
+    head: "Pool Balance",
+    accessor: "poolBalance",
+    component: (item: FormattedPool) => {
+      const token0Meta = getToken(item.token0);
+      const token1Meta = getToken(item.token1);
+  
+      if (!token0Meta || !token1Meta) return <>...</>;
+  
+      const reserve0 = fromUnits(item.reserve0, token0Meta.decimals);
+      const reserve1 = fromUnits(item.reserve1, token1Meta.decimals);
+  
+      return (
+        <>
+          {Number(reserve0) + Number(reserve1)}
+        </>
+      );
+    }
+  },
+  {
+    head: "",
+    accessor: "action",
+    component: (item: FormattedPool) => {
+      const url = item.url || "/deposit";
+      return (
+        <>
+          <details className="dropdown dropdown-end relative">
+            <summary className="border-0 cursor-pointer p-0 flex items-center m-1">
+              {moreIcn}
+            </summary>
+            <ul className="menu dropdown-content z-[1] bg-base-100 bg-white rounded-box w-48 sm:w-52 p-2 shadow-md text-dark absolute right-0 mt-2">
+              <li className="border-b border-dashed border-[#000] py-1">
+                <Link
+                  href={url}
+                  className="flex items-center text-black font-medium "
+                >
+                  Deposit
+                </Link>
+              </li>
+              <li className="py-1">
+                <Link
+                  href={url}
+                  className="flex items-center text-black font-medium "
+                >
+                  Withdraw
+                </Link>
+              </li>
+            </ul>
+          </details>
+        </>
+      );
+    },
+    hasFixedHeight: false
   },
 ];
 
