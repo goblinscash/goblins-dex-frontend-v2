@@ -1,6 +1,6 @@
-import { fromUnits } from '@/utils/math.utils';
-import { VeNFT } from '@/utils/sugar.utils';
-import React, { useState } from 'react'
+import { fromUnits, formatTimestamp } from '@/utils/math.utils';
+import {VeNFT } from '@/utils/sugar.utils';
+import React, {useState } from 'react'
 import styled, { keyframes } from 'styled-components';
 import ActButton from '../common/ActButton';
 import { useEthersSigner } from '@/hooks/useEthersSigner';
@@ -80,7 +80,7 @@ const Transfer: React.FC<TransferProps> = ({ tokenId, lock }) => {
                                                         data-test-amount="2.5156102566030962"
                                                         className="tabular-nums"
                                                     >
-                                                        {lock && fromUnits(lock?.amount, Number(lock?.decimals))}<span className="opacity-70">&nbsp;GOB</span>
+                                                        {lock && fromUnits(lock?.amount, Number(lock?.decimals))}<span className="opacity-70">&nbsp;GOBV2</span>
                                                     </span>
                                                 </div>
                                                 <div
@@ -105,7 +105,7 @@ const Transfer: React.FC<TransferProps> = ({ tokenId, lock }) => {
                                                     className="inline-block cursor-pointer"
                                                     data-testid="flowbite-tooltip-target"
                                                 >
-                                                    locked for 4 years
+                                                    {formatTimestamp(Number(lock?.expires_at))}
                                                 </div>
                                                 <div
                                                     data-testid="flowbite-tooltip"

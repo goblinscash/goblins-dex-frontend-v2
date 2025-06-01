@@ -32,7 +32,7 @@ export const gobV2: Record<number, TokenInfo> = {
         decimals: 18
     },
     56: {
-        address: "0x75331507C3E54bB3a8E23890b94a4cE10B7bE4C7",
+        address: "0xea247d090AE406c70cf96Cc63cc667c534F79F21",
         symbol: "GOBV2",
         decimals: 18
     }
