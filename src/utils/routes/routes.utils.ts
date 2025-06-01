@@ -93,6 +93,7 @@ export function getRoutes(
             pairAddresses.map((pairAddressWithDirection) => {
                 const [dir, pairAddress] = pairAddressWithDirection.split(":");
                 const pair = pairsByAddress[pairAddress];
+                console.log(pair, "pairpair")
 
                 const from = pair[2]
                 const to = pair[3]
@@ -204,6 +205,8 @@ export async function fetchQuote(
                 if (!BigNumber.from(amountOut).isZero())
                     quoteChunks.push({ route, amount, amountOut, amountsOut });
             }
+
+            console.log(amountsOut, "amountsOut+++++")
         }
     }
 
@@ -241,6 +244,8 @@ export async function quoteForSwap(chainId: number, token0: string, token1: stri
             token1?.toLowerCase(), //token1
             []
         )
+
+        console.log(routes, "routesroutes")
 
         const quote = await fetchQuote(
             routes,

@@ -31,7 +31,7 @@ const formatDaysLabel = (days) => {
   return label.trim();
 };
 
-const RangeSlider = ({ value, onChange, title, currentLockExpiresAt, activeSlider = true }) => {
+const RangeSlider = ({ value, onChange, title, currentLockExpiresAt, activeSlider = false }) => {
   // Slider min 1 day, max 4 years (1460 days)
   const min = 1;
   const max = MAX_LOCK_DAYS;

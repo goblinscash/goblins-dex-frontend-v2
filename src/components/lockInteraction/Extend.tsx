@@ -30,7 +30,7 @@ const Extend: React.FC<ExtendProps> = ({ tokenId }) => {
     const [displayableNewExpiry, setDisplayableNewExpiry] = useState("");
     const [load, setLoad] = useState<{ [key: string]: boolean }>({});
     const [duration, setDuration] = useState(1); // Initial duration set to 1 day
-    const [activeSlider, setActiveSlider] = useState<boolean>(true);
+    const [activeSlider, setActiveSlider] = useState<boolean>(false);
     const [status, setStatus] = useState<{ [key: string]: boolean }>({
         extendCompleted: false,
     });
