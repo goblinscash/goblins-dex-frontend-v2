@@ -4,7 +4,7 @@ export const tokens = [
   {
     "name": "Goblin V2",
     "symbol": "GOBV2",
-    "address": "0xea247d090AE406c70cf96Cc63cc667c534F79F21",
+    "address": "0x62440594BE441fAec7F9fd4a3A8D1F4AD86E2987",
     "chainId": 56,
     "decimals": 18,
     "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/gob.png"
@@ -209,7 +209,7 @@ export const tokenLogos = {
   "0x767dc7981a5d58539814110dea8dd88857164fa1": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/bcbch.png",
   "0x4fad9b2458634b1e5d679732ca3f6c203e565b13": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/ether.png",
   "0x205f59c72385c82b2328fc1c7776640c8d10f836": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/gob.png",
-  "0xea247d090AE406c70cf96Cc63cc667c534F79F21": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/gob.png",
+  "0x62440594BE441fAec7F9fd4a3A8D1F4AD86E2987": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/gob.png",
   "0x2859e4544c4bb03966803b044a93563bd2d0dd4d": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/shib.png",
   "0x25d887ce7a35172c62febfd67a1856f20faebb00": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/pepe.png",
   "0xfb5b838b6cfeedc2873ab27866079ac55363d37e": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/floki.png",
