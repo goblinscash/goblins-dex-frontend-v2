@@ -103,7 +103,7 @@ const column: Column[] = [
   },
   { head: "APR", accessor: "apr" },
   {
-    head: "Volume",
+    head: "Volume (24h)",
     accessor: "volume",
     isComponent: true,
     component: (item: FormattedPool) => {
@@ -334,7 +334,7 @@ const Liquidity = () => {
           <div className="col-span-12 mb-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label htmlFor="minPoolBalance" className="block text-sm font-medium text-gray-300 mb-1">Min. Pool Balance</label>
+                <label htmlFor="minPoolBalance" className="block text-sm font-medium text-white mb-1">Min. Pool Balance</label>
                 <input
                   type="number"
                   name="minPoolBalance"
@@ -346,7 +346,7 @@ const Liquidity = () => {
                 />
               </div>
               <div>
-                <label htmlFor="minVolume" className="block text-sm font-medium text-gray-300 mb-1">Min. Volume (24h)</label>
+                <label htmlFor="minVolume" className="block text-sm font-medium text-white mb-1">Min. Volume (24h)</label>
                 <input
                   type="number"
                   name="minVolume"
@@ -358,7 +358,7 @@ const Liquidity = () => {
                 />
               </div>
               <div>
-                <label htmlFor="minApr" className="block text-sm font-medium text-gray-300 mb-1">Min. APR (%)</label>
+                <label htmlFor="minApr" className="block text-sm font-medium text-white mb-1">Min. APR (%)</label>
                 <input
                   type="number"
                   name="minApr"
