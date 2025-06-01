@@ -95,7 +95,7 @@ export const aerodromeContracts: AerodromeContracts = {
     56: {
         router: "0xeCe23FBaEf237BbE8696258717CDdAfB21a0e4C9",
         factory: "0xd4603DE52a29ABa9B046B248ea7d0ac69801548c",
-        lpSugar: "0xA2Fa2D338673D73f7166087a190e78ff6176dC21",
+        lpSugar: "0xe060bc9f12ED95EA1525f4c8628F7a048804Ab15",
         veSugar: "0xDC81F216C4433bD93A6bF696C61F867251d3ADb6",
         rewardSugar: "0x544CBEb10C743958d117f2898d4Cb111aBAf2cE1",
         relaySugar: "0x97F87783Ac34616d08e9715182cCBFE5eA0d886f",
