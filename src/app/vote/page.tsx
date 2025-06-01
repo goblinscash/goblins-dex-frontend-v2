@@ -201,11 +201,11 @@ const Vote = () => {
                     <span className="me-2"> (x)</span> Basic{" "}
                     {Number(item.type) == 0 ? "Stable" : "Volatile"}
                   </p>
-                  {item.pool_fee}
+                  {item.pool_fee} 
                 </div>
               </div>
             </div>
-            <p className="m-0 pt-2 text-xs text-blue-500">
+            <p className="m-0 pt-2 text-xs text-white">
               TVL <span className="text-white">~{item.poolBalance}</span>
             </p>
           </div>
@@ -241,7 +241,7 @@ const Vote = () => {
             <p className="m-0 pb-3 border-b border-[#2a2a2a]">
               No available incentives
             </p>
-            <Link href="/incentivize" className="m-0 text-blue-500 pt-3">
+            <Link href="/incentivize" className="m-0 text-[#00ff4e] pt-3">
               Add incentives
             </Link>
           </div>
@@ -257,7 +257,7 @@ const Vote = () => {
             <p className="m-0 pb-3 border-b border-[#2a2a2a] text-white">
               No available incentives
             </p>
-            <p className="m-0 text-blue-500 pt-3">Fees + Incentives</p>
+            <p className="m-0 text-white pt-3">Fees + Incentives</p>
           </div>
         );
       },
@@ -276,14 +276,14 @@ const Vote = () => {
                   0.99938 veAERO
                   { }
                 </p>
-                <p className="m-0 text-blue-500 pt-3">Vote</p>
+                <p className="m-0 text-white pt-3">Vote</p>
               </div>
             </div>
             <div className="dropdown w-full">
               <div
                 tabIndex={0}
                 role="button"
-                className="btn text-xs w-full text-right text-white flex justify-end border-0 p-0 bg-transparent"
+                className="btn text-xs w-full text-right text-[#00ff4e] flex justify-end border-0 p-0 bg-transparent"
               >
                 Vote
               </div>
