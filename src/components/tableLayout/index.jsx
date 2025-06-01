@@ -63,7 +63,7 @@ const Table = styled.table`
   font-size: 14px;
   th {
     background: var(--backgroundColor2);
-    color: #666666;
+    color: #FFFFFF;
   }
   tr {
     > *:first-child {
