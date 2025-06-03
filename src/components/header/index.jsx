@@ -56,7 +56,7 @@ const Header = () => {
   return (
     <>
       <header
-        className={`py-2 sticky-top siteHeader shadow-sm`}
+        className={`py-2 shadow-sm sticky top-0`}
         style={{ zIndex: 999, background: "var(--backgroundColor)" }}
       >
         <div className="container px-3 py-2">
@@ -81,45 +81,45 @@ const Header = () => {
                 <ul className={`list-none pl-0 mb-0 flex items-center gap-3 ${isMobileMenuOpen ? 'flex-col w-full space-y-2 items-start' : 'justify-end md:flex'}`}>
                   <li className={`px-2 ${currentPath === "/dashboard" ? "menu-item-active" : "menu-item-inactive"}`}>
                     <Link href="/dashboard" onClick={handleLinkClick}>
-                    Dashboard
-                  </Link>
-                </li>
-                <li className={`px-2 ${currentPath === "/swap" ? "menu-item-active" : "menu-item-inactive"}`}>
-                  <Link href="/swap" onClick={handleLinkClick}>
-                    Swap
-                  </Link>
-                </li>
-                <li className={`px-2 ${currentPath === "/liquidity" ? "menu-item-active" : "menu-item-inactive"}`}>
-                  <Link href="/liquidity" onClick={handleLinkClick}>
-                    Liquidity
-                  </Link>
-                </li>
-                <li className={`px-2 ${currentPath === "/locks" ? "menu-item-active" : "menu-item-inactive"}`}>
-                  <Link href="/locks" onClick={handleLinkClick}>
-                    Lock
-                  </Link>
-                </li>
-                <li className={`px-2 ${currentPath === "/vote" ? "menu-item-active" : "menu-item-inactive"}`}>
-                  <Link href="/vote" onClick={handleLinkClick}>
-                    Vote
-                  </Link>
-                </li>
-                <li className={`px-2 ${currentPath === "/incentivize" ? "menu-item-active" : "menu-item-inactive"}`}>
-                  <Link href="/incentivize" onClick={handleLinkClick}>
-                    Incentivize
-                  </Link>
-                </li>
-                <li className={`px-2 ${currentPath === "/tokenlist" ? "menu-item-active" : "menu-item-inactive"}`}>
-                  <Link href="/tokenlist" onClick={handleLinkClick}>
-                    Tokens
-                  </Link>
-                </li>
-                <li className={`px-2 menu-item-inactive`}>
-                  <Link href="https://goblins.cash/docs/" target="_blank" rel="noopener noreferrer" onClick={handleLinkClick}>
-                    Docs
-                  </Link>
-                </li>
-              </ul>
+                      Dashboard
+                    </Link>
+                  </li>
+                  <li className={`px-2 ${currentPath === "/swap" ? "menu-item-active" : "menu-item-inactive"}`}>
+                    <Link href="/swap" onClick={handleLinkClick}>
+                      Swap
+                    </Link>
+                  </li>
+                  <li className={`px-2 ${currentPath === "/liquidity" ? "menu-item-active" : "menu-item-inactive"}`}>
+                    <Link href="/liquidity" onClick={handleLinkClick}>
+                      Liquidity
+                    </Link>
+                  </li>
+                  <li className={`px-2 ${currentPath === "/locks" ? "menu-item-active" : "menu-item-inactive"}`}>
+                    <Link href="/locks" onClick={handleLinkClick}>
+                      Lock
+                    </Link>
+                  </li>
+                  <li className={`px-2 ${currentPath === "/vote" ? "menu-item-active" : "menu-item-inactive"}`}>
+                    <Link href="/vote" onClick={handleLinkClick}>
+                      Vote
+                    </Link>
+                  </li>
+                  <li className={`px-2 ${currentPath === "/incentivize" ? "menu-item-active" : "menu-item-inactive"}`}>
+                    <Link href="/incentivize" onClick={handleLinkClick}>
+                      Incentivize
+                    </Link>
+                  </li>
+                  <li className={`px-2 ${currentPath === "/tokenlist" ? "menu-item-active" : "menu-item-inactive"}`}>
+                    <Link href="/tokenlist" onClick={handleLinkClick}>
+                      Tokens
+                    </Link>
+                  </li>
+                  <li className={`px-2 menu-item-inactive`}>
+                    <Link href="https://goblins.cash/docs/" target="_blank" rel="noopener noreferrer" onClick={handleLinkClick}>
+                      Docs
+                    </Link>
+                  </li>
+                </ul>
               </div>
             </div> {/* End of new wrapper div */}
 
@@ -132,7 +132,7 @@ const Header = () => {
                 {isMobileMenuOpen ? closeIcon : menuIcon}
               </button>
             </div>
-            
+
             {/* Connect Button and other right-side elements */}
             <MobileMenu
               className={`cstmMenu flex items-center justify-end ps-lg-4 gap-2 ${isMobileMenuOpen ? 'hidden md:flex' : 'flex'}`} // Hide on mobile when menu is open, or adjust styling
