@@ -11,6 +11,7 @@ import { getToken } from "@/utils/token.utils";
 import { CircularLoader } from "@/components/common";
 import { fromUnits } from "@/utils/math.utils";
 import VolumeCell from "@/components/listData/PoolVolume";
+import ToolTipCopy from "@/components/ToolTipCopy/ToolTipCopy";
 
 const Nav = styled.div`
   button {
@@ -134,12 +135,12 @@ const column: Column[] = [
     component: (item: FormattedPool) => {
       const token0Meta = getToken(item.token0);
       const token1Meta = getToken(item.token1);
-  
+
       if (!token0Meta || !token1Meta) return <>...</>;
-  
+
       const reserve0 = fromUnits(item.reserve0, token0Meta.decimals);
       const reserve1 = fromUnits(item.reserve1, token1Meta.decimals);
-  
+
       return (
         <>
           {Number(reserve0) + Number(reserve1)}
@@ -219,7 +220,7 @@ const Liquidity = () => {
   const [minPoolBalance, setMinPoolBalance] = useState<string>("");
   const [minVolume, setMinVolume] = useState<string>("");
   const [minApr, setMinApr] = useState<string>("");
-  
+
   // Add sorting state
   const [sortConfig, setSortConfig] = useState<{
     key: string;
@@ -243,12 +244,12 @@ const Liquidity = () => {
   // Sorting function
   const requestSort = (key: string, dataType: SortableDataType) => {
     let direction: SortDirection = 'asc';
-    
+
     if (sortConfig.key === key) {
-      direction = sortConfig.direction === 'asc' ? 'desc' : 
-                 sortConfig.direction === 'desc' ? null : 'asc';
+      direction = sortConfig.direction === 'asc' ? 'desc' :
+        sortConfig.direction === 'desc' ? null : 'asc';
     }
-    
+
     setSortConfig({ key, direction });
   };
 
@@ -259,8 +260,8 @@ const Liquidity = () => {
         <span>{title}</span>
         {sortConfig.key === key && sortConfig.direction && (
           <span className="ml-1">
-            {sortConfig.direction === 'asc' ? 
-              <ArrowUp size={14} /> : 
+            {sortConfig.direction === 'asc' ?
+              <ArrowUp size={14} /> :
               <ArrowDown size={14} />
             }
           </span>
@@ -270,7 +271,7 @@ const Liquidity = () => {
     SortableHeader.displayName = `SortableHeader(${key})`;
     return SortableHeader;
   };
-  
+
 
   const filteredPools = useMemo(() => {
     return pools.filter((pool) => {
@@ -304,6 +305,11 @@ const Liquidity = () => {
     });
   }, [pools, minPoolBalance, minVolume, minApr]);
 
+
+  function tooltipHandler(item: FormattedPool) {
+    console.log(item, "FormattedPoolFormattedPool")
+  }
+
   // Define column configuration with sorting capabilities
   const column = useMemo<Column[]>(() => [
     {
@@ -334,9 +340,11 @@ const Liquidity = () => {
                 </div>
               </li>
             </ul>
-            <div className="content">
-              <p className="m-0 text-muted">{item?.symbol || `cAMM-${getToken(item!.token0)!.symbol}/${getToken(item!.token1)!.symbol}`}</p>
-            </div>
+            <ToolTipCopy address={item.lp}>
+              <div className="content" onMouseOver={() => tooltipHandler(item)}>
+                <p className="m-0 text-muted">{item?.symbol || `cAMM-${getToken(item!.token0)!.symbol}/${getToken(item!.token1)!.symbol}`}</p>
+              </div>
+            </ToolTipCopy>
           </div>
         );
       },
@@ -345,8 +353,8 @@ const Liquidity = () => {
       headerComponent: createSortableHeader("Liquidity Pool", "symbol", 'string'),
       onHeaderClick: () => requestSort("symbol", 'string')
     },
-    { 
-      head: "APR", 
+    {
+      head: "APR",
       accessor: "apr",
       sortable: true,
       dataType: 'number',
@@ -390,12 +398,12 @@ const Liquidity = () => {
       component: (item: FormattedPool) => {
         const token0Meta = getToken(item.token0);
         const token1Meta = getToken(item.token1);
-    
+
         if (!token0Meta || !token1Meta) return <>...</>;
-    
+
         const reserve0 = fromUnits(item.reserve0, token0Meta.decimals);
         const reserve1 = fromUnits(item.reserve1, token1Meta.decimals);
-    
+
         return (
           <>
             {Number(reserve0) + Number(reserve1)}
@@ -443,7 +451,7 @@ const Liquidity = () => {
       hasFixedHeight: false
     },
   ], [sortConfig, requestSort, createSortableHeader]);
-  
+
   // Sort data based on current sort configuration
   const sortedData = useMemo(() => {
     if (!sortConfig.direction || !sortConfig.key) {
@@ -456,7 +464,7 @@ const Liquidity = () => {
       if (!columnConfig) return 0;
 
       let aValue, bValue;
-      
+
       // Handle special cases for different columns
       if (sortConfig.key === 'poolBalance') {
         aValue = parsePoolBalance(a.poolBalance) || 0;
@@ -474,7 +482,7 @@ const Liquidity = () => {
         aValue = a[sortConfig.key as keyof FormattedPool];
         bValue = b[sortConfig.key as keyof FormattedPool];
       }
-      
+
       // Determine sort direction
       if (sortConfig.direction === 'asc') {
         //@ts-expect-error ignore
@@ -546,7 +554,7 @@ const Liquidity = () => {
         });
     }
   }, [chainId, type]);
-  
+
   return (
     <section className="Liquidity py-5 relative">
       <div className="container ">
@@ -583,10 +591,10 @@ const Liquidity = () => {
               <div>
                 <label htmlFor="minVolume" className="block text-sm font-medium text-white mb-1 ">Min. Volume (24h)</label>
                 <input
-                  type="number"                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+                  type="number"
                   name="minVolume"
                   id="minVolume"
-                  value={minVolume}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+                  value={minVolume}
                   onChange={(e) => setMinVolume(e.target.value)}
                   placeholder="e.g., 10000"
                   className="w-full bg-gray-800 border border-gray-700 text-white rounded-lg shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm p-2.5"
