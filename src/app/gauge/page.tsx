@@ -71,9 +71,12 @@ type ActiveStakeInfo = {
 
 const StakePage = () => {
   const [stakePercentage, setStakePercentage] = useState(100);
+  const [withdrawPercentage, setWithdrawPercentage] = useState(100);
   const [stakingAction, setStakingAction] = useState<string | null>(null);
   const [load, setLoad] = useState<{ [key: string]: boolean }>({});
   const [activeStakeInfo, setActiveStakeInfo] = useState<ActiveStakeInfo>({});
+  const [quotedToken0ToReceive, setQuotedToken0ToReceive] = useState<string>('--');
+  const [quotedToken1ToReceive, setQuotedToken1ToReceive] = useState<string>('--');
   const signer = useEthersSigner();
   const chainId = useChainId();
   const { address } = useAccount();
@@ -239,52 +242,86 @@ const StakePage = () => {
 
       handleLoad("Unstake", true);
 
+      if (!stakeDetails) {
+        toast.error("Stake details not loaded.");
+        handleLoad("Unstake", false);
+        return;
+      }
+
+      let amountToUnstake;
+      if (_position === 0 && activeStakeInfo?.activeVersion === "v2") { // V2 Gauge Unstake
+        if (stakePercentage <= 0 || stakePercentage > 100) {
+          toast.warn("Please select a valid percentage (1-100).");
+          handleLoad("Unstake", false);
+          return;
+        }
+        // Assuming stakeDetails.gauge_liquidity is a number representing total staked LP tokens in GWEI/wei
+        // and stakePercentage is 0-100.
+        // We need to convert gauge_liquidity (which is likely a formatted number) to BigNumber based on 18 decimals
+        // then calculate the percentage.
+        const totalStakedBigNum = toUnits(String(stakeDetails.gauge_liquidity), 18);
+        amountToUnstake = totalStakedBigNum.mul(stakePercentage).div(100);
+
+        if (amountToUnstake.isZero()) {
+            toast.warn("Amount to unstake is zero.");
+            handleLoad("Unstake", false);
+            return;
+        }
+      } else {
+        // This case should ideally not be hit if UI logic is correct,
+        // as CL unstake calls clUnstake() directly.
+        // Defaulting to full V2 unstake if somehow reached (original behavior).
+        amountToUnstake = toUnits(String(stakeDetails.gauge_liquidity), 18);
+      }
+
+
       const gaugeInstance = new ethers.Contract(
         stakeDetails.gauge,
         guageAbi,
         await signer
       );
 
-      const tx = await gaugeInstance.withdraw(
-        stakeDetails.gauge_liquidity,
+      const tx = await gaugeInstance.withdraw( // For V2 gauges, withdraw is (uint256 amount)
+        amountToUnstake,
         {
           gasLimit: 5000000
         }
       );
 
-
-      await tx.wait()
+      await tx.wait();
       Notify({ chainId, txhash: tx.hash });
+      toast.success("Successfully unstaked from gauge!");
+      if (chainId && id && address) {
+        fetchUserPosition(chainId, Number(id)); // Refresh data
+      }
+      setStakePercentage(100); // Reset percentage
       handleLoad("Unstake", false);
     } catch (error) {
       console.log(error);
+      const err = error as any;
+      toast.error(err?.reason || err?.message || "Failed to unstake from gauge.");
       handleLoad("Unstake", false);
     }
-
   }
 
   const removeV2Liquidity = async () => {
     try {
       if (!address) return alert("Please connect your wallet");
-      if (!stakeDetails) return
+      if (!stakeDetails) return;
+      if (withdrawPercentage <= 0 || withdrawPercentage > 100) {
+        return toast.warn("Please enter a valid percentage (1-100).");
+      }
 
       handleLoad("RemoveLiquidity", true);
-      const amount0Min = toUnits(stakeDetails?.token0Amount, stakeDetails.token0?.decimals);
-      const amount1Min = toUnits(stakeDetails?.token0Amount, stakeDetails.token1?.decimals);
-      const to = address;
-      const deadline = Math.floor(Date.now() / 1000) + 600;
-      const stable = stakeDetails.type.includes("Volatile") ? false : true
 
-      const tx0Approve = await approve(
-        stakeDetails?.lp,
-        await signer,
-        aerodromeContracts[chainId].router,
-        stakeDetails.liquidity,
-        18
-      );
-      if (tx0Approve) {
-        await tx0Approve.wait();
+      const liquidityToRemoveNumerical = (Number(stakeDetails.liquidity) * withdrawPercentage) / 100;
+      if (liquidityToRemoveNumerical <= 0) {
+        toast.warn("Calculated liquidity to remove is zero.");
+        handleLoad("RemoveLiquidity", false);
+        return;
       }
+
+      const lpAmountToRemoveBigNum = toUnits(liquidityToRemoveNumerical, 18); // LP tokens usually have 18 decimals
 
       const aerodromeRouter = new ethers.Contract(
         aerodromeContracts[chainId].router,
@@ -292,11 +329,55 @@ const StakePage = () => {
         await signer
       );
 
+      const stable = stakeDetails.type.includes("Volatile") ? false : true;
+
+      // Approve the router to spend LP tokens
+      // The approve util takes (tokenAddr, signer, spenderAddr, numericAmount, decimals)
+      // Assuming stakeDetails.lp is the address of the LP token
+      const txApprove = await approve(
+        stakeDetails.lp,
+        await signer,
+        aerodromeContracts[chainId].router,
+        liquidityToRemoveNumerical, // Use the numerical value for approval, matching current approve util
+        18 // LP token decimals
+      );
+      if (txApprove) {
+        await txApprove.wait();
+      } else {
+        // If approve returns null or undefined (e.g. if approval failed pre-transaction)
+        toast.error("LP Token approval failed.");
+        handleLoad("RemoveLiquidity", false);
+        return;
+      }
+
+      // Get expected amounts of underlying tokens
+      const [expectedToken0Amount, expectedToken1Amount] = await aerodromeRouter.quoteRemoveLiquidity(
+        stakeDetails.token0.address,
+        stakeDetails.token1.address,
+        stable,
+        lpAmountToRemoveBigNum
+      );
+
+      // Update state with quoted amounts
+      setQuotedToken0ToReceive(ethers.utils.formatUnits(expectedToken0Amount, stakeDetails.token0.decimals));
+      setQuotedToken1ToReceive(ethers.utils.formatUnits(expectedToken1Amount, stakeDetails.token1.decimals));
+
+      console.log("Expected Token0 Amount:", fromUnits(expectedToken0Amount, stakeDetails.token0.decimals));
+      console.log("Expected Token1 Amount:", fromUnits(expectedToken1Amount, stakeDetails.token1.decimals));
+
+      // Apply 0.5% slippage
+      const amount0Min = expectedToken0Amount.mul(995).div(1000);
+      const amount1Min = expectedToken1Amount.mul(995).div(1000);
+
+      const to = address;
+      const deadline = Math.floor(Date.now() / 1000) + 600;
+
+      // Proceed with removing liquidity
       const tx = await aerodromeRouter.removeLiquidity(
         stakeDetails.token0.address,
         stakeDetails.token1.address,
         stable,
-        toUnits(stakeDetails.liquidity, 18),
+        lpAmountToRemoveBigNum,
         amount0Min,
         amount1Min,
         to,
@@ -305,10 +386,21 @@ const StakePage = () => {
       );
 
       await tx.wait();
+      Notify({ chainId, txhash: tx.hash });
+      toast.success("Liquidity removed successfully!");
 
-      handleLoad("RemoveLiquidity", false);
+      if (chainId && id && address) {
+        fetchUserPosition(chainId, Number(id)); // Refresh data
+      }
+      setWithdrawPercentage(100); // Reset percentage
+      setQuotedToken0ToReceive('--'); // Reset quoted amounts on success
+      setQuotedToken1ToReceive('--');
+
     } catch (error) {
       console.log(error);
+      const err = error as any;
+      toast.error(err?.reason || err?.message || "Failed to remove liquidity.");
+    } finally {
       handleLoad("RemoveLiquidity", false);
     }
   };
@@ -394,6 +486,46 @@ const StakePage = () => {
 
   console.log(stakeDetails, "pool+++++>>>>>>>>>>>" , activeStakeInfo)
 
+  const isV2LPRemovalMode =
+    stakingAction === "withdraw" &&
+    activeStakeInfo.activeVersion === "v2" &&
+    _position === 0 &&
+    stakeDetails &&
+    Number(stakeDetails.gauge_liquidity) === 0 &&
+    Number(stakeDetails.liquidity) > 0;
+
+  const showGaugeOrCLOps =
+    stakeDetails &&
+    (stakingAction === "stake" ||
+      (stakingAction === "withdraw" && (Number(stakeDetails.gauge_liquidity) > 0 || _position > 0)));
+
+  const isCLUnstakeMode =
+    stakingAction === 'withdraw' &&
+    _position > 0 &&
+    activeStakeInfo?.activeVersion === "v3" &&
+    showGaugeOrCLOps; // Ensures it's part of the gauge/CL ops block
+
+  const isV2GaugeUnstakeMode =
+    stakingAction === 'withdraw' &&
+    _position === 0 &&
+    activeStakeInfo?.activeVersion === "v2" &&
+    stakeDetails && // ensure stakeDetails is loaded
+    Number(stakeDetails.gauge_liquidity) > 0 &&
+    showGaugeOrCLOps; // Ensures it's part of the gauge/CL ops block
+
+  useEffect(() => {
+    if (isCLUnstakeMode) {
+      setStakePercentage(100); // CL NFTs are unstaked entirely
+    }
+  }, [isCLUnstakeMode]);
+
+  useEffect(() => {
+    // Reset quoted amounts if the percentage or underlying stake details change
+    setQuotedToken0ToReceive('--');
+    setQuotedToken1ToReceive('--');
+  }, [withdrawPercentage, stakeDetails]);
+
+
   return (
     <div className='container px-3 py-5 flex flex-col grow h-full min-h-[55vh]'>
       <div className='flex flex-col gap-8 mx-auto'>
@@ -420,68 +552,169 @@ const StakePage = () => {
           />
         </div>
 
-        {/* Staking Amount Section */}
-        <div className=" space-y-5 rounded-2xl border border-[#2A2A2A] p-5 sm:space-y-8 sm:p-8">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-bold text-white">Staking amount</h2>
+        {isV2LPRemovalMode && stakeDetails ? (
+          <div className="space-y-5 rounded-2xl border border-[#2A2A2A] p-5 sm:space-y-8 sm:p-8">
+            <h2 className="text-lg font-bold text-white">Withdraw Liquidity from V2 Pool</h2>
+            <p className="text-sm text-gray-400">
+              Your total LP tokens: {stakeDetails.liquidity}
+            </p>
+            <p className="text-sm text-gray-400">
+              Approximate underlying: {stakeDetails.token0Amount} {stakeDetails.token0.symbol} + {stakeDetails.token1Amount} {stakeDetails.token1.symbol}
+            </p>
+
+            <div className="flex flex-col gap-2">
+              <label htmlFor="withdrawPercentage" className="text-sm font-medium text-white">
+                Percentage to withdraw:
+              </label>
+              <input
+                type="number"
+                id="withdrawPercentage"
+                name="withdrawPercentage"
+                min="0"
+                max="100"
+                value={withdrawPercentage}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  if (val >= 0 && val <= 100) {
+                    setWithdrawPercentage(val);
+                  }
+                }}
+                className="w-full p-2 rounded-md bg-[#0F0F0F] text-white border border-[#2A2A2A] focus:ring-1 focus:ring-purple-500"
+              />
+              <div className="flex gap-2 mt-2">
+                {[25, 50, 75, 100].map((perc) => (
+                  <button
+                    key={perc}
+                    onClick={() => setWithdrawPercentage(perc)}
+                    className={`py-1 px-3 rounded-md text-sm font-medium ${
+                      withdrawPercentage === perc
+                        ? "bg-purple-600 text-white"
+                        : "bg-[#1A1A1A] text-gray-300 hover:bg-purple-500"
+                    }`}
+                  >
+                    {perc}%
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <p className="text-sm text-gray-400">
+              You will receive approximately:
+            </p>
+            <p id="calculatedToken0AmountDisplay" className="text-sm text-white font-medium">
+              {quotedToken0ToReceive} {stakeDetails?.token0.symbol}
+            </p>
+            <p id="calculatedToken1AmountDisplay" className="text-sm text-white font-medium">
+              {quotedToken1ToReceive} {stakeDetails?.token1.symbol}
+            </p>
+
+            <ActButton
+              label="Confirm Withdrawal"
+              onClick={removeV2Liquidity} // We'll need to adjust removeV2Liquidity to use withdrawPercentage
+              load={load["RemoveLiquidity"]}
+              disableBtn={
+                !(withdrawPercentage > 0 && withdrawPercentage <= 100 && stakeDetails && Number(stakeDetails.liquidity) > 0)
+              }
+            />
           </div>
+        ) : showGaugeOrCLOps && stakeDetails ? (
+          // Existing UI for gauge/CL operations
+          <div className=" space-y-5 rounded-2xl border border-[#2A2A2A] p-5 sm:space-y-8 sm:p-8">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-bold text-white">
+                {stakingAction === "stake" ? "Staking amount" : "Unstaking amount"}
+              </h2>
+            </div>
 
-          {/* Staking Slider Component */}
-          <StakeSlider
-            initialPercentage={stakePercentage}
-            onChange={(value) => setStakePercentage(value)}
-            position={searchParams.get("position") != null && Number(searchParams.get("position")) > 0 ? true : false}
-          />
+            {/* Staking Slider Component */}
+            {stakingAction === "stake" && !isCLUnstakeMode && (
+              <StakeSlider
+                initialPercentage={stakePercentage}
+                onChange={(value) => setStakePercentage(value)}
+                position={_position > 0} // Simplified: true if CL, false if V2
+              />
+            )}
+            {isV2GaugeUnstakeMode && ( // Slider for V2 gauge unstaking
+              <StakeSlider
+                initialPercentage={stakePercentage}
+                onChange={(value) => setStakePercentage(value)}
+                position={false} // V2 position
+              />
+            )}
 
-          {/* Token Amounts */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            {stakeDetails && <TokenAmountCard
-              chainId={chainId}
-              token={stakeDetails.token0.address}
-              tokenSymbol={stakeDetails?.token0.name}
-              amount={(Number(stakeDetails.token0Amount) * stakePercentage) / 100}
-              // usdValue={'0'}
-              iconColor="purple-600"
-            />}
+            {isCLUnstakeMode && (
+              <p className="text-center text-white my-4">
+                CL NFT #{_position} will be unstaked entirely (100%).
+              </p>
+            )}
 
-            {stakeDetails && <TokenAmountCard
-              chainId={chainId}
-              token={stakeDetails.token1.address}
-              tokenSymbol={stakeDetails?.token1.name}
-              amount={(Number(stakeDetails.token1Amount) * stakePercentage) / 100}
-              // usdValue={'0'}
-              iconColor="yellow-500"
-            />}
+            {/* Token Amounts */}
+            {/* Render TokenAmountCards only if not CLUnstakeMode or if explicitly needed for CL */}
+            {!isCLUnstakeMode && stakeDetails && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <TokenAmountCard
+                  chainId={chainId}
+                  token={stakeDetails.token0.address}
+                  tokenSymbol={stakeDetails.token0.name}
+                  amount={
+                    stakingAction === "stake"
+                      ? (Number(stakeDetails.token0Amount) * stakePercentage) / 100
+                      : isV2GaugeUnstakeMode // For V2 gauge unstaking
+                      ? (Number(stakeDetails.unstaked0Amount) * stakePercentage) / 100
+                      : 0 // Default or CL unstake (hidden)
+                  }
+                  iconColor="purple-600"
+                />
+                <TokenAmountCard
+                  chainId={chainId}
+                  token={stakeDetails.token1.address}
+                  tokenSymbol={stakeDetails.token1.name}
+                  amount={
+                    stakingAction === "stake"
+                      ? (Number(stakeDetails.token1Amount) * stakePercentage) / 100
+                      : isV2GaugeUnstakeMode // For V2 gauge unstaking
+                      ? (Number(stakeDetails.unstaked1Amount) * stakePercentage) / 100
+                      : 0 // Default or CL unstake (hidden)
+                  }
+                  iconColor="yellow-500"
+                />
+              </div>
+            )}
+
+            {/* Fee Notice Component */}
+            {(stakingAction === "stake" || isV2GaugeUnstakeMode) && <FeeNotice message={feeNoticeMessage} />}
+
+            {stakingAction === "stake" && (
+              <ActButton
+                label="Stake"
+                onClick={() => _position > 0 ? clStake() : stake()}
+                load={_position > 0 ? load['ClStake'] : load["Stake"]}
+                disableBtn={stakingAction === "withdraw"}
+              />
+            )}
+            {stakingAction === "withdraw" && (
+               <ActButton
+                label="Unstake"
+                onClick={() => {
+                  if (isCLUnstakeMode) {
+                    clUnstake();
+                  } else if (isV2GaugeUnstakeMode) {
+                    unstake(); // This function needs to be reviewed/modified to use stakePercentage for V2 gauge unstake
+                  }
+                }}
+                load={isCLUnstakeMode ? load['ClUnstake'] : (isV2GaugeUnstakeMode ? load["Unstake"] : false)}
+                disableBtn={stakingAction === "stake"} // Keep original logic, or adjust if needed for new modes
+              />
+            )}
           </div>
-
-          {/* Fee Notice Component */}
-          <FeeNotice message={feeNoticeMessage} />
-
-          <ActButton
-            label="stake"
-            onClick={() => _position > 0 ? clStake() : stake()}
-            load={_position > 0 ? load['ClStake'] : load["Stake"]}
-            disableBtn={stakingAction == "withdraw"}
-
-          />
-          <ActButton
-            label="Unstake"
-            onClick={() => _position > 0 ? clUnstake() : unstake()}
-            load={load["Unstake"]}
-            disableBtn={stakingAction == "stake"}
-
-          />
-
-          {_position == 0 && <ActButton
-            label="RemoveLiquidity"
-            onClick={() => removeV2Liquidity()}
-            load={load["RemoveLiquidity"]}
-          /> }
-        </div>
-
+        ) : (
+          <div className="text-center py-10">
+            <p className="text-gray-400">Loading details or no applicable action...</p>
+          </div>
+        )}
       </div>
     </div>
   );
 };
 
-export default StakePage; 
+export default StakePage;
