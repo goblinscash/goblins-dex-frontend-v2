@@ -1,5 +1,7 @@
 import { stableTokens } from "./constant.utils"
 
+const testTokenSymbols = ['tGOB', 'tETH', 'tUSDC', 'tUSDT', 'tBCH'];
+
 export const tokens = [
   {
     "name": "Goblin V2",
@@ -161,7 +163,7 @@ export const tokens = [
     "decimals": 18,
     "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/bcbch.png"
   }
-]
+].filter(token => !testTokenSymbols.includes(token.symbol));
 
 export const tokenLogos = {
   "0x5ca35ebc4f25b042d2cae75914c7e882e631fa9a": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/neiro.png",
