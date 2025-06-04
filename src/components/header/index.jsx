@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Switch from "react-switch";
 // css
 import Image from "next/image";
@@ -15,21 +15,39 @@ import { shortenPubkey } from "@/utils/math.utils";
 import { useWeb3Modal } from "@web3modal/wagmi/react";
 import { useAccount } from "wagmi";
 
+const navItems = [
+  { label: 'Dashboard', path: '/dashboard' },
+  { label: 'Swap', path: '/swap' },
+  { label: 'Liquidity', path: '/liquidity' },
+  { label: 'Lock', path: '/locks' },
+  { label: 'Vote', path: '/vote' },
+  { label: 'Incentivize', path: '/incentivize' },
+  { label: 'Tokens', path: '/tokenlist' },
+];
 
 const Header = () => {
   const { theme, toggleTheme } = useTheme();
   const router = useRouter();
   const currentPath = usePathname();
-  const [activeTab, setActiveTab] = useState("");
 
   const [openDropdown, setOpenDropdown] = useState(null);
-  const [menu, setMenu] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
+  const [activePath, setActivePath] = useState('');
   const { address } = useAccount();
   const { open } = useWeb3Modal();
 
-  console.log(currentPath == '/locks', "currentpath")
+
+  const navPaths = navItems.map((item) => item.path);
+
+  const matchedPath = useMemo(() => {
+    return navPaths.find((path) => currentPath.startsWith(path));
+  }, [currentPath]);
+
+  useEffect(() => {
+    if (matchedPath) {
+      setActivePath(matchedPath);
+    }
+  }, [matchedPath]);
 
   const connect = async () => {
     await open();
@@ -54,9 +72,6 @@ const Header = () => {
   );
 
   const handleLinkClick = (e) => {
-    const domain = window.location.origin;
-    const active = e.target.href.split(domain)[1].split("/")[1];
-    setActiveTab(`${"/" + active}`);
     setIsMobileMenuOpen(false);
   };
 
@@ -86,41 +101,53 @@ const Header = () => {
                 style={{ background: isMobileMenuOpen ? "var(--backgroundColor)" : "transparent" }}
               >
                 <ul className={`list-none pl-0 mb-0 flex items-center gap-3 ${isMobileMenuOpen ? 'flex-col w-full space-y-2 items-start' : 'justify-end md:flex'}`}>
-                  <li className={`px-2 ${currentPath === "/dashboard" || activeTab == "/dashboard" ? "menu-item-active" : "menu-item-inactive"}`}>
+                  {navItems.map((item) => (
+                    <li className={`px-2 ${item.path === activePath ? "menu-item-active" : "menu-item-inactive"}`}>
+                      <Link
+                        onClick={handleLinkClick}
+                        key={item.path}
+                        href={item.path}
+                      >
+                        {item.label}
+                      </Link>
+                    </li>
+
+                  ))}
+                  {/* <li className={`px-2 ${currentPath === "/dashboard" || currentPath == "/dashboard" ? "menu-item-active" : "menu-item-inactive"}`}>
                     <Link href="/dashboard" onClick={handleLinkClick}>
                       Dashboard
                     </Link>
                   </li>
-                  <li className={`px-2 ${currentPath === "/swap" || activeTab == "/swap" ? "menu-item-active" : "menu-item-inactive"}`}>
+                  <li className={`px-2 ${activeTab === "/swap" || currentPath == "/swap" ? "menu-item-active" : "menu-item-inactive"}`}>
                     <Link href="/swap" onClick={handleLinkClick}>
                       Swap
                     </Link>
                   </li>
-                  <li className={`px-2 ${currentPath === "/liquidity" || activeTab == "/liquidity" ? "menu-item-active" : "menu-item-inactive"}`}>
+                  <li className={`px-2 ${activeTab === "/liquidity" || currentPath == "/liquidity" ? "menu-item-active" : "menu-item-inactive"}`}>
                     <Link href="/liquidity" onClick={handleLinkClick}>
                       Liquidity
                     </Link>
                   </li>
-                  <li className={`px-2 ${currentPath === "/locks" || activeTab == "/locks" ? "menu-item-active" : "menu-item-inactive"}`}>
+                  <li className={`px-2 ${activeTab === "/locks" || currentPath == "/locks" ? "menu-item-active" : "menu-item-inactive"}`}>
                     <Link href="/locks" onClick={handleLinkClick}>
                       Lock
                     </Link>
                   </li>
-                  <li className={`px-2 ${currentPath === "/vote" || activeTab == "/vote" ? "menu-item-active" : "menu-item-inactive"}`}>
+                  <li className={`px-2 ${activeTab === "/vote" || currentPath == "/vote" ? "menu-item-active" : "menu-item-inactive"}`}>
                     <Link href="/vote" onClick={handleLinkClick}>
                       Vote
                     </Link>
                   </li>
-                  <li className={`px-2 ${currentPath === "/incentivize" || activeTab == "/incentivize" ? "menu-item-active" : "menu-item-inactive"}`}>
+                  <li className={`px-2 ${activeTab === "/incentivize" || currentPath == "/incentivize" ? "menu-item-active" : "menu-item-inactive"}`}>
                     <Link href="/incentivize" onClick={handleLinkClick}>
                       Incentivize
                     </Link>
                   </li>
-                  <li className={`px-2 ${currentPath === "/tokenlist" || activeTab == "/tokenlist" ? "menu-item-active" : "menu-item-inactive"}`}>
+                  <li className={`px-2 ${activeTab === "/tokenlist" || currentPath == "/tokenlist" ? "menu-item-active" : "menu-item-inactive"}`}>
                     <Link href="/tokenlist" onClick={handleLinkClick}>
                       Tokens
                     </Link>
-                  </li>
+                  </li> */}
                   <li className={`px-2 menu-item-inactive`}>
                     <Link href="https://goblins.cash/docs/" target="_blank" rel="noopener noreferrer" onClick={handleLinkClick}>
                       Docs
