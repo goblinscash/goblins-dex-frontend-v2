@@ -93,7 +93,7 @@ export function getRoutes(
             pairAddresses.map((pairAddressWithDirection) => {
                 const [dir, pairAddress] = pairAddressWithDirection.split(":");
                 const pair = pairsByAddress[pairAddress];
-                console.log(pair, "pairpair")
+                // console.log(pair, "pairpair")
 
                 const from = pair[2]
                 const to = pair[3]
@@ -139,7 +139,7 @@ function filterPaths(
     highLiqTokens: string[],
     maxLength: number
 ): [][] {
-    console.log(paths, "++")
+    // console.log(paths, "++")
     paths = paths.filter((routes: []) =>
         routes.every(
             (r) =>
@@ -148,19 +148,10 @@ function filterPaths(
         )
     );
     if (paths.length > maxLength) {
-        const itemsToRemove: number = paths.length - maxLength;
-        const filteredArray: [][] = [];
-        let count = 0;
-        for (let i = 0; i < paths.length; i++) {
-            const path: [] = paths[i];
-            if (count < itemsToRemove) {
-                //@ts-expect-error ignore
-                if (path.length == 1) filteredArray.push(path);
-                // Ignore tokens with more than 1 hop
-                else count++;
-            } else filteredArray.push(path);
-        }
-        paths = filteredArray;
+        // Sort paths by length (number of hops) in ascending order
+        paths.sort((a, b) => a.length - b.length);
+        // Take the first maxLength paths
+        paths = paths.slice(0, maxLength);
     }
     return paths;
 }
@@ -194,7 +185,7 @@ export async function fetchQuote(
             try {
                 amountsOut = await router.getAmountsOut(amount, route);
             } catch (err) {
-                console.log(err)
+                // console.log(err)
                 amountsOut = [];
             }
             // Ignore bad quotes...
@@ -206,7 +197,7 @@ export async function fetchQuote(
                     quoteChunks.push({ route, amount, amountOut, amountsOut });
             }
 
-            console.log(amountsOut, "amountsOut+++++")
+            // console.log(amountsOut, "amountsOut+++++")
         }
     }
 
@@ -245,7 +236,7 @@ export async function quoteForSwap(chainId: number, token0: string, token1: stri
             []
         )
 
-        console.log(routes, "routesroutes")
+        // console.log(routes, "routesroutes")
 
         const quote = await fetchQuote(
             routes,
@@ -253,7 +244,7 @@ export async function quoteForSwap(chainId: number, token0: string, token1: stri
             toUnits(amount, decimal0),
             chainId,
         )
-        console.log(quote, "quote+++++")
+        // console.log(quote, "quote+++++")
 
 
         return {
@@ -262,7 +253,7 @@ export async function quoteForSwap(chainId: number, token0: string, token1: stri
             command_type: "V2_SWAP_EXACT_IN"
         }
     } catch (error) {
-        console.log(error)
+        // console.log(error)
         return {
             data: null,
             amountOut: 0,
