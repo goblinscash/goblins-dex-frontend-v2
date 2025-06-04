@@ -297,8 +297,8 @@ const StakePage = () => {
         stakeDetails.token1.address,
         stable,
         toUnits(stakeDetails.liquidity, 18),
-        amount0Min,
-        amount1Min,
+        0,
+        0,
         to,
         deadline,
         { gasLimit: 5000000 }
