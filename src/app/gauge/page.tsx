@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect, useState } from 'react';
 import StakeSlider from './StakeSlider';
 import TokenAmountCard from './TokenAmountCard';
@@ -90,7 +91,7 @@ const StakePage = () => {
 
 
     if (_position > 0) {
-      console.log("*************", _position, typeof(_position))
+      console.log("*************", _position, typeof (_position))
       const v3Position: LiquidityPosition = await fetchV3Position(chainId, Number(searchParams.get("position")));
       //@ts-expect-error ignore
       const [pool]: [FormattedPool] = await Promise.all([byIndex(chainId, index)]);
@@ -142,9 +143,9 @@ const StakePage = () => {
       fee: _activeStake.pool!.fee || "",
       type: PoolTypeMap[String(_activeStake.pool!.type)],
       //@ts-expect-error ignore
-      token0Amount: _activeStake?.activeVersion == "v3" ? fromUnits(_activeStake?.pool.reserve0, token0.decimals) : String(Number(_activeStake.position?.amount0 || 0)/  10**token0.decimals),
+      token0Amount: _activeStake?.activeVersion == "v3" ? fromUnits(_activeStake?.pool.reserve0, token0.decimals) : String(Number(_activeStake.position?.amount0 || 0) / 10 ** token0.decimals),
       //@ts-expect-error ignore
-      token1Amount: _activeStake?.activeVersion == "v3" ? fromUnits(_activeStake?.pool.reserve1, token1.decimals) : String(Number(_activeStake.position?.amount1 || 0) / 10**token1.decimals),
+      token1Amount: _activeStake?.activeVersion == "v3" ? fromUnits(_activeStake?.pool.reserve1, token1.decimals) : String(Number(_activeStake.position?.amount1 || 0) / 10 ** token1.decimals),
       unstaked0Amount: fromUnits(_activeStake.position?.staked0 || 0, token0.decimals),
       unstaked1Amount: fromUnits(_activeStake.position?.staked1 || 0, token1.decimals),
       apr: `${_activeStake.pool!.apr}%`,
@@ -183,7 +184,7 @@ const StakePage = () => {
   const handleLoad = (action: string, status: boolean) => {
     setLoad((prev) => ({ ...prev, [action]: status }));
   };
-  
+
   const stake = async () => {
     try {
       if (!address) return toast.warn("Please connect your wallet");
@@ -233,24 +234,27 @@ const StakePage = () => {
 
   const unstake = async () => {
     try {
+      console.log("start")
       if (!address) return toast.warn("Please connect your wallet");
       if (stakeDetails?.gauge == zeroAddr) return toast.warn("Gauge is not available for this pool")
-      if (stakeDetails?.liquidity != 0 || !stakeDetails?.gauge_liquidity) return;
-
+      if (stakeDetails?.liquidity != 0 || !stakeDetails?.gauge_liquidity) { };
       handleLoad("Unstake", true);
-
+      if (!stakeDetails) return;
       const gaugeInstance = new ethers.Contract(
-        stakeDetails.gauge,
+        stakeDetails?.gauge,
         guageAbi,
         await signer
       );
+      console.log(stakeDetails.gauge_liquidity, "stakePercentage", stakePercentage);
+      const rawLiquidity = ethers.toBigInt(stakeDetails.gauge_liquidity);
+      const percent = BigInt(Math.floor(stakePercentage * 100)); // e.g. 25.5 => 255000
+      const amountToWithdraw = (rawLiquidity * percent) / BigInt(10000);
 
-      const tx = await gaugeInstance.withdraw(
-        stakeDetails.gauge_liquidity,
-        {
-          gasLimit: 5000000
-        }
-      );
+      console.log("💸 Unstaking:", amountToWithdraw.toString());
+
+      const tx = await gaugeInstance.withdraw(amountToWithdraw.toString(), {
+        gasLimit: 5000000
+      });
 
 
       await tx.wait()
@@ -318,7 +322,7 @@ const StakePage = () => {
       if (!address) return toast.warn("Please connect your wallet");
       if (stakeDetails?.gauge == zeroAddr) return toast.warn("Gauge is not available for this pool")
       if (_position == 0) return toast.warn("You dont have lp position to stake");
-      if(!stakeDetails) return
+      if (!stakeDetails) return
 
       handleLoad("ClStake", true);
 
@@ -363,7 +367,7 @@ const StakePage = () => {
       if (!address) return toast.warn("Please connect your wallet");
       if (stakeDetails?.gauge == zeroAddr) return toast.warn("Gauge is not available for this pool")
       // if (_position == 0) return toast.warn("You dont have lp position to stake");
-      if(!stakeDetails) return
+      if (!stakeDetails) return
 
       handleLoad("ClUnstake", true);
 
@@ -392,7 +396,7 @@ const StakePage = () => {
   }
 
 
-  console.log(stakeDetails, "pool+++++>>>>>>>>>>>" , activeStakeInfo)
+  console.log(stakeDetails, "pool+++++>>>>>>>>>>>", activeStakeInfo)
 
   return (
     <div className='container px-3 py-5 flex flex-col grow h-full min-h-[55vh]'>
@@ -476,7 +480,7 @@ const StakePage = () => {
             label="RemoveLiquidity"
             onClick={() => removeV2Liquidity()}
             load={load["RemoveLiquidity"]}
-          /> }
+          />}
         </div>
 
       </div>
