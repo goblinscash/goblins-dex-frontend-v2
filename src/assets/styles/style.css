@@ -7,30 +7,37 @@
   background-color: #000;
   color: #fff;
 }
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 15px;
 }
+
 :root .btn {
   padding: 0 20px;
   box-shadow: unset !important;
 }
+
 .themeClr {
   color: #00ff4e;
 }
+
 input.form-control {
   outline: 0 !important;
   box-shadow: unset;
 }
+
 input.form-control:focus {
   box-shadow: unset;
   border-color: #00ff4e !important;
 }
+
 .iconWithText .icn {
   top: 50%;
   transform: translateY(-50%);
 }
+
 :root .commonBtn {
   background-color: #00ff4e;
   border-color: #00ff4e;
@@ -38,11 +45,22 @@ input.form-control:focus {
   color: #001b1c;
   height: 45px;
 }
+
 :root .commonBtn:hover {
   background-color: #001b1c;
   border-color: #001b1c;
   color: #00ff4e;
 }
+
+:root .commonBtn.disabled-btn {
+  background-color: #00ff4e;
+  border-color: #00ff4e;
+  color: #00ff4e;
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 
 section:not(.Toastify) {
   min-height: calc(100vh - 150px);
@@ -59,10 +77,12 @@ input::-webkit-inner-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+
 .cstmModal .modalDialog {
   max-height: calc(100vh - 50px);
   scrollbar-width: none;
 }
+
 .cstmModal .modalDialog::-webkit-scrollbar {
   display: none;
 }
@@ -72,49 +92,62 @@ input[type="number"] {
 }
 
 /* Menu item styles */
-.cstmMenu ul li a { /* Default link color for items not specifically active/inactive */
-  color: #00ff4e; /* Green */
-  transition: color 0.3s ease; /* Smooth transition for hover effect */
+.cstmMenu ul li a {
+  /* Default link color for items not specifically active/inactive */
+  color: #00ff4e;
+  /* Green */
+  transition: color 0.3s ease;
+  /* Smooth transition for hover effect */
 }
 
 .cstmMenu ul li a:hover {
-  color: #00cc3f; /* Slightly darker green for hover */
+  color: #00cc3f;
+  /* Slightly darker green for hover */
 }
 
 /* Applied to the LI or a parent of A for an inactive menu item */
 .cstmMenu ul li.menu-item-inactive a {
-  color: #00ff4e; /* Neon Green */
+  color: #00ff4e;
+  /* Neon Green */
 }
 
 .cstmMenu ul li.menu-item-inactive a:hover {
-  color: #00dd00; /* Slightly darker/dimmer Neon Green for hover */
+  color: #00dd00;
+  /* Slightly darker/dimmer Neon Green for hover */
 }
 
 /* Applied to the LI or a parent of A for an active menu item */
 .cstmMenu ul li.menu-item-active a {
-  color: #ffffff; /* White */
-  font-weight: bold; /* Optional: make active link bold */
+  color: #ffffff;
+  /* White */
+  font-weight: bold;
+  /* Optional: make active link bold */
 }
 
 /* Ensure active link hover doesn't change its color from white */
 .cstmMenu ul li.menu-item-active a:hover {
-  color: #ffffff; /* White */
+  color: #ffffff;
+  /* White */
 }
 
 /* Utility class for neon green text */
 .text-neon-green {
-  color: #00ff4e !important; /* Neon Green */
+  color: #00ff4e !important;
+  /* Neon Green */
 }
 
 .text-neon-green:hover {
-  color: #00dd00 !important; /* Slightly darker neon green for hover */
+  color: #00dd00 !important;
+  /* Slightly darker neon green for hover */
 }
 
 /* Utility class for neon green bg */
 .bg-neon-green {
-  background: #00ff4e !important; /* Neon Green */
+  background: #00ff4e !important;
+  /* Neon Green */
 }
 
 .bg-neon-green:hover {
-  background: #00dd00 !important; /* Slightly darker neon green for hover */
+  background: #00dd00 !important;
+  /* Slightly darker neon green for hover */
 }

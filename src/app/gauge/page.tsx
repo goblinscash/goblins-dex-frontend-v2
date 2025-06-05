@@ -269,16 +269,32 @@ const StakePage = () => {
 
   const removeV2Liquidity = async () => {
     try {
-      if (!address) return alert("Please connect your wallet");
-      if (!stakeDetails) return
+      console.log("🚀 Starting removeV2Liquidity");
+
+      if (!address) {
+        console.log("⚠️ Wallet not connected");
+        alert("Please connect your wallet");
+        return;
+      }
+
+      if (!stakeDetails) {
+        console.log("⚠️ No stakeDetails found");
+        return;
+      }
 
       handleLoad("RemoveLiquidity", true);
+      console.log("⏳ Loading started");
+
       const amount0Min = toUnits(stakeDetails?.token0Amount, stakeDetails.token0?.decimals);
       const amount1Min = toUnits(stakeDetails?.token0Amount, stakeDetails.token1?.decimals);
+      console.log("🧮 Calculated min amounts:", { amount0Min, amount1Min });
+
       const to = address;
       const deadline = Math.floor(Date.now() / 1000) + 600;
-      const stable = stakeDetails.type.includes("Volatile") ? false : true
+      const stable = stakeDetails.type.includes("Volatile") ? false : true;
+      console.log("📋 Params:", { to, deadline, stable });
 
+      console.log("🔐 Approving LP token");
       const tx0Approve = await approve(
         stakeDetails?.lp,
         await signer,
@@ -287,7 +303,11 @@ const StakePage = () => {
         18
       );
       if (tx0Approve) {
+        console.log("⏳ Waiting for approval tx to confirm...");
         await tx0Approve.wait();
+        console.log("✅ Approval confirmed");
+      } else {
+        console.log("ℹ️ No approval tx needed or returned");
       }
 
       const aerodromeRouter = new ethers.Contract(
@@ -295,12 +315,25 @@ const StakePage = () => {
         aerodromeRouterAbi,
         await signer
       );
+      console.log("📡 Contract instance created");
 
+      console.log("🔄 Calling removeLiquidity...");
+      console.log(stakeDetails?.gauge_liquidity, fromUnits(stakeDetails.liquidity, 18), "stakeDetails.liquiditystakeDetails.liquidity")
+      const liquidityRaw = ethers.toBigInt(stakeDetails.liquidity);
+      const scale = 10000;
+      const percentBigInt = BigInt(Math.floor(stakePercentage * 100)); // e.g. 50% => 5000
+
+      const diff = BigInt(stakeDetails?.gauge_liquidity) - BigInt(stakeDetails.liquidity);
+      const positiveDiff = diff >= 0 ? diff : -diff;
+      const result = toUnits(positiveDiff.toString(), 18);
+
+
+      console.log(stakeDetails?.gauge_liquidity - stakeDetails.liquidity, "stakeDetails.liquiditystakeDetails.liquidity")
       const tx = await aerodromeRouter.removeLiquidity(
         stakeDetails.token0.address,
         stakeDetails.token1.address,
         stable,
-        toUnits(stakeDetails.liquidity, 18),
+        result.toString(),
         0,
         0,
         to,
@@ -308,11 +341,15 @@ const StakePage = () => {
         { gasLimit: 5000000 }
       );
 
+      console.log("⏳ Waiting for removeLiquidity tx confirmation...");
       await tx.wait();
 
+      console.log("✅ Liquidity removed successfully");
+
       handleLoad("RemoveLiquidity", false);
+      console.log("⏹ Loading ended");
     } catch (error) {
-      console.log(error);
+      console.error("❌ Error in removeV2Liquidity:", error);
       handleLoad("RemoveLiquidity", false);
     }
   };
@@ -461,20 +498,22 @@ const StakePage = () => {
           {/* Fee Notice Component */}
           <FeeNotice message={feeNoticeMessage} />
 
-          <ActButton
-            label="stake"
-            onClick={() => _position > 0 ? clStake() : stake()}
-            load={_position > 0 ? load['ClStake'] : load["Stake"]}
-            disableBtn={stakingAction == "withdraw"}
+          {
 
-          />
-          <ActButton
-            label="Unstake"
-            onClick={() => _position > 0 ? clUnstake() : unstake()}
-            load={load["Unstake"]}
-            disableBtn={stakingAction == "stake"}
+            stakingAction == "stake" && <ActButton
+              label="stake"
+              onClick={() => _position > 0 ? clStake() : stake()}
+              load={_position > 0 ? load['ClStake'] : load["Stake"]}
+            />
+          }
+          {
 
-          />
+            stakingAction == "withdraw" && <ActButton
+              label="Unstake"
+              onClick={() => _position > 0 ? clUnstake() : unstake()}
+              load={load["Unstake"]}
+            />
+          }
 
           {_position == 0 && <ActButton
             label="RemoveLiquidity"

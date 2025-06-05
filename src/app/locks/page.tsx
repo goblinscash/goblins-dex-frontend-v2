@@ -63,7 +63,7 @@ const column: Column[] = [
   {
     accessor: "Unlock Date",
     component: (item: VeNFT) => {
-      console.log(item,"timetime")
+      console.log(item, "timetime")
       const formattedDate = item.expires_at === "0" ? "-" : formatTimestamp(Number(item.expires_at));
       return (
         <>

@@ -136,7 +136,7 @@ const Swap = () => {
         } as Token);
       }
       if (!token1) { // Only set if not already set
-         const defaultToken1Index = tokens_.length > 1 ? 1 : 0; // Handle case with only one token
+        const defaultToken1Index = tokens_.length > 1 ? 1 : 0; // Handle case with only one token
         setToken1({
           address: tokens_[defaultToken1Index].address,
           symbol: tokens_[defaultToken1Index].symbol,
@@ -219,7 +219,7 @@ const Swap = () => {
 
 
 
-            
+
             const out = fromUnits(quote.amountOut, tokenTwo.decimals)
             setAmountOut(String(out ?? "0"));
             //@ts-expect-error ignore
@@ -636,10 +636,16 @@ const Swap = () => {
                       <button
                         disabled={load["Pending"]}
                         onClick={swap}
-                        className="btn flex items-center font-medium justify-center w-full rounded btn commonBtn"
+                        className={`btn flex items-center font-medium justify-center w-full rounded commonBtn transition-all duration-300 ease-in-out
+    ${load["Pending"] ? "disabled-btn" : ""}`}
                       >
-                        Swap {token0?.symbol} for {token1?.symbol}
+                        {load["Pending"] ? <BtnLoader /> : `Swap ${token0?.symbol} for ${token1?.symbol}`}
+                        { }
                       </button>
+
+
+
+
                     </div>
                   </div>
                 </div>
