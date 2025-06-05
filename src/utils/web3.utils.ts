@@ -12,6 +12,7 @@ import routerAbi from "../abi/aerodrome/router.json";
 import voterAbi from "../abi/aerodrome/voter.json";
 import aerodromeNfpm from "@/abi/aerodrome/nfpm.json"
 import clFactoryAbi from "@/abi/aerodrome/clFactory.json"
+import quoterAbi from "@/abi/aerodrome/quoterv2.json"
 
 import { fromUnits, toUnits } from "./math.utils";
 import { getTokenDetails } from "./requests.utils";
@@ -649,8 +650,6 @@ export const fetchV2Pools = async (chainId: number, token0: string, token1: stri
     }]
 }
 
-
-//fetchV3PoolsDetailfetchV3PoolsDetailfetchV3PoolsDetailfetchV3PoolsDetail
 export const fetchV3PoolsDetail = async (chainId: number, token0: string, token1: string) => {
     if (!isValidChainId(chainId)) {
         throw new Error(`Invalid chainId: ${chainId}`);
@@ -750,6 +749,35 @@ export const quoteV2AddLiquidity = async (chainId: number, token0: string, token
         amount1.toString()
     );
 
+    const [amountOne, amountTwo, liquidity] = result as unknown as bigint[];
+    return {
+        amountOne, amountTwo, liquidity
+    }
+}
+
+export const quoteV3AddLiquidity = async (chainId: number, token0: string, token1: string, tickSpacing: number, amount0: number, sqrtPriceLimitX96: number) => {
+    if (!isValidChainId(chainId)) {
+        throw new Error(`Invalid chainId: ${chainId}`);
+    }
+
+    const quoter = new ethers.Contract(
+        aerodromeContracts[chainId].quoterv2,
+        quoterAbi,
+        new ethers.JsonRpcProvider(rpcUrls[chainId])
+    );
+
+    const params = {
+        tokenIn:token0,
+        tokenOut: token1,
+        tickSpacing,
+        amountIn:amount0,
+        sqrtPriceLimitX96: 0
+    };
+
+    console.log(params, "paramsparams>>>")
+
+    const result = await quoter.quoteExactInputSingle.staticCall(params);
+console.log(result,"paramsparams" )
     const [amountOne, amountTwo, liquidity] = result as unknown as bigint[];
     return {
         amountOne, amountTwo, liquidity

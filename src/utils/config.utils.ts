@@ -20,6 +20,7 @@ export type AerodromeContract = {
     nfpm: string;
     clFactory: string;
     offchainOracle: string;
+    quoterv2:string;
 }
 
 type AerodromeContracts = Record<number, AerodromeContract>;
@@ -76,6 +77,7 @@ export const aerodromeContracts: AerodromeContracts = {
         nfpm:"",
         clFactory: "",
         offchainOracle: "",
+        quoterv2: ""
     },
     8453: {
         router: "0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43",
@@ -91,6 +93,7 @@ export const aerodromeContracts: AerodromeContracts = {
         nfpm: "0x827922686190790b37229fd06084350E74485b72",
         clFactory: "",
         offchainOracle: "",
+        quoterv2: ""
     },
     56: {
         router: "0xeCe23FBaEf237BbE8696258717CDdAfB21a0e4C9",
@@ -106,6 +109,7 @@ export const aerodromeContracts: AerodromeContracts = {
         nfpm: "0xC8AB3794b47aCBAd975301993D6dd15B409bC390",
         clFactory: "0x7A3027f7A2f9241c0634a7f6950D2D8270aC0563",
         offchainOracle: "0x5e5035560dD68D03EC6C6644f29dD217192C4464",
+        quoterv2: "0x45bb208961D6214767505596B3Df37da23BbF92c"
     }
 };
 

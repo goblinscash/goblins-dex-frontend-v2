@@ -11,6 +11,7 @@ import {
   fetchTokenDetails,
   fetchV3PoolsDetail,
   quoteV2AddLiquidity,
+  quoteV3AddLiquidity,
 } from "@/utils/web3.utils";
 import { aerodromeContracts, zeroAddr } from "@/utils/config.utils";
 import aerodromeRouterAbi from "../../abi/aerodromeRouter.json";
@@ -24,9 +25,8 @@ import { Token } from "@/components/modals/SelectTokenPopup";
 import nfpmAbi from "@/abi/aerodrome/nfpm.json"
 import clFactoryAbi from "@/abi/aerodrome/clFactory.json"
 import { encodeSqrtRatioX96 } from "@uniswap/v3-sdk"
-import { getMaxTick, getMinTick } from "@/utils/constant.utils";
 import { toast } from "react-toastify";
-import { isNumber, set } from "lodash";
+import { isNumber } from "lodash";
 
 
 
@@ -83,13 +83,27 @@ const Deposit = () => {
 
 
   const handleChangeAmount = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
+
     if (name === "amount0") {
-      setAmount0(value)
+      setAmount0(value);
+
+      if (ratio && value) {
+        //@ts-expect-error ignore
+        const calculated = (Number(value) / ratio).toFixed(token1.decimals || 6);
+        setAmount1(calculated);
+      }
     } else if (name === "amount1") {
-      setAmount1(value)
+      setAmount1(value);
+
+      if (ratio && value) {
+        //@ts-expect-error ignore
+        const calculated = (Number(value) * ratio).toFixed(token0.decimals || 6);
+        setAmount0(calculated);
+      }
     }
-  }
+  };
+
 
   useEffect(() => {
     if (chainId && token0Address && token1Address) {
@@ -145,7 +159,7 @@ const Deposit = () => {
     if (chainId && token0?.address) {
       fetchTokenRatio()
     }
-  }, [token0, token1])
+  }, [token0, token1, selectedV3PositionDetails])
 
   const fetchToken = async (
     chainId: number,
@@ -163,16 +177,14 @@ const Deposit = () => {
       const allFeeTiers: (PoolConfig | null)[] = await fetchV3PoolsDetail(chainId, token0.address, token1.address);
       setV3PositionDetails(allFeeTiers);
       if (allFeeTiers[0] != null) {
-  
+
         //@ts-expect-error ignore
         setSelectedFee(allFeeTiers[0]?.fee);
         setSelectedV3PositionDetails(allFeeTiers[0]);
       }
 
-      console.log(allFeeTiers, "Number(relevantTier?.tickLower)")
       if (fee) { // fee is from URL param
         const relevantTier = allFeeTiers.find((item) => item?.fee == fee);
-        console.log(relevantTier, "Number(relevantTier?.tickLower)Number(relevantTier?.tickLower)")
         if (relevantTier) {
           setSelectedFee(Number(relevantTier.fee));
           if (Number(type) <= 0) { // Concentrated liquidity pool
@@ -212,20 +224,33 @@ const Deposit = () => {
   const fetchTokenRatio = async () => {
     try {
       if (!token0?.address || !token1?.address) return;
-      const data = await quoteV2AddLiquidity(
-        chainId,
-        token0.address,
-        token1.address,
-        stable,
-        // @ts-expect-error ignore
-        toUnits(100, Number(token0.decimals)),
-        toUnits(100, Number(token1.decimals))
-      )
+      if (Number(type) <= 0) {
+        const data = await quoteV2AddLiquidity(
+          chainId,
+          token0.address,
+          token1.address,
+          stable,
+          // @ts-expect-error ignore
+          toUnits(100, Number(token0.decimals)),
+          toUnits(100, Number(token1.decimals))
+        )
 
-      //@ts-expect-error ignore
-      let ratio = fromUnits(data.amountOne, token0.decimals) / fromUnits(data.amountTwo, token1.decimals)
-      ratio = type == 1 ? 1 : ratio
-      setRatio(ratio)
+        //@ts-expect-error ignore
+        const ratio = fromUnits(data.amountOne, token0.decimals) / fromUnits(data.amountTwo, token1.decimals)
+        setRatio(ratio || null)
+      }else {
+        const data = await quoteV3AddLiquidity(
+          chainId,
+          token0.address,
+          token1.address,
+          selectedV3PositionDetails?.tickSpacing || 1,
+          //@ts-expect-error ignore
+          toUnits(1, Number(token0.decimals)),
+          0
+        )
+        console.log(data, "datadata")
+      }
+
     } catch (error) {
       setRatio(null)
       console.log(error)
@@ -313,7 +338,6 @@ const Deposit = () => {
   };
 
 
-  console.log(v3PositionDetails, "v3PositionDetails")
   const addLiquidity = async () => {
     try {
       if (!address) return alert("Please connect your wallet");
@@ -383,8 +407,6 @@ const Deposit = () => {
 
   console.log(selectedV3PositionDetails, "selectedV3PositionDetails")
   const mint = async () => {
-
-
     try {
       if (!address) return toast.warn("Please connect your wallet");
       if (!amount0 || !amount1 || !token0 || !token1) return toast.warn("Enter the amounts for token0 and token1");
@@ -477,7 +499,7 @@ const Deposit = () => {
 
   }
 
-  console.log(selectedV3PositionDetails, "selectedV3PositionDetails", lowValue, highValue)
+  console.log(selectedV3PositionDetails, "selectedV3PositionDetails", lowValue, highValue, pool)
   return (
     <>
       <section className="relative py-5 ">
