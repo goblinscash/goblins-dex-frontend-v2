@@ -152,7 +152,7 @@ const Relays = () => {
                                                 {
                                                     locks.map((item) => (
                                                         <option key={item.id} value={item.id}>
-                                                            Lock #{item.id} with {fromUnits(item.amount, Number(item.decimals))} {gobV2[chainId || 8453]?.symbol}
+                                                          Lock #{item.id} with {fromUnits(item.amount, Number(item.decimals))} {gobV2[chainId || 8453]?.symbol}
                                                         </option>
                                                     ))
                                                 }

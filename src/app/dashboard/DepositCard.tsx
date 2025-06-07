@@ -10,6 +10,8 @@ import Notify from '@/components/common/Notify';
 import { zeroAddr } from '@/utils/config.utils';
 import gaugeAbi from "@/abi/aerodrome/gauge.json"
 import Tooltip from '@/components/common/Tooltip';
+import { showErrorToast, showSuccessToast } from '@/utils/toast/toast.utils';
+
 
 interface TokenPair {
   index: number;
@@ -86,7 +88,9 @@ const DepositCard: React.FC<DepositCardProps> = ({
   };
 
   const claimPoolFee = async () => {
+    let txHash: string = "";
     try {
+
       if (!address) return toast.warn("Please connect your wallet");
       if (!tokenPair.lp) return;
 
@@ -103,23 +107,28 @@ const DepositCard: React.FC<DepositCardProps> = ({
           gasLimit: 5000000
         }
       );
-
-
+      txHash = tx?.hash;
       await tx.wait()
-      Notify({ chainId, txhash: tx.hash });
+      // Notify({ chainId, txhash: tx.hash });
+      showSuccessToast(chainId, tx.hash);
       handleLoad("Claim", false);
     } catch (error) {
       console.log(error);
       handleLoad("Claim", false);
+      if (txHash) {
+        showErrorToast(chainId, txHash);
+      }
+      else showErrorToast();
     }
 
   }
 
   const claimGuageReward = async () => {
+    let txHash: string = "";
     try {
       if (!address) return toast.warn("Please connect your wallet");
       if (tokenPair?.gauge == zeroAddr) return toast.warn("Gauge not found for this pool")
-      if(Number(tokenPair.emissionsAmount) == 0) return toast.warn("Emission is zero.")
+      if (Number(tokenPair.emissionsAmount) == 0) return toast.warn("Emission is zero.")
 
       handleLoad("ClaimGuageReward", true);
 
@@ -136,15 +145,19 @@ const DepositCard: React.FC<DepositCardProps> = ({
         }
       );
 
-
+      txHash = tx?.hash;
       await tx.wait()
-      Notify({ chainId, txhash: tx.hash });
+      // Notify({ chainId, txhash: tx.hash });
+      showSuccessToast(chainId, tx?.hash);
       handleLoad("ClaimGuageReward", false);
     } catch (error) {
       console.log(error);
       handleLoad("ClaimGuageReward", false);
+      if (txHash) {
+        showErrorToast(chainId, txHash);
+      }
+      else showErrorToast();
     }
-
   }
 
   // Tooltip content component
@@ -154,7 +167,7 @@ const DepositCard: React.FC<DepositCardProps> = ({
         <div className="text-gray-400 text-xs mb-1">Pool Address</div>
         <div className="flex items-center justify-between">
           <div className="text-white text-xs font-medium">{tokenPair.lp ? (tokenPair.lp.slice(0, 6) + '...' + tokenPair.lp.slice(-5)) : 'N/A'}</div>
-          <button 
+          <button
             className="text-white hover:text-neon-green"
             onClick={(e) => {
               e.stopPropagation();
@@ -162,16 +175,16 @@ const DepositCard: React.FC<DepositCardProps> = ({
               toast.success('Address copied to clipboard');
             }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg>
           </button>
         </div>
       </div>
-      
+
       <div>
         <div className="text-gray-400 text-xs mb-1">Gauge Address</div>
         <div className="flex items-center justify-between">
           <div className="text-white text-xs font-medium">{tokenPair.gauge ? (tokenPair.gauge.slice(0, 6) + '...' + tokenPair.gauge.slice(-5)) : 'N/A'}</div>
-          <button 
+          <button
             className="text-white hover:text-neon-green"
             onClick={(e) => {
               e.stopPropagation();
@@ -179,7 +192,7 @@ const DepositCard: React.FC<DepositCardProps> = ({
               toast.success('Address copied to clipboard');
             }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-copy"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg>
           </button>
         </div>
       </div>
@@ -223,7 +236,7 @@ const DepositCard: React.FC<DepositCardProps> = ({
               <div className="flex items-center">
                 <span className="text-white text-sm sm:text-base font-medium">{tokenPair.token0Name} / {tokenPair.token1Name}</span>
                 <span className="ml-2 text-gray-500 text-xs">{tokenPair.fee}%</span>
-                <Tooltip 
+                <Tooltip
                   content={<TooltipContent />}
                   placement="top"
                   contentClassName="w-64"

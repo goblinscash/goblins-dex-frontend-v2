@@ -26,6 +26,11 @@ import BtnLoader from "@/components/common/BtnLoader";
 import { stableTokens } from "@/utils/constant.utils";
 import { quoteForSwap } from "@/utils/routes/routes.utils";
 import { getUsdRates } from "@/utils/price.utils";
+import { Notify } from "@/components/common";
+
+import { toast } from "react-toastify";
+import { showErrorToast, showInfoToast, showSuccessToast } from "@/utils/toast/toast.utils";
+
 
 interface SwapStep {
   from: string;
@@ -213,13 +218,6 @@ const Swap = () => {
             // );
 
             // setAmountOut(outAmount.toString());
-
-
-
-
-
-
-
             const out = fromUnits(quote.amountOut, tokenTwo.decimals)
             setAmountOut(String(out ?? "0"));
             //@ts-expect-error ignore
@@ -305,7 +303,12 @@ const Swap = () => {
 
   const rootLength = root?.length;
 
+  console.log(root, "rootroot")
+
   const swap = async () => {
+    let txHash: string = "";
+
+
     try {
       if (quoteData?.command_type === undefined) return;
       if (token0?.address === undefined) return;
@@ -360,16 +363,19 @@ const Swap = () => {
           gasLimit: 500000,
         }
       );
-
+      txHash = tx?.hash;
       await tx.wait();
       handleLoad("Pending", false);
+      showSuccessToast(chainId, "0ewrfgwefguyf");
     } catch (error) {
       handleLoad("Pending", false);
       console.log(error, "error+");
+      if (txHash) {
+        showErrorToast(chainId, txHash);
+      }
+      else showErrorToast();
     }
   };
-
-
   return (
     <>
       {tokenBeingSelected &&
@@ -527,14 +533,14 @@ const Swap = () => {
 
                                           <div className="absolute z-10 top-1.5 sm:top-2 border-t border-dashed border-gray-700 dark:border-gray-900 w-10/12" />
                                           {/* <div className="absolute z-10 top-6 border-r-2 border-gray-700 h-3" /> */}
-                                          {/* <div className="absolute top-10">
-                                        <div className="w-20 sm:w-28 text-[10px] md:text-xs bg-[var(--backgroundColor)] dark:bg-gray-850 px-3 py-2.5 rounded-md">
-                                          <div className=" delay-75 text-center">
-                                            {" "}
-                                            0.05%<div>Stable</div>
+                                          <div className="absolute top-10">
+                                            <div className="w-20 sm:w-28 text-[10px] md:text-xs bg-[var(--backgroundColor)] dark:bg-gray-850 px-3 py-2.5 rounded-md">
+                                              <div className=" delay-75 text-center">
+                                                {" "}
+                                                0.05%<div>Stable</div>
+                                              </div>
+                                            </div>
                                           </div>
-                                        </div>
-                                      </div> */}
                                         </div>
                                       </>
                                     ) : (
