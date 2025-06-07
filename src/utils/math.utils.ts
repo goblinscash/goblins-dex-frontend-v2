@@ -58,10 +58,11 @@ export const toUnits = (value: string | number, decimals: number): bigint => {
 }
 
 export const formatValue = (value: bigint | string | number | boolean | null | undefined) => (typeof value === "bigint" ? value.toString() : value);
-
 export const formatTimestamp = (timestamp: number) => {
   const now = new Date();
+  now.setHours(0, 0, 0, 0);
   const future = new Date(timestamp * 1000);
+  future.setHours(0, 0, 0, 0);
 
   const isFuture = future > now;
   const from = isFuture ? now : future;
@@ -83,15 +84,15 @@ export const formatTimestamp = (timestamp: number) => {
   }
 
   const parts = [];
-  if (years > 0) parts.push(`${years} year${years > 1 ? "s" : ""}`);
-  if (months > 0) parts.push(`${months} month${months > 1 ? "s" : ""}`);
-  if (days > 0) parts.push(`${days} day${days > 1 ? "s" : ""}`);
+  if (years > 0) parts.push(`${years} y${years > 1 ? "" : ""}`);
+  if (months > 0) parts.push(`${months} m${months > 1 ? "" : ""}`);
+  if (days > 0) parts.push(`${days} d${days > 1 ? "" : ""}`);
 
   if (parts.length === 0) {
     return isFuture ? "Unlocks in less than a day" : "Unlocked just now";
   }
 
-  const label = parts.slice(0, 2).join(" "); // optional: limit to 2 parts max
+  const label = parts.join(" "); // Show all parts including days
 
   return isFuture ? `Unlocks in ${label}` : `Unlocked ${label} ago`;
 };

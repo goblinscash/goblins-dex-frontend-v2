@@ -13,3 +13,61 @@
     font-family: "poppins";
   }
 } */
+/* Override react-toastify default styling */
+:root {
+  --toastify-color-dark: #111111;
+  --toastify-color-success: #00ff85;
+  --toastify-color-error: #ff4c4c;
+  --toastify-color-info: #3daeff;
+}
+
+/* Toast container */
+.Toastify__toast {
+  border-radius: 12px;
+  background: #161616 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 10px rgba(0, 255, 133, 0.25);
+  font-weight: 500;
+  font-size: 14px;
+  backdrop-filter: blur(4px);
+}
+
+/* Success toast with glow */
+.Toastify__toast--success {
+  box-shadow: 0 0 8px #00ff85;
+}
+
+/* Error toast with glow */
+.Toastify__toast--error {
+  box-shadow: 0 0 8px #ff4c4c;
+}
+
+/* Info toast */
+.Toastify__toast--info {
+  box-shadow: 0 0 8px #3daeff;
+}
+
+/* Toast Link style */
+.toast-link {
+  color: #00ff85;
+  margin-left: 8px;
+  text-decoration: underline;
+  font-weight: 500;
+  transition: 0.2s ease;
+}
+
+.toast-link:hover {
+  color: #0fc0f0;
+}
+
+.toast-link {
+  color: #00ff85;
+  margin-left: 8px;
+  text-decoration: underline;
+  font-weight: 500;
+  transition: 0.2s ease;
+}
+
+.toast-link:hover {
+  color: #0fc0f0;
+}

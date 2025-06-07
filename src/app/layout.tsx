@@ -65,7 +65,17 @@ export default async function RootLayout({
             {children}
             <Footer />
           </Web3ModalProvider>
-          <ToastContainer />
+          <ToastContainer
+            position="top-right"
+            autoClose={4000}
+            hideProgressBar={false}
+            newestOnTop
+            closeOnClick
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="dark"
+          />
         </ThemeProvider>
       </body>
     </html>

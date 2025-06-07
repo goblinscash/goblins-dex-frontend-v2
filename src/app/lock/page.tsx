@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useEthersSigner } from "@/hooks/useEthersSigner";
 import { useAccount, useChainId } from "wagmi";
 import ActButton from "@/components/common/ActButton";
@@ -20,6 +20,7 @@ import { lockById, VeNFT } from "@/utils/sugar.utils";
 import Increase from "@/components/lockInteraction/Increase";
 import Merge from "@/components/lockInteraction/Merge";
 import Extend from "@/components/lockInteraction/Extend";
+import { toast } from "react-toastify";
 
 const Deposit = () => {
   const searchParams = useSearchParams();
@@ -44,6 +45,11 @@ const Deposit = () => {
     createLock: false,
     tokenLocked: false,
   });
+
+  // amount button refrence
+
+  const inputAmountRef = useRef<HTMLInputElement | null>(null);
+
 
   useEffect(() => {
     if (chainId && id_) {
@@ -106,7 +112,17 @@ const Deposit = () => {
   const createLock = async () => {
     try {
       if (!address) return alert("Please connect your wallet");
-      if (!amount) return;
+      if (!amount) {
+        if (inputAmountRef) {
+          inputAmountRef.current?.focus();
+          toast.info("Please add the amount to proceed!" ,{
+            onClose(reason) {
+              inputAmountRef.current?.focus();
+            },
+          })
+        }
+        return;
+      };
 
       handleLoad("createLock", true);
 
@@ -270,6 +286,7 @@ const Deposit = () => {
                               <input
                                 onChange={(e) => setAmount(e.target.value)}
                                 value={amount}
+                                ref={inputAmountRef}
                                 type="number"
                                 className="form-control text-right border-0 p-3 h-10 text-xs bg-transparent w-full"
                                 placeholder="0"

@@ -2,7 +2,7 @@
 import React from "react";
 import styled from "styled-components";
 
-const TableLayout = ({ column, data}) => {
+const TableLayout = ({ column, data }) => {
   return (
     <>
       <div className="overflow-x-auto">
@@ -16,7 +16,7 @@ const TableLayout = ({ column, data}) => {
                     key={index}
                     className={`font-semibold p-3 border-0 ${item.className ? item.className : 'text-left'}`}
                     onClick={item.onHeaderClick}
-                    style={item.onHeaderClick ? {cursor: 'pointer'} : {}}
+                    style={item.onHeaderClick ? { cursor: 'pointer' } : {}}
                   >
                     {item.headerComponent ? item.headerComponent() : item.head}
                   </th>
@@ -34,7 +34,7 @@ const TableLayout = ({ column, data}) => {
                       // Determine if this cell should have fixed height (default to true if not specified)
                       const hasFixedHeight = item.hasFixedHeight !== false;
                       const cellClassName = `border-0 p-3 fw-sbold ${hasFixedHeight ? 'table-cell-fixed-height' : 'table-cell-fixheight'}`;
-                      
+
                       if (item.component) {
                         return (
                           <td key={colIndex} className={cellClassName}>

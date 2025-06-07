@@ -6,6 +6,7 @@ import Logo from '@/components/common/Logo';
 import TableLayout from '@/components/tableLayout';
 import { erc20Balance } from '@/utils/web3.utils';
 import styled from 'styled-components';
+import ToolTipCopy from '@/components/ToolTipCopy/ToolTipCopy';
 
 interface Token {
 	address: string;
@@ -45,8 +46,8 @@ const SortIndicator = styled.span`
 type SortDirection = 'asc' | 'desc' | 'none';
 
 interface SortState {
-  column: string;
-  direction: SortDirection;
+	column: string;
+	direction: SortDirection;
 }
 
 const TokenListPage = () => {
@@ -67,7 +68,7 @@ const TokenListPage = () => {
 			setLoading(true);
 			try {
 				const filteredTokens = tokens.filter((token: Token) => token.chainId === chainId);
-				
+
 				// Add placeholders for TVL and price data
 				const tokensWithData = await Promise.all(
 					filteredTokens.map(async (token) => {
@@ -76,11 +77,11 @@ const TokenListPage = () => {
 							// Convert the result to a number
 							balance = Number(await erc20Balance(chainId, token.address, token.decimals, address));
 						}
-						
+
 						// Mock data for demonstration
 						const tvl = Math.random() * 10000000;
 						const price = Math.random() * 5;
-						
+
 						return {
 							...token,
 							balance: Number(balance),
@@ -89,7 +90,7 @@ const TokenListPage = () => {
 						};
 					})
 				);
-				
+
 				setTokenList(tokensWithData);
 				setFilteredTokens(tokensWithData);
 			} catch (error) {
@@ -107,45 +108,45 @@ const TokenListPage = () => {
 	// Filter and sort tokens when search query, filter selection, or sort state changes
 	useEffect(() => {
 		let result = tokenList;
-		
+
 		// Apply balance filter if selected
 		if (selectedFilter === "Balance") {
 			result = result.filter((token) => token.balance && token.balance > 0);
 		}
-		
+
 		// Apply search filter
 		if (searchQuery.trim() !== "") {
-			result = result.filter((token) => 
+			result = result.filter((token) =>
 				token.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
 				token.address.toLowerCase().includes(searchQuery.toLowerCase())
 			);
 		}
-		
+
 		// Apply sorting if a column is selected
 		if (sortState.column && sortState.direction !== 'none') {
 			result = [...result].sort((a, b) => {
 				const aValue = a[sortState.column as keyof Token];
 				const bValue = b[sortState.column as keyof Token];
-				
+
 				// Handle undefined values
 				if (aValue === undefined && bValue === undefined) return 0;
 				if (aValue === undefined) return sortState.direction === 'asc' ? 1 : -1;
 				if (bValue === undefined) return sortState.direction === 'asc' ? -1 : 1;
-				
+
 				// Sort based on value type
 				if (typeof aValue === 'string' && typeof bValue === 'string') {
-					return sortState.direction === 'asc' 
-						? aValue.localeCompare(bValue) 
+					return sortState.direction === 'asc'
+						? aValue.localeCompare(bValue)
 						: bValue.localeCompare(aValue);
 				}
-				
+
 				// For numbers
-				return sortState.direction === 'asc' 
-					? (aValue as number) - (bValue as number) 
+				return sortState.direction === 'asc'
+					? (aValue as number) - (bValue as number)
 					: (bValue as number) - (aValue as number);
 			});
 		}
-		
+
 		setFilteredTokens(result);
 	}, [searchQuery, tokenList, selectedFilter, sortState]);
 
@@ -154,9 +155,9 @@ const TokenListPage = () => {
 		setSortState(prevState => {
 			// If clicking on the same column, cycle through sort directions
 			if (prevState.column === columnName) {
-				const nextDirection: SortDirection = 
+				const nextDirection: SortDirection =
 					prevState.direction === 'none' ? 'asc' :
-					prevState.direction === 'asc' ? 'desc' : 'none';
+						prevState.direction === 'asc' ? 'desc' : 'none';
 				return { column: columnName, direction: nextDirection };
 			}
 			// If clicking on a new column, start with ascending sort
@@ -167,7 +168,7 @@ const TokenListPage = () => {
 	// Function to render sort indicator
 	const renderSortIndicator = (columnName: string) => {
 		if (sortState.column !== columnName) return null;
-		
+
 		return (
 			<SortIndicator>
 				{sortState.direction === 'asc' ? '↑' : sortState.direction === 'desc' ? '↓' : ''}
@@ -182,11 +183,15 @@ const TokenListPage = () => {
 			component: (rowData: Token) => (
 				<div className="flex items-center gap-2">
 					<Logo chainId={rowData.chainId} token={rowData.address} margin={0} height={30} />
+
 					<div>
-						<div className="font-medium">{rowData.symbol}</div>
-						<div className="text-xs text-gray-500">{`0x${rowData.address.substring(2, 6)}...${rowData.address.substring(rowData.address.length - 4)}`}</div>
+						<ToolTipCopy address={rowData.address} >
+							<div className="font-medium">{rowData.symbol}</div>
+							<div className="text-xs text-gray-500">{`0x${rowData.address.substring(2, 6)}...${rowData.address.substring(rowData.address.length - 4)}`}</div>
+						</ToolTipCopy>
 					</div>
-				</div>
+
+				</div >
 			),
 			onHeaderClick: () => handleSort('symbol'),
 			headerComponent: () => (
@@ -257,8 +262,8 @@ const TokenListPage = () => {
 						<div>
 							<h2 className="text-white text-lg font-medium mb-2">The tokens listed here represent our tokenlist</h2>
 							<p className="text-gray-400 text-sm">
-								The liquidity pools for these tokens receive emissions and incentives, 
-								are fetched directly from our smart contracts, and the price for every 
+								The liquidity pools for these tokens receive emissions and incentives,
+								are fetched directly from our smart contracts, and the price for every
 								token is fetched from our on-chain oracle in real-time.
 							</p>
 						</div>
@@ -274,25 +279,25 @@ const TokenListPage = () => {
 					<div>
 						<div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
 							<h3 className="text-xl font-bold">Listed Tokens ({filteredTokens.length})</h3>
-							
+
 							<div className="flex flex-wrap gap-2">
 								<div className="flex gap-2 mr-2">
-									<FilterButton 
-										active={selectedFilter === "All"} 
+									<FilterButton
+										active={selectedFilter === "All"}
 										onClick={() => setSelectedFilter("All")}
 										className="px-3 py-1 rounded text-sm"
 									>
 										All
 									</FilterButton>
-									<FilterButton 
-										active={selectedFilter === "Balance"} 
+									<FilterButton
+										active={selectedFilter === "Balance"}
 										onClick={() => setSelectedFilter("Balance")}
 										className="px-3 py-1 rounded text-sm"
 									>
 										Balance
 									</FilterButton>
-									<FilterButton 
-										active={selectedFilter === "Connector"} 
+									<FilterButton
+										active={selectedFilter === "Connector"}
 										onClick={() => setSelectedFilter("Connector")}
 										className="px-3 py-1 rounded text-sm"
 									>
@@ -309,8 +314,8 @@ const TokenListPage = () => {
 									/>
 									<span className="absolute left-2 top-1/2 -translate-y-1/2">
 										<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-											<path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-											<path d="M21 21L16.65 16.65" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+											<path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+											<path d="M21 21L16.65 16.65" stroke="#888" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
 										</svg>
 									</span>
 								</div>
@@ -320,7 +325,7 @@ const TokenListPage = () => {
 						{loading ? (
 							<div className="text-center py-10">Loading tokens...</div>
 						) : (
-							<TableLayout column={column} data={filteredTokens}/>
+							<TableLayout column={column} data={filteredTokens} />
 						)}
 					</div>
 				</div>
