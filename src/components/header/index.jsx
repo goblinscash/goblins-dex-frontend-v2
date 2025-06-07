@@ -101,8 +101,8 @@ const Header = () => {
                 style={{ background: isMobileMenuOpen ? "var(--backgroundColor)" : "transparent" }}
               >
                 <ul className={`list-none pl-0 mb-0 flex items-center gap-3 ${isMobileMenuOpen ? 'flex-col w-full space-y-2 items-start' : 'justify-end md:flex'}`}>
-                  {navItems.map((item) => (
-                    <li className={`px-2 ${item.path === activePath ? "menu-item-active" : "menu-item-inactive"}`}>
+                  {navItems.map((item , index) => (
+                    <li className={`px-2 ${item.path === activePath ? "menu-item-active" : "menu-item-inactive"}`} key={index}>
                       <Link
                         onClick={handleLinkClick}
                         key={item.path}
