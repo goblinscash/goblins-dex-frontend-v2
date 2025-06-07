@@ -785,7 +785,7 @@ export const quoteV3AddLiquidity = async (chainId: number, token0: string, token
     //   )
 
     console.log(params, "paramsparams>>>")
-    const result = await quoter.exactInputSingle.staticCall(params)
+    const result = await quoter.exactInputSingle(params)
 
     // const tick = 2000
     // const encodedTickSpacing = tick.toString(16).padStart(2 * 3, '0');

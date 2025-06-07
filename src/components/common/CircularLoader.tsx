@@ -5,17 +5,17 @@ interface CircularLoaderProps {
   size?: number;
   thickness?: number;
   color?: string;
-  fullPage?: boolean;
+  fullpage?: boolean;
 }
 
 const CircularLoader: React.FC<CircularLoaderProps> = ({
   size = 40,
   thickness = 4,
   color = "#00ff4e",
-  fullPage = false,
+  fullpage = false,
 }) => {
   return (
-    <LoaderContainer fullPage={fullPage}>
+    <LoaderContainer fullpage={fullpage}>
       <Spinner
         size={size}
         thickness={thickness}
@@ -35,13 +35,13 @@ const CircularLoader: React.FC<CircularLoaderProps> = ({
   );
 };
 
-const LoaderContainer = styled.div<{ fullPage: boolean }>`
+const LoaderContainer = styled.div<{ fullpage: boolean }>`
   display: flex;
   justify-content: center;
   align-items: center;
   
-  ${({ fullPage }) =>
-    fullPage &&
+  ${({ fullpage }) =>
+    fullpage &&
     `
     position: fixed;
     top: 0;
