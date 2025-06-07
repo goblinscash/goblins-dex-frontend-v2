@@ -337,7 +337,6 @@ const Deposit = () => {
     setToken1(newToken1);
   };
 
-
   const addLiquidity = async () => {
     try {
       if (!address) return alert("Please connect your wallet");

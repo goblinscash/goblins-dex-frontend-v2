@@ -767,17 +767,33 @@ export const quoteV3AddLiquidity = async (chainId: number, token0: string, token
     );
 
     const params = {
-        tokenIn:token0,
+        tokenIn: token0,
         tokenOut: token1,
         tickSpacing,
-        amountIn:amount0,
+        amountIn: ethers.parseEther('1'),
         sqrtPriceLimitX96: 0
     };
 
-    console.log(params, "paramsparams>>>")
+    // const {
+    //     amountOut,
+    //     sqrtPriceX96AfterList,
+    //     initializedTicksCrossedList,
+    //     gasEstimate,
+    //   } = await quoter.callStatic.quoteExactInput(
+    //     encodePath([tokens[0].address, tokens[2].address], [TICK_SPACINGS[FeeAmount.MEDIUM]]),
+    //     10000
+    //   )
 
-    const result = await quoter.quoteExactInputSingle.staticCall(params);
-console.log(result,"paramsparams" )
+    console.log(params, "paramsparams>>>")
+    const result = await quoter.exactInputSingle.staticCall(params)
+
+    // const tick = 2000
+    // const encodedTickSpacing = tick.toString(16).padStart(2 * 3, '0');
+    // const encoded = '0x' + token0.slice(2) + encodedTickSpacing + token1.slice(2);
+
+    // console.log(encoded, "+++>>>>")
+    // const result = await quoter.quoteExactInput.staticCall(encoded, 4000);
+    console.log(result, "paramsparams")
     const [amountOne, amountTwo, liquidity] = result as unknown as bigint[];
     return {
         amountOne, amountTwo, liquidity
@@ -861,3 +877,12 @@ export const v3PositionByAddress = async (chainId: number, wallet: string) => {
     }
 }
 // aerodrome //
+
+export function encodePath(token0: string, token1: string, tickSpacing: number): string {
+    const TICK_SPACING_SIZE = 3; // 3 bytes = 6 hex characters
+
+    const encodedTickSpacing = tickSpacing.toString(16).padStart(2 * TICK_SPACING_SIZE, '0');
+    const encoded = '0x' + token0.slice(2) + encodedTickSpacing + token1.slice(2);
+
+    return encoded.toLowerCase();
+}
