@@ -770,22 +770,12 @@ export const quoteV3AddLiquidity = async (chainId: number, token0: string, token
         tokenIn: token0,
         tokenOut: token1,
         tickSpacing,
-        amountIn: ethers.parseEther('1'),
-        sqrtPriceLimitX96: 0
+        amountIn: amount0,
+        sqrtPriceLimitX96: BigInt(0)
     };
 
-    // const {
-    //     amountOut,
-    //     sqrtPriceX96AfterList,
-    //     initializedTicksCrossedList,
-    //     gasEstimate,
-    //   } = await quoter.callStatic.quoteExactInput(
-    //     encodePath([tokens[0].address, tokens[2].address], [TICK_SPACINGS[FeeAmount.MEDIUM]]),
-    //     10000
-    //   )
-
     console.log(params, "paramsparams>>>")
-    const result = await quoter.exactInputSingle(params)
+    const result = await quoter.quoteExactInputSingle.staticCall(params)
 
     // const tick = 2000
     // const encodedTickSpacing = tick.toString(16).padStart(2 * 3, '0');

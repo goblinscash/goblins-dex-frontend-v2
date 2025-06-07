@@ -238,17 +238,44 @@ const Deposit = () => {
         //@ts-expect-error ignore
         const ratio = fromUnits(data.amountOne, token0.decimals) / fromUnits(data.amountTwo, token1.decimals)
         setRatio(ratio || null)
-      }else {
-        const data = await quoteV3AddLiquidity(
-          chainId,
-          token0.address,
-          token1.address,
-          selectedV3PositionDetails?.tickSpacing || 1,
-          //@ts-expect-error ignore
-          toUnits(1, Number(token0.decimals)),
-          0
-        )
-        console.log(data, "datadata")
+      } else {
+        const aerodromeNfpm = new ethers.Contract(
+          aerodromeContracts[chainId].nfpm,
+          nfpmAbi,
+          await signer
+        );
+
+        const tick_upper = highValue == '∞' ? selectedV3PositionDetails?.tickUpper : Number(highValue);
+        const tick_lower = Number(lowValue) >= 0 ? lowValue : selectedV3PositionDetails?.tickLower;
+
+        const amount0Desired = toUnits(1, token0?.decimals);
+        const amount1Desired = toUnits(1, token1?.decimals);
+        const deadline = Math.floor(Date.now() / 1000) + 600;
+        const [tokenId, liquidity, amount0Used, amount1Used] = await aerodromeNfpm.mint.staticCall(
+          {
+            token0: token0.address,
+            token1: token1.address,
+            tickSpacing: selectedV3PositionDetails?.tickSpacing,
+            tickLower: tick_lower,
+            tickUpper: tick_upper,
+            amount0Desired,
+            amount1Desired,
+            amount0Min: 0,
+            amount1Min: 0,
+            recipient: address,
+            deadline
+          }
+        );
+
+        if (
+          amount0Used != null && amount1Used != null) {
+          const amt0 = amount0Used.toString() / 10**token0.decimals
+          const amt1 = amount1Used.toString()/ 10**token1.decimals
+        
+          console.log(amt0, "knj", amt1)
+          const ratio =  1 / Number(amt1)
+          setRatio(ratio || null);
+        }
       }
 
     } catch (error) {
@@ -412,8 +439,6 @@ const Deposit = () => {
       if (!selectedV3PositionDetails?.fee || !selectedFee) return toast.warn("Select a fee tier")
       const tick_upper = highValue == '∞' ? selectedV3PositionDetails.tickUpper : Number(highValue);
       const tick_lower = Number(lowValue) >= 0 ? lowValue : selectedV3PositionDetails.tickLower;
-      console.log(tick_lower, "tickLower11111111111111");
-      console.log(tick_upper, "tickLower11111111111111");
 
       handleLoad("mint", true);
       const amount0Desired = toUnits(amount0, token0?.decimals);
@@ -469,6 +494,24 @@ const Deposit = () => {
         nfpmAbi,
         await signer
       );
+
+      const data = await aerodromeNfpm.mint.staticCall(
+        {
+          token0: token0.address,
+          token1: token1.address,
+          tickSpacing: selectedV3PositionDetails.tickSpacing,
+          tickLower: tick_lower,
+          tickUpper: tick_upper,
+          amount0Desired,
+          amount1Desired,
+          amount0Min,
+          amount1Min,
+          recipient: address,
+          deadline
+        }
+      );
+
+      console.log("<<<<<<<jaja", data, ">>>>>>>>>>>>>")
 
 
       const tx = await aerodromeNfpm.mint(
