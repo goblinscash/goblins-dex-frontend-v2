@@ -115,7 +115,7 @@ const Deposit = () => {
       if (!amount) {
         if (inputAmountRef) {
           inputAmountRef.current?.focus();
-          toast.info("Please add the amount to proceed!" ,{
+          toast.info("Please add the amount to proceed!", {
             onClose(reason) {
               inputAmountRef.current?.focus();
             },

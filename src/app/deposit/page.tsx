@@ -96,7 +96,7 @@ const Deposit = () => {
       setAmount1(value);
 
       if (ratio && value) {
-        //@ts-expect-error ignore
+   
         const calculated = (Number(value) * ratio).toFixed(token0?.decimals || 6);
         setAmount0(calculated);
       }
