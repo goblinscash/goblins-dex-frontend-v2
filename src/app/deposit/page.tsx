@@ -10,8 +10,7 @@ import {
   erc20Balance,
   fetchTokenDetails,
   fetchV3PoolsDetail,
-  quoteV2AddLiquidity,
-  quoteV3AddLiquidity,
+  quoteV2AddLiquidity
 } from "@/utils/web3.utils";
 import { aerodromeContracts, zeroAddr } from "@/utils/config.utils";
 import aerodromeRouterAbi from "../../abi/aerodromeRouter.json";
