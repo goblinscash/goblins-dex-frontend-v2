@@ -1,6 +1,6 @@
 import { fromUnits, formatTimestamp } from '@/utils/math.utils';
-import {VeNFT } from '@/utils/sugar.utils';
-import React, {useState } from 'react'
+import { VeNFT } from '@/utils/sugar.utils';
+import React, { useRef, useState } from 'react'
 import styled, { keyframes } from 'styled-components';
 import ActButton from '../common/ActButton';
 import { useEthersSigner } from '@/hooks/useEthersSigner';
@@ -10,6 +10,7 @@ import { ethers } from 'ethers';
 import { aerodromeContracts } from '@/utils/config.utils';
 import votingEscrowAbi from "../../abi/aerodrome/votingEscrow.json";
 import Notify from '../common/Notify';
+import { showInfoToast } from '@/utils/toast/toast.utils';
 
 interface TransferProps {
     tokenId: number;
@@ -23,7 +24,7 @@ const Transfer: React.FC<TransferProps> = ({ tokenId, lock }) => {
     const signer = useEthersSigner();
     const chainId = useChainId();
     const { address } = useAccount();
-
+    const inputAddressRef = useRef<HTMLInputElement>(null);
     const handleLoad = (action: string, status: boolean) => {
         setLoad((prev) => ({ ...prev, [action]: status }));
     };
@@ -174,6 +175,7 @@ const Transfer: React.FC<TransferProps> = ({ tokenId, lock }) => {
                                         <div className="flex">
                                             <div className="relative w-full">
                                                 <input
+                                                    ref={inputAddressRef}
                                                     value={wallet}
                                                     onChange={(e) => setWallet(e.target.value)}
                                                     type="text"
@@ -230,13 +232,22 @@ const Transfer: React.FC<TransferProps> = ({ tokenId, lock }) => {
                                             <div className="text-sm text-black pb-8">
                                                 Transferring a lock will also transfer any rewards and rebases! Before
                                                 continuing, please make sure you have{" "}
-                                                <a href="/dash" className="pt-4 underline hover:no-underline">
+                                                <a href="/dashboard" className="pt-4 underline hover:no-underline">
                                                     claimed all available rewards
                                                 </a>
                                                 .
                                             </div>
                                         </div>
                                         <button
+                                            onClick={() => {
+                                                if (inputAddressRef.current) {
+                                                    showInfoToast("Please enter the address!", () => {
+                                                        inputAddressRef.current?.focus();
+                                                    })
+                                                }
+
+
+                                            }}
                                             type="button"
                                             className="group flex h-min items-center justify-center text-center focus:z-10 focus:outline-none focus:ring-transparent focus-visible:ring-inherit font-semibold border border-transparent bg-white hover:opacity-80 text-black transition rounded-xl focus:ring-2 w-full"
                                         >
