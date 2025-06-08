@@ -162,6 +162,14 @@ export const tokens = [
     "chainId": 56,
     "decimals": 18,
     "logoURI": "https://raw.githubusercontent.com/goblinscash/goblins-icons/main/icons/bcbch.png"
+  },
+  {
+    "name": "ANDY",
+    "symbol": "ANDY",
+    "address": "0x01ca78a2b5f1a9152d8a3a625bd7df5765eee1d8",
+    "chainId": 56,
+    "decimals": 18,
+    "logoURI": "https://bscscan.com/token/images/andytoken2_32.png"
   }
 ].filter(token => !testTokenSymbols.includes(token.symbol));
 

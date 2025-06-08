@@ -103,6 +103,7 @@ const VotePopup = ({ chainId, vote, setVote, data, setData }) => {
   }, [data]);
 
   const vote_ = async (id) => {
+    let txHash = "";
     try {
       if (!address) return alert("Please connect your wallet");
       handleLoad(id, true);
@@ -120,12 +121,18 @@ const VotePopup = ({ chainId, vote, setVote, data, setData }) => {
         { gasLimit: 5000000 }
       );
 
-      await tx.wait();
-      Notify({ chainId, txhash: tx.hash });
-      handleLoad(id, false);
+      txHash = tx?.hash;
+      await tx.wait()
+      // Notify({ chainId, txhash: tx.hash });
+      showSuccessToast(chainId, tx?.hash);
+      handleLoad("ClaimGuageReward", false);
     } catch (error) {
       console.log(error);
       handleLoad(id, false);
+      if (txHash) {
+        showErrorToast(chainId, txHash);
+      }
+      else showErrorToast();
     }
   };
 
