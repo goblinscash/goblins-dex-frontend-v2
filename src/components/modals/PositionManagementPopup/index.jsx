@@ -228,7 +228,7 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
       parseInt(nftPosition.position.tickLower),
       parseInt(nftPosition.position.tickUpper),
       nftPosition.position.liquidity,
-      parseInt(nftPosition.token0?.decimals),
+      parseInt(nftPosition.token0.decimals),
       parseInt(nftPosition.token1.decimals),
       token0,
       token1,
@@ -315,9 +315,9 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
       pool,
       token0,
       token1,
-      parseInt(nftPosition.token0?.decimals),
+      parseInt(nftPosition.token0.decimals),
       parseInt(nftPosition.token1.decimals),
-      nftPosition.token0?.symbol,
+      nftPosition.token0.symbol,
       nftPosition.token1.symbol,
       nftPosition.token0.name,
       nftPosition.token1.name,
@@ -383,7 +383,7 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
         await signer,
         predictedSickle,
         parseInt(claimInfo.removeLp.rawSwapAmount),
-        parseInt(nftPosition.token0?.decimals)
+        parseInt(nftPosition.token0.decimals)
       );
       if (tx0Approve) {
         await tx0Approve.wait();
@@ -466,7 +466,7 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
         nftPosition?.position.tickLower,
         nftPosition?.position.tickUpper,
         sweepTokens,
-        toUnits(data.amount0Desired, parseInt(nftPosition.token0?.decimals)).toString(),
+        toUnits(data.amount0Desired, parseInt(nftPosition.token0.decimals)).toString(),
         toUnits(data.amount1Desired, parseInt(nftPosition.token1.decimals)).toString(),
       )
 
@@ -477,7 +477,7 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
         await signer,
         predictedSickle,
         parseFloat(data.amount0Desired),
-        parseInt(nftPosition.token0?.decimals)
+        parseInt(nftPosition.token0.decimals)
       );
       if (tx0Approve) {
         await tx0Approve.wait();
@@ -545,7 +545,7 @@ const PositionManagementPopup = ({ position, setPosition, nftPosition }) => {
         await signer,
         predictedSickle,
         parseFloat(1),
-        parseInt(nftPosition.token0?.decimals)
+        parseInt(nftPosition.token0.decimals)
       );
       if (tx0Approve) {
         await tx0Approve.wait();
