@@ -209,21 +209,14 @@ const Swap = () => {
             setQuoteData(quote);
           }
           else if (quote.command_type === "V2_SWAP_EXACT_IN") {
-            // const outAmount = await fetchAmountsOut(
-            //   chainId,
-            //   value,
-            //   tokenOne.decimals,
-            //   tokenTwo.decimals,
-            //   quote?.data
-            // );
-
-            // setAmountOut(outAmount.toString());
             const out = fromUnits(quote.amountOut, tokenTwo.decimals)
             setAmountOut(String(out ?? "0"));
             //@ts-expect-error ignore
             setQuoteData(quote);
           } else if (quote.command_type === "V3_SWAP_EXACT_IN") {
-            setAmountOut("");
+            const out = fromUnits(quote.amountOut, tokenTwo.decimals)
+            console.log(out, "PPPP>>>>>><<<<<<<", quote)
+            setAmountOut(String(out ?? "0"));
             //@ts-expect-error ignore
             setQuoteData(quote);
           }
@@ -319,6 +312,7 @@ const Swap = () => {
       const swapRoutes = quoteData?.data;
       const planner = new RoutePlanner();
 
+      console.log(command,"YYYYYYYYYYYYY", swapRoutes, ">>")
       planner.addCommand(command, [
         address,
         toUnits(amount0, decimal),

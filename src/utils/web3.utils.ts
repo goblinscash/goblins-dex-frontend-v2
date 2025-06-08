@@ -755,6 +755,29 @@ export const quoteV2AddLiquidity = async (chainId: number, token0: string, token
     }
 }
 
+export const quoteV3AddLiquidity = async (chainId: number, encodedInput: string, amountIn: number) => {
+    if (!isValidChainId(chainId)) {
+        throw new Error(`Invalid chainId: ${chainId}`);
+    }
+
+    const quoter = new ethers.Contract(
+        aerodromeContracts[chainId].quoterv2,
+        quoterAbi,
+        new ethers.JsonRpcProvider(rpcUrls[chainId])
+    );
+
+    const {
+        amountOut,
+        sqrtPriceX96AfterList,
+        initializedTicksCrossedList,
+        gasEstimate,
+      } = await quoter.quoteExactInput.staticCall(encodedInput, BigInt(amountIn))
+
+      console.log(amountOut, "amountOut 333")
+
+    return [amountIn, amountOut]
+}
+
 export const fetchV3Position = async (chainId: number, tokenId: number) => {
     try {
         if (!isValidChainId(chainId)) {
@@ -832,12 +855,3 @@ export const v3PositionByAddress = async (chainId: number, wallet: string) => {
     }
 }
 // aerodrome //
-
-export function encodePath(token0: string, token1: string, tickSpacing: number): string {
-    const TICK_SPACING_SIZE = 3; // 3 bytes = 6 hex characters
-
-    const encodedTickSpacing = tickSpacing.toString(16).padStart(2 * TICK_SPACING_SIZE, '0');
-    const encoded = '0x' + token0.slice(2) + encodedTickSpacing + token1.slice(2);
-
-    return encoded.toLowerCase();
-}

@@ -8,6 +8,9 @@ import { ethers } from "ethers";
 import { aerodromeContracts, rpcUrls } from "../config.utils";
 import { toUnits } from "../math.utils";
 import { GraphType } from "graphology-types";
+import quoterAbi from "@/abi/aerodrome/quoterv2.json"
+import { encodePath } from "../path.utils";
+import { quoteV3AddLiquidity } from "../web3.utils";
 
 const MAX_ROUTES = 10;
 
@@ -61,7 +64,7 @@ export function getRoutes(
     fromToken: string,
     toToken: string,
     highLiqTokens: string[],
-    maxHops = 3
+    maxHops = 5
 ): [][] {
     if (!fromToken || !toToken) {
         return [];
@@ -93,17 +96,25 @@ export function getRoutes(
             pairAddresses.map((pairAddressWithDirection) => {
                 const [dir, pairAddress] = pairAddressWithDirection.split(":");
                 const pair = pairsByAddress[pairAddress];
-                console.log(pair, "pairpair")
-
                 const from = pair[2]
                 const to = pair[3]
+                const factory = pair[4]
 
                 const routeComponent = {
                     from,
                     to,
-                    stable: pair[1] == 0 ? true : false,  //pair.stable,
-                    factory: pair[4] //pair.factory,
+                    factory: factory
                 };
+                const isV3 = factory.toLowerCase() === '0x7a3027f7a2f9241c0634a7f6950d2d8270ac0563';
+
+                if (isV3) {
+                    //@ts-expect-error ignore
+                    routeComponent.fee = Number(pair[1]); // Assume pair[1] is the fee tier for v3
+                } else {
+                    //@ts-expect-error ignore
+                    routeComponent.stable = Number(pair[1]) == 0 ? true : false;
+                }
+
                 if (dir === "reversed") {
                     routeComponent.from = to;
                     routeComponent.to = from;
@@ -119,7 +130,7 @@ export function getRoutes(
                         );
                     });
                 }
-                
+
             });
 
             //@ts-expect-error ignore
@@ -171,7 +182,7 @@ function filterPaths(
  * if the quoted amount is the same. This should theoretically limit
  * the price impact on a trade.
  */
-export async function fetchQuote(
+export async function fetchQuoteV2(
     routes: [][],
     amount: BigNumber,
     chainId: number,
@@ -193,6 +204,7 @@ export async function fetchQuote(
             let amountsOut;
             try {
                 amountsOut = await router.getAmountsOut(amount, route);
+                console.log(amountsOut, "OOOOPPPPOOOOO")
             } catch (err) {
                 console.log(err)
                 amountsOut = [];
@@ -206,7 +218,6 @@ export async function fetchQuote(
                     quoteChunks.push({ route, amount, amountOut, amountsOut });
             }
 
-            console.log(amountsOut, "amountsOut+++++")
         }
     }
 
@@ -231,10 +242,85 @@ export async function fetchQuote(
     return bestQuote;
 }
 
-// under testing
+export async function fetchQuoteV3(
+    routes: [][],
+    amount: BigNumber,
+    chainId: number,
+    chunkSize = 50
+) {
+    const routeChunks = chunk(routes, chunkSize);
+    const quoteChunks = [];
+    // Split into chunks and get the route quotes...
+    for (const routeChunk of routeChunks) {
+        for (const route of routeChunk) {
+            let amountsOut;
+            try {
+               if(route?.length){
+                //@ts-expect-error ignore
+                const encodedInput = encodePath([route[0].from, route[0].to], [route[0].fee])
+                amountsOut = await quoteV3AddLiquidity(chainId, encodedInput, Number(amount));
+                console.log(amountsOut, "amountsOut")
+               }
+            } catch (err) {
+                console.log(err)
+                amountsOut = [];
+            }
+            // Ignore bad quotes...
+            if (amountsOut && amountsOut.length >= 1) {
+                const amountOut = amountsOut[amountsOut.length - 1];
+
+                // Ignore zero quotes...
+                if (!BigNumber.from(amountOut).isZero())
+                    quoteChunks.push({ route, amount, amountOut, amountsOut });
+            }
+
+        }
+    }
+
+    // Filter out bad quotes and find the best one...
+    const bestQuote = quoteChunks
+        .flat()
+        .filter(Boolean)
+        //@ts-expect-error ignore
+        .reduce((best, quote) => {
+            if (!best) {
+                return quote;
+            } else {
+                //@ts-expect-error ignore
+                return best.amountOut.gt(quote.amountOut) ? best : quote;
+            }
+        }, null);
+
+    if (!bestQuote) {
+        return null;
+    }
+
+    return bestQuote;
+}
+
+//@ts-expect-error ignore
+const separateRoutes = (routes) => {
+    const v2Routes = [];
+    const v3Routes = [];
+
+    for (const route of routes) {
+        if (route.length === 0) continue;
+
+        const firstHop = route[0];
+
+        if ('fee' in firstHop) {
+            // V3 route has "fee"
+            v3Routes.push(route);
+        } else if ('stable' in firstHop) {
+            // V2 route has "stable"
+            v2Routes.push(route);
+        }
+    }
+
+    return { v2Routes, v3Routes };
+}
 
 export async function quoteForSwap(chainId: number, token0: string, token1: string, amount: number, decimal0: number) {
-    // console.log(decimal0, ">>>>>>>><<<<<<<<<<", token0, token1, amount)
     try {
         const [poolsGraph, poolsByAddress] = buildGraph(await getPools(chainId));
         const routes = getRoutes(
@@ -245,20 +331,34 @@ export async function quoteForSwap(chainId: number, token0: string, token1: stri
             []
         )
 
-        console.log(routes, "routesroutes")
+        const { v2Routes, v3Routes } = separateRoutes(routes);
+        console.log("V2 Routes:", v2Routes);
+        console.log("V3 Routes:", v3Routes);
 
-        const quote = await fetchQuote(
-            routes,
+
+        const quotev2 = await fetchQuoteV2(
+            v2Routes,
             //@ts-expect-error ignore
             toUnits(amount, decimal0),
             chainId,
         )
-        console.log(quote, "quote+++++")
 
+        const quotev3 = await fetchQuoteV3(
+            v3Routes,
+            //@ts-expect-error ignore
+            toUnits(amount, decimal0),
+            chainId,
+        )
+        console.log(quotev3, "quot<><><>******<e+++++", quotev2)
+        // return {
+        //     data: quotev3?.route,
+        //     amountOut: quotev3?.amountOut,
+        //     command_type: "V3_SWAP_EXACT_IN"
+        // }
 
         return {
-            data: quote?.route,
-            amountOut: quote?.amountOut,
+            data: quotev2?.route,
+            amountOut: quotev2?.amountOut,
             command_type: "V2_SWAP_EXACT_IN"
         }
     } catch (error) {

@@ -156,7 +156,7 @@ const Increase: React.FC<IncreaseProps> = ({ tokenId }) => {
                                                         data-test-amount="2.5156102566030962"
                                                         className="tabular-nums"
                                                     >
-                                                        {lock && fromUnits(lock?.amount, Number(lock?.decimals))}<span className="opacity-70">&nbsp;GOB</span>
+                                                        {lock && fromUnits(lock?.amount, Number(lock?.decimals))}<span className="opacity-70">&nbsp;GOBV2</span>
                                                     </span>
                                                 </div>
                                                 <div
