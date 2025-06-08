@@ -261,7 +261,6 @@ const Dashboard = () => {
 
 
     }
-
     const toggleExpandAllDeposits = () => {
         const newExpandedState = !allDepositsExpanded;
         setAllDepositsExpanded(newExpandedState);

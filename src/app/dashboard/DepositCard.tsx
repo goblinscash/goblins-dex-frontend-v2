@@ -60,6 +60,8 @@ const DepositCard: React.FC<DepositCardProps> = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const router = useRouter()
 
+  console.log(tokenPair,"tokenPair" , depositId)
+
   // Update local expanded state when forceExpanded changes
   useEffect(() => {
     setIsExpanded(forceExpanded);
@@ -199,6 +201,13 @@ const DepositCard: React.FC<DepositCardProps> = ({
     </div>
   );
 
+
+
+  function toFixedValue(value: string): string {
+    return Number(value).toFixed(3);
+  }
+
+
   return (
     <div className="w-full">
       {/* Pool Info Header */}
@@ -295,10 +304,10 @@ const DepositCard: React.FC<DepositCardProps> = ({
             <div className="p-3 sm:p-4">
               <div className="text-gray-400 text-xs mb-2">Staked</div>
               <div className="text-white text-sm font-medium">
-                {tokenPair.token0Amount} {tokenPair.token0Name}
+                {toFixedValue(tokenPair.token0Amount)} {tokenPair.token0Name}
               </div>
               <div className="text-white text-sm font-medium">
-                {tokenPair.token1Amount} {tokenPair.token1Name}
+                {toFixedValue(tokenPair.token1Amount)} {tokenPair.token1Name}
               </div>
             </div>
 
@@ -306,10 +315,10 @@ const DepositCard: React.FC<DepositCardProps> = ({
             <div className="p-3 sm:p-4">
               <div className="text-gray-400 text-xs mb-2">Unstaked</div>
               <div className="text-white text-sm font-medium">
-                {tokenPair.unstaked0Amount} {tokenPair.token0Name}
+                {toFixedValue(tokenPair.unstaked0Amount)} {tokenPair.token0Name}
               </div>
               <div className="text-white text-sm font-medium">
-                {tokenPair.unstaked1Amount} {tokenPair.token1Name}
+                {toFixedValue(tokenPair.unstaked1Amount)} {tokenPair.token1Name}
               </div>
               <div className="flex gap-2 mt-4">
                 <button onClick={() => navigate("stake")}>
@@ -328,14 +337,14 @@ const DepositCard: React.FC<DepositCardProps> = ({
             {/* APR Column */}
             <div className="p-3 sm:p-4">
               <div className="text-gray-400 text-xs mb-2">APR</div>
-              <div className="text-white text-sm font-bold">{tokenPair.apr}</div>
+              <div className="text-white text-sm font-bold">{toFixedValue(tokenPair.apr.split('%')[0])}%</div>
             </div>
 
             {/* Emissions Column */}
             <div className="p-3 sm:p-4">
               <div className="text-gray-400 text-xs mb-2">Emissions</div>
               <div className="text-white text-sm font-bold">
-                {tokenPair.emissionsAmount} {tokenPair.emissionsToken}
+                {toFixedValue(tokenPair.emissionsAmount)} {tokenPair.emissionsToken}
               </div>
               <div className="flex mt-4">
                 <button
@@ -351,10 +360,10 @@ const DepositCard: React.FC<DepositCardProps> = ({
             <div className="p-3 sm:p-4">
               <div className="text-gray-400 text-xs mb-2">Trading Fees</div>
               <div className="text-white text-sm font-bold">
-                {tokenPair.tradingFees0} {tokenPair.token0Name}
+                {toFixedValue(tokenPair.tradingFees0)} {tokenPair.token0Name}
               </div>
               <div className="text-white text-sm font-bold">
-                {tokenPair.tradingFees1} {tokenPair.token1Name}
+                {toFixedValue(tokenPair.tradingFees1)} {tokenPair.token1Name}
               </div>
               <div className="flex mt-4">
                 <button
