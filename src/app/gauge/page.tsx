@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import StakeSlider from './StakeSlider';
 import TokenAmountCard from './TokenAmountCard';
 import PoolInfoCard from './PoolInfoCard';
@@ -83,6 +83,8 @@ const StakePage = () => {
   const _position = Number(searchParams.get("position"))
   const id = searchParams.get("id");
   const [stakeDetails, setStakeDetails] = useState<StakeDetails>();
+
+
 
 
   const fetchUserPosition = async (chainId: number, index: number) => {

@@ -36,7 +36,7 @@ export function showErrorToast(chainId?: number, txhash?: string) {
     }
 }
 
-export function showCustomErrorToast(message: string, txhash?: string, chainId?: number) {
+export function showCustomErrorToast(message?: string, txhash?: string, chainId?: number) {
     if (txhash && chainId) {
         const url = `${explorerUrls[chainId]}/${txhash}`;
         toastWithLink(
@@ -52,6 +52,6 @@ export function showCustomErrorToast(message: string, txhash?: string, chainId?:
 
 
 
-export function showInfoToast(message: string) {
-    toast.info(message);
+export function showInfoToast(message: string, afterClose?: () => void) {
+    toast.info(message, { onClose: afterClose });
 }
