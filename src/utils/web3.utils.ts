@@ -620,7 +620,7 @@ export const fetchV2Pools = async (chainId: number, token0: string, token1: stri
             pool: ZeroAddress,
             token0,
             token1,
-            symbol: _symbol + "AMM - " + `${_token0.symbol}/${_token1.symbol}`,
+            symbol: _symbol + "AMM - " + `${_token0?.symbol}/${_token1.symbol}`,
             status: false,
             action: "New Deposit",
         }]

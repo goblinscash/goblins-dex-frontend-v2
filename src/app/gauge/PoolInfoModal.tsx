@@ -59,9 +59,9 @@ const PoolInfoModal: React.FC<PoolInfoModalProps> = ({
         <button onClick={onClose} className="border-0 p-0 absolute top-4 right-4">
           {cross}
         </button>
-        
+
         <h2 className="text-white text-xl font-bold mb-6">Pool info</h2>
-        
+
         <div className="flex items-center mb-6">
           {/* Token Icons */}
           <div className="flex items-center">
@@ -76,39 +76,39 @@ const PoolInfoModal: React.FC<PoolInfoModalProps> = ({
               </svg>
             </div>
           </div>
-          
+
           {/* Token info */}
           <div className="ml-3">
             <div className="flex items-center">
-              <span className="text-white text-base font-medium">{token0.symbol} / {token1.symbol}</span>
+              <span className="text-white text-base font-medium">{token0?.symbol} / {token1.symbol}</span>
               <span className="ml-2 text-gray-400 text-sm">{fee}</span>
             </div>
             <div className="text-blue-400 text-sm">{type}</div>
           </div>
         </div>
-        
+
         {/* Pool Stats */}
         <div className="space-y-4">
           <div className="flex justify-between items-center border-b border-[#273257] pb-3">
             <span className="text-gray-400">APR</span>
             <span className="text-white">{apr}</span>
           </div>
-          
+
           <div className="flex justify-between items-center border-b border-[#273257] pb-3">
             <span className="text-gray-400">TVL</span>
             <span className="text-white">{tvl}</span>
           </div>
-          
+
           <div className="flex justify-between items-center border-b border-[#273257] pb-3">
             <span className="text-gray-400">Volume</span>
             <span className="text-white">{volume}</span>
           </div>
-          
+
           <div className="flex justify-between items-center border-b border-[#273257] pb-3">
             <span className="text-gray-400">Fees</span>
             <span className="text-white">{fees}</span>
           </div>
-          
+
           <div className="flex justify-between items-center pb-3">
             <span className="text-gray-400">Trading fee</span>
             <span className="text-white">{tradingFee}</span>

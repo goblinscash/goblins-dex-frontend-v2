@@ -97,7 +97,7 @@ const Deposit = () => {
 
       if (ratio && value) {
         //@ts-expect-error ignore
-        const calculated = (Number(value) * ratio).toFixed(token0.decimals || 6);
+        const calculated = (Number(value) * ratio).toFixed(token0?.decimals || 6);
         setAmount0(calculated);
       }
     }
@@ -230,12 +230,12 @@ const Deposit = () => {
           token1.address,
           stable,
           // @ts-expect-error ignore
-          toUnits(100, Number(token0.decimals)),
+          toUnits(100, Number(token0?.decimals)),
           toUnits(100, Number(token1.decimals))
         )
 
         //@ts-expect-error ignore
-        const ratio = fromUnits(data.amountOne, token0.decimals) / fromUnits(data.amountTwo, token1.decimals)
+        const ratio = fromUnits(data.amountOne, token0?.decimals) / fromUnits(data.amountTwo, token1.decimals)
         setRatio(ratio || null)
       } else {
         const aerodromeNfpm = new ethers.Contract(
@@ -268,11 +268,11 @@ const Deposit = () => {
 
         if (
           amount0Used != null && amount1Used != null) {
-          const amt0 = amount0Used.toString() / 10**token0.decimals
-          const amt1 = amount1Used.toString()/ 10**token1.decimals
-        
+          const amt0 = amount0Used.toString() / 10 ** token0?.decimals
+          const amt1 = amount1Used.toString() / 10 ** token1.decimals
+
           console.log(amt0, "knj", amt1)
-          const ratio =  1 / Number(amt1)
+          const ratio = 1 / Number(amt1)
           setRatio(ratio || null);
         }
       }
@@ -381,7 +381,7 @@ const Deposit = () => {
         await signer,
         aerodromeContracts[chainId].router,
         Number(amount0),
-        token0.decimals
+        token0?.decimals
       );
       if (tx0Approve) {
         await tx0Approve.wait();
@@ -452,7 +452,7 @@ const Deposit = () => {
         await signer,
         aerodromeContracts[chainId].nfpm,
         Number(amount0),
-        token0.decimals
+        token0?.decimals
       );
       if (tx0Approve) {
         await tx0Approve.wait();
