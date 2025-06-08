@@ -755,41 +755,6 @@ export const quoteV2AddLiquidity = async (chainId: number, token0: string, token
     }
 }
 
-export const quoteV3AddLiquidity = async (chainId: number, token0: string, token1: string, tickSpacing: number, amount0: number, sqrtPriceLimitX96: number) => {
-    if (!isValidChainId(chainId)) {
-        throw new Error(`Invalid chainId: ${chainId}`);
-    }
-
-    const quoter = new ethers.Contract(
-        aerodromeContracts[chainId].quoterv2,
-        quoterAbi,
-        new ethers.JsonRpcProvider(rpcUrls[chainId])
-    );
-
-    const params = {
-        tokenIn: token0,
-        tokenOut: token1,
-        tickSpacing,
-        amountIn: amount0,
-        sqrtPriceLimitX96: BigInt(0)
-    };
-
-    console.log(params, "paramsparams>>>")
-    const result = await quoter.quoteExactInputSingle.staticCall(params)
-
-    // const tick = 2000
-    // const encodedTickSpacing = tick.toString(16).padStart(2 * 3, '0');
-    // const encoded = '0x' + token0.slice(2) + encodedTickSpacing + token1.slice(2);
-
-    // console.log(encoded, "+++>>>>")
-    // const result = await quoter.quoteExactInput.staticCall(encoded, 4000);
-    console.log(result, "paramsparams")
-    const [amountOne, amountTwo, liquidity] = result as unknown as bigint[];
-    return {
-        amountOne, amountTwo, liquidity
-    }
-}
-
 export const fetchV3Position = async (chainId: number, tokenId: number) => {
     try {
         if (!isValidChainId(chainId)) {
