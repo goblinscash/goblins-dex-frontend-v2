@@ -13,7 +13,7 @@ import { useAccount, useChainId } from "wagmi";
 import { tokens } from "@/utils/token.utils";
 import universalRouterAbi from "../../abi/aerodrome/universalRouter.json";
 import { aerodromeContracts } from "@/utils/config.utils";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react"; // Add useRef
 import { useSearchParams } from "next/navigation";
 import { createPortal } from "react-dom";
 import SelectTokenPopup, { Token } from "@/components/modals/SelectTokenPopup";
@@ -37,15 +37,21 @@ interface SwapStep {
   to: string;
   stable: boolean;
 }
+
 interface QuoteData {
-  data: SwapStep;
+  data: SwapStep[]; // Changed from SwapStep to SwapStep[]
   command_type: string;
+  // If the raw 'quote' object from 'fetchQuote' contains other useful top-level info for the UI
+  // besides 'data' and 'command_type', it could be added here.
+  // For now, this matches its usage for route display.
+  amountOut?: string | ethers.BigNumber; // Keep amountOut here if it's part of the quote response
 }
 
 const Swap = () => {
   const [quoteData, setQuoteData] = useState<QuoteData | null>(null);
   const [amountOut, setAmountOut] = useState("");
   const [load, setLoad] = useState<{ [key: string]: boolean }>({});
+  const latestRequestRef = useRef(0);
 
   const signer = useEthersSigner();
   const chainId = useChainId();
@@ -62,15 +68,37 @@ const Swap = () => {
   const [filteredTokenList, setFilteredTokenList] = useState<Token[]>([]); // Keep for original list if needed elsewhere
   const [tokenListWithBalances, setTokenListWithBalances] = useState<Token[]>([]);
 
+  const resetQuoteDetails = useCallback((newAmountOut: string = "", newQuoteData: QuoteData | null = null) => {
+    setAmountOut(newAmountOut);
+    setQuoteData(newQuoteData);
+  }, [setAmountOut, setQuoteData]); // setAmountOut and setQuoteData from useState are stable
+
+  const handleRefreshQuote = () => {
+    if (token0 && token1 && amount0 && parseFloat(amount0) > 0) {
+      if (token0.address === token1.address) {
+        resetQuoteDetails(amount0, null); // Output is same as input, no quote
+        showInfoToast(undefined, "Input and output tokens are the same.");
+      } else {
+        showInfoToast(undefined, "Refreshing quote...");
+        fetchToken(token0, token1, parseFloat(amount0));
+      }
+    } else {
+      resetQuoteDetails("", null); // Clear details if inputs are not valid for refresh
+      showErrorToast(undefined, "Please select tokens and enter an amount to refresh the quote.");
+    }
+  };
+
   const handleTokenSelect = (token: Token) => {
     const newQueryParams = new URLSearchParams(searchParams.toString());
     if (tokenBeingSelected === "token0") {
       setAmount0("");
+      resetQuoteDetails("", null); // Reset when input token changes and amount is cleared
       setToken0(token);
       newQueryParams.set("token0", token.address);
     } else if (tokenBeingSelected === "token1") {
       setToken1(token);
-      setAmount0("");
+      setAmount0(""); // Amount is cleared, so dependent quote should also clear
+      resetQuoteDetails("", null); // Reset when output token changes and amount is cleared
       newQueryParams.set("token1", token.address);
     }
     setTokenBeingSelected(null);
@@ -182,18 +210,25 @@ const Swap = () => {
     //   amount: amount,
     // };
 
-    return await quoteForSwap(chainId, tokenOne, tokenTwo, amount, decimals)
+    // return await quoteForSwap(chainId, tokenOne, tokenTwo, amount, decimals)
 
     try {
       // const response = await axios.get(ROUTE_API_URI, { params });
       // return response.data;
+      const result = await quoteForSwap(chainId, tokenOne, tokenTwo, amount, decimals);
+      return result;
     } catch (err) {
-      console.error("Error fetching quote:", err);
+      console.error("Error during quoteForSwap execution:", err);
+      // Re-throw the error to be caught by fetchToken's catch block
+      throw err;
     }
   };
 
   const fetchToken = useCallback(
     debounce(async (tokenOne: Token, tokenTwo: Token, value: number) => {
+      latestRequestRef.current += 1;
+      const requestId = latestRequestRef.current;
+
       handleLoad("FetchRoute", true);
       try {
         const quote = await fetchQuote(
@@ -202,55 +237,73 @@ const Swap = () => {
           value,
           tokenOne.decimals
         );
-        if (quote?.data != null) {
-          if (tokenOne.address === tokenTwo.address) {
-            setAmountOut(amount0);
-            //@ts-expect-error ignore
-            setQuoteData(quote);
-          }
-          else if (quote.command_type === "V2_SWAP_EXACT_IN") {
-            // const outAmount = await fetchAmountsOut(
-            //   chainId,
-            //   value,
-            //   tokenOne.decimals,
-            //   tokenTwo.decimals,
-            //   quote?.data
-            // );
 
-            // setAmountOut(outAmount.toString());
-            const out = fromUnits(quote.amountOut, tokenTwo.decimals)
+        if (requestId !== latestRequestRef.current) {
+          // A newer request has been made, ignore this response
+          return;
+        }
+
+        // Primary success condition: quote and quote.data are present
+        if (quote?.data != null) {
+          // The calling functions (handleChange, handleRefreshQuote) ensure tokenOne.address !== tokenTwo.address.
+          // So, no need for that check here.
+
+          if (quote.command_type === "V2_SWAP_EXACT_IN") {
+            const out = fromUnits(quote.amountOut, tokenTwo.decimals);
             setAmountOut(String(out ?? "0"));
-            //@ts-expect-error ignore
-            setQuoteData(quote);
+            setQuoteData(quote as QuoteData);
           } else if (quote.command_type === "V3_SWAP_EXACT_IN") {
-            setAmountOut("");
-            //@ts-expect-error ignore
-            setQuoteData(quote);
+            // Current behavior: setAmountOut("") for V3. This might need review based on V3 expectations,
+            // but for error handling, we just ensure it's processed.
+            setAmountOut(""); // As per original logic
+            setQuoteData(quote as QuoteData);
+          } else {
+            // Unknown command_type or structure not matching V2/V3 expectations
+            // This could be treated as a form of "no valid quote"
+            console.warn("Unknown quote command_type:", quote.command_type);
+            resetQuoteDetails("", null);
+            showErrorToast(undefined, "Received an unexpected quote format. Please try again.");
           }
         } else {
-          setAmountOut("");
-          setQuoteData(null);
+          // quote or quote.data is null/undefined - treated as a failed fetch
+          if (requestId === latestRequestRef.current) {
+            resetQuoteDetails("", null);
+            showErrorToast(undefined, "Could not fetch a valid quote. Please try again.");
+          }
         }
       } catch (err) {
-        handleLoad("FetchRoute", false);
-        console.error("Error in fetchRoute:", err);
-        setQuoteData(null);
+        // This catches errors from fetchQuote (which includes errors from quoteForSwap)
+        if (requestId !== latestRequestRef.current) {
+          return; // Stale request, error belongs to an old request
+        }
+        console.error("Error in fetchToken's try block:", err); // More specific console error
+        resetQuoteDetails("", null);
+        showErrorToast(undefined, "Error fetching quote. Please check console or try again.");
       } finally {
-        handleLoad("FetchRoute", false);
+        if (requestId === latestRequestRef.current) {
+          handleLoad("FetchRoute", false);
+        }
       }
     }, 500),
-    []
+    [chainId, resetQuoteDetails]
   );
 
   const handleChange = (value: string, token0_: Token, token1_: Token) => {
     setAmount0(value);
     if (!token0_ || !token1_) {
       console.error("Token0 or Token1 is missing");
+      resetQuoteDetails("", null);
       return;
     }
 
     if (parseFloat(value) > 0) {
-      fetchToken(token0_, token1_, parseFloat(value));
+      if (token0_.address === token1_.address) {
+        resetQuoteDetails(value, null); // amountOut is same as amountIn, no quote
+      } else {
+        fetchToken(token0_, token1_, parseFloat(value));
+      }
+    } else {
+      resetQuoteDetails("", null); // Clear for zero/empty input
     }
   };
 
@@ -288,22 +341,26 @@ const Swap = () => {
   }
 
 
-  //@ts-expect-error ignore
-  const root: string[] = quoteData?.data?.length && quoteData?.data?.reduce((acc: string[], step: SwapStep) => {
-    // Add the "from" address if it's not already in the array
+  const root: string[] = quoteData?.data?.length ? quoteData.data.reduce((acc: string[], step: SwapStep) => {
     if (!acc.includes(step.from)) {
       acc.push(step.from);
     }
-    // Add the "to" address if it's not already in the array
     if (!acc.includes(step.to)) {
       acc.push(step.to);
     }
     return acc;
-  }, []);
+  }, [] as string[]) : [];
 
   const rootLength = root?.length;
 
   console.log(root, "rootroot")
+
+  let displayRate = "0";
+  if (token0 && token1 && amount0 && parseFloat(amount0) > 0 && amountOut && parseFloat(amountOut) > 0) {
+    const rate = parseFloat(amountOut) / parseFloat(amount0);
+    // Format the rate to a reasonable number of decimal places, e.g., 5 or 6
+    displayRate = rate.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 });
+  }
 
   const swap = async () => {
     let txHash: string = "";
@@ -562,21 +619,20 @@ const Swap = () => {
                       <h4 className="m-0 font-semibold text-xl">Swap</h4>
                       <div className="content pt-3">
                         <SwapList className="list-none py-3 relative z-10 pl-0 mb-0">
-                          {amountOut && (
+                          {parseFloat(amount0) > 0 && amountOut && parseFloat(amountOut) > 0 && token0 && token1 && (
                             <li className="py-1 flex itmes-start gap-3 ">
                               <span className="flex bg-[var(--backgroundColor)] h-6 w-6 text-green-500 items-center justify-center rounded-full">
-                                {calculate}
+                                {calculate} {/* existing icon */}
                               </span>
                               <div className="content text-xs text-gray-400">
                                 <p className="m-0">
                                   Exchange rate found...{" "}
-                                  <button className="border-0 p-0">
+                                  <button className="border-0 p-0 text-[#00ff4e] hover:underline" onClick={handleRefreshQuote}>
                                     Refresh
                                   </button>
                                 </p>
-                                <p className="m-0 flex items-center mt-1 gap-1 font-medium">
-                                  1 {token0?.symbol} {exchange} {amountOut}{" "}
-                                  {token1?.symbol}
+                                <p className="m-0 flex items-center mt-1 gap-1 font-medium text-white"> {/* Added text-white for visibility */}
+                                  1 {token0?.symbol} &asymp; {displayRate} {token1?.symbol}
                                 </p>
                               </div>
                             </li>
