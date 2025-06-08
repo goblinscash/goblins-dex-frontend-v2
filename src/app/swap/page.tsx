@@ -312,6 +312,7 @@ const Swap = () => {
       const swapRoutes = quoteData?.data;
       const planner = new RoutePlanner();
 
+      console.log(command,"YYYYYYYYYYYYY", swapRoutes, ">>")
       planner.addCommand(command, [
         address,
         toUnits(amount0, decimal),

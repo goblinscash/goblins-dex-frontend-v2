@@ -300,8 +300,8 @@ export async function fetchQuoteV3(
 
 //@ts-expect-error ignore
 const separateRoutes = (routes) => {
-    let v2Routes = [];
-    let v3Routes = [];
+    const v2Routes = [];
+    const v3Routes = [];
 
     for (const route of routes) {
         if (route.length === 0) continue;
@@ -350,17 +350,17 @@ export async function quoteForSwap(chainId: number, token0: string, token1: stri
             chainId,
         )
         console.log(quotev3, "quot<><><>******<e+++++", quotev2)
-        return {
-            data: quotev3?.route,
-            amountOut: quotev3?.amountOut,
-            command_type: "V3_SWAP_EXACT_IN"
-        }
-
         // return {
-        //     data: quotev2?.route,
-        //     amountOut: quotev2?.amountOut,
-        //     command_type: "V2_SWAP_EXACT_IN"
+        //     data: quotev3?.route,
+        //     amountOut: quotev3?.amountOut,
+        //     command_type: "V3_SWAP_EXACT_IN"
         // }
+
+        return {
+            data: quotev2?.route,
+            amountOut: quotev2?.amountOut,
+            command_type: "V2_SWAP_EXACT_IN"
+        }
     } catch (error) {
         console.log(error)
         return {
