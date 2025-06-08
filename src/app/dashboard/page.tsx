@@ -229,27 +229,27 @@ const Dashboard = () => {
                     gauge: pool.gauge,
                     token0: pool.token0,
                     token1: pool.token1,
-                    token0Name: token0.symbol,
+                    token0Name: token0?.symbol,
                     token1Name: token1?.symbol,
                     fee: pool.pool_fee || "",
                     type: PoolTypeMap[String(pool.type)],
-                    token0Amount: pool.type > 0 ? fromUnits(pool.reserve0, token0.decimals) : String(Number(deposit.amount0) / 10 ** token0.decimals),
-                    token1Amount: pool.type > 0 ? fromUnits(pool.reserve1, token1.decimals) : String(Number(deposit.amount1) / 10 ** token1.decimals),
-                    unstaked0Amount: pool.type > 0 ? fromUnits(pool.staked0, token0.decimals) : String(Number(deposit.staked0) / 10 ** token0.decimals),
-                    unstaked1Amount: pool.type > 0 ? fromUnits(pool.staked1, token0.decimals) : String(Number(deposit.staked1) / 10 ** token1.decimals),
+                    token0Amount: pool.type > 0 ? fromUnits(pool?.reserve0, token0?.decimals) : String(Number(deposit?.amount0) / 10 ** token0?.decimals),
+                    token1Amount: pool.type > 0 ? fromUnits(pool?.reserve1, token1?.decimals) : String(Number(deposit?.amount1) / 10 ** token1.decimals),
+                    unstaked0Amount: pool.type > 0 ? fromUnits(pool?.staked0, token0?.decimals) : String(Number(deposit?.staked0) / 10 ** token0?.decimals),
+                    unstaked1Amount: pool.type > 0 ? fromUnits(pool?.staked1, token0?.decimals) : String(Number(deposit?.staked1) / 10 ** token1?.decimals),
                     apr: `${pool.apr}%`,
                     emissionsToken: rewardToken?.symbol ?? "",
                     emissionsAmount: rewardToken
-                        ? String(Number(deposit.emissions_earned) / 10 ** rewardToken.decimals)
+                        ? String(Number(deposit.emissions_earned) / 10 ** rewardToken?.decimals)
                         : "",
-                    tradingFees0: pool.type > 0 ? fromUnits(pool.token0_fees, token0.decimals) : String(Number(deposit.unstaked_earned0) / 10 ** token0.decimals),
-                    tradingFees1: pool.type > 0 ? fromUnits(pool.token1_fees, token0.decimals) : String(Number(deposit.unstaked_earned1) / 10 ** token1.decimals),
+                    tradingFees0: pool.type > 0 ? fromUnits(pool?.token0_fees, token0?.decimals) : String(Number(deposit.unstaked_earned0) / 10 ** token0?.decimals),
+                    tradingFees1: pool.type > 0 ? fromUnits(pool?.token1_fees, token0?.decimals) : String(Number(deposit.unstaked_earned1) / 10 ** token1?.decimals),
                     depositedUsd: `$${(
                         (parseFloat(String(pool.poolBalance).replace("$", "")) *
-                            Number(deposit.liquidity || deposit.position?.liquidity)) /
+                            Number(deposit?.liquidity || deposit.position?.liquidity)) /
                         pool.liquidity
                     ).toFixed(2)}`,
-                    poolTotalUsd: `${pool.poolBalance}`
+                    poolTotalUsd: `${pool?.poolBalance}`
                 }
             } as DepositItem;
 

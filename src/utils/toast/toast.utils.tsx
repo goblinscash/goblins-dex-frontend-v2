@@ -36,6 +36,22 @@ export function showErrorToast(chainId?: number, txhash?: string) {
     }
 }
 
-export function showInfoToast(message: string) {
-    toast.info(message);
+export function showCustomErrorToast(message?: string, txhash?: string, chainId?: number) {
+    if (txhash && chainId) {
+        const url = `${explorerUrls[chainId]}/${txhash}`;
+        toastWithLink(
+            'error',
+            message || 'Something went wrong with the transaction.',
+            'View on Explorer',
+            url
+        );
+    } else {
+        toast.error(message || 'Something went wrong. Please try again.');
+    }
+}
+
+
+
+export function showInfoToast(message: string, afterClose?: () => void) {
+    toast.info(message, { onClose: afterClose });
 }

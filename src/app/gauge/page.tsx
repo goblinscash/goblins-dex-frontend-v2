@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import StakeSlider from './StakeSlider';
 import TokenAmountCard from './TokenAmountCard';
 import PoolInfoCard from './PoolInfoCard';
@@ -85,6 +85,8 @@ const StakePage = () => {
   const [stakeDetails, setStakeDetails] = useState<StakeDetails>();
 
 
+
+
   const fetchUserPosition = async (chainId: number, index: number) => {
     if (!address) return
     let _activeStake: ActiveStakeInfo;
@@ -143,15 +145,15 @@ const StakePage = () => {
       fee: _activeStake.pool!.fee || "",
       type: PoolTypeMap[String(_activeStake.pool!.type)],
       //@ts-expect-error ignore
-      token0Amount: _activeStake?.activeVersion == "v3" ? fromUnits(_activeStake?.pool.reserve0, token0.decimals) : String(Number(_activeStake.position?.amount0 || 0) / 10 ** token0.decimals),
+      token0Amount: _activeStake?.activeVersion == "v3" ? fromUnits(_activeStake?.pool.reserve0, token0?.decimals) : String(Number(_activeStake.position?.amount0 || 0) / 10 ** token0?.decimals),
       //@ts-expect-error ignore
       token1Amount: _activeStake?.activeVersion == "v3" ? fromUnits(_activeStake?.pool.reserve1, token1.decimals) : String(Number(_activeStake.position?.amount1 || 0) / 10 ** token1.decimals),
-      unstaked0Amount: fromUnits(_activeStake.position?.staked0 || 0, token0.decimals),
+      unstaked0Amount: fromUnits(_activeStake.position?.staked0 || 0, token0?.decimals),
       unstaked1Amount: fromUnits(_activeStake.position?.staked1 || 0, token1.decimals),
       apr: `${_activeStake.pool!.apr}%`,
       emissionsToken: rewardToken?.symbol ?? "",
       emissionsAmount: rewardToken ? String(Number(_activeStake.position?.emissions_earned || 0) / 10 ** rewardToken.decimals) : "",
-      tradingFees0: String(Number(_activeStake.position?.unstaked_earned0 || 0) / 10 ** token0.decimals),
+      tradingFees0: String(Number(_activeStake.position?.unstaked_earned0 || 0) / 10 ** token0?.decimals),
       tradingFees1: String(Number(_activeStake.position?.unstaked_earned1 || 0) / 10 ** token1.decimals),
       depositedUsd: `$${(parseFloat(String(_activeStake.pool!.poolBalance).replace("$", "")) * Number(_activeStake.position!.liquidity) / _activeStake.pool!.liquidity).toFixed(2)}`,
       poolTotalUsd: `${_activeStake.pool!.poolBalance}`,
@@ -445,7 +447,7 @@ const StakePage = () => {
             stakeDetails && <PoolInfoCard
               chainId={chainId}
               token0={stakeDetails.token0.address}
-              token0Name={stakeDetails.token0.symbol}
+              token0Name={stakeDetails.token0?.symbol}
               token1={stakeDetails.token1.address}
               token1Name={stakeDetails.token1.symbol}
               fee={`${Number(stakeDetails.fee) / 100}%`}

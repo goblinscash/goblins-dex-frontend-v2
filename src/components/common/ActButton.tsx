@@ -1,11 +1,13 @@
-import React from "react";
+import React, { HTMLElementType } from "react";
 import BtnLoader from "./BtnLoader";
 
 interface ActButtonProps {
   label: string;
   onClick: () => void;
   load?: boolean;
-  disableBtn?: boolean
+  disableBtn?: boolean;
+
+
 }
 
 const ActButton: React.FC<ActButtonProps> = ({ label, onClick, load = false, disableBtn = false }) => {

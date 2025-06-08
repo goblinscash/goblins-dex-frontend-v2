@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useEthersSigner } from "@/hooks/useEthersSigner";
 import { useAccount, useChainId } from "wagmi";
 import ActButton from "@/components/common/ActButton";
@@ -26,6 +26,7 @@ import clFactoryAbi from "@/abi/aerodrome/clFactory.json"
 import { encodeSqrtRatioX96 } from "@uniswap/v3-sdk"
 import { toast } from "react-toastify";
 import { isNumber } from "lodash";
+import { showCustomErrorToast, showErrorToast, showInfoToast, showSuccessToast } from "@/utils/toast/toast.utils";
 
 
 
@@ -79,13 +80,23 @@ const Deposit = () => {
   const [selectedFee, setSelectedFee] = useState<number | null>(0);
   const [v3PositionDetails, setV3PositionDetails] = useState<(PoolConfig | null)[]>([]);
   const [selectedV3PositionDetails, setSelectedV3PositionDetails] = useState<(PoolConfig | null)>({});
-
+  const inputRefForAmount0 = useRef<HTMLInputElement>(null);
+  const inputRefForAmount1 = useRef<HTMLInputElement>(null);
 
   const handleChangeAmount = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
     if (name === "amount0") {
-      setAmount0(value);
+      if (Number(value) > 0) {
+        setAmount0(value);
+      }
+      else {
+        if (value == "" || Number(value) <= 0) {
+          setAmount0('');
+          setAmount1('')
+        }
+      }
+
 
       if (ratio && value) {
         //@ts-expect-error ignore
@@ -93,11 +104,19 @@ const Deposit = () => {
         setAmount1(calculated);
       }
     } else if (name === "amount1") {
-      setAmount1(value);
+      if (Number(value) > 0) {
+        setAmount1(value);
+      }
+      else {
+        if (value == "" || Number(value) <= 0) {
+          setAmount1('');
+          setAmount0('')
+        }
+      }
 
       if (ratio && value) {
-        //@ts-expect-error ignore
-        const calculated = (Number(value) * ratio).toFixed(token0.decimals || 6);
+
+        const calculated = (Number(value) * ratio).toFixed(token0?.decimals || 6);
         setAmount0(calculated);
       }
     }
@@ -230,12 +249,12 @@ const Deposit = () => {
           token1.address,
           stable,
           // @ts-expect-error ignore
-          toUnits(100, Number(token0.decimals)),
+          toUnits(100, Number(token0?.decimals)),
           toUnits(100, Number(token1.decimals))
         )
 
         //@ts-expect-error ignore
-        const ratio = fromUnits(data.amountOne, token0.decimals) / fromUnits(data.amountTwo, token1.decimals)
+        const ratio = fromUnits(data.amountOne, token0?.decimals) / fromUnits(data.amountTwo, token1.decimals)
         setRatio(ratio || null)
       } else {
         const aerodromeNfpm = new ethers.Contract(
@@ -268,11 +287,11 @@ const Deposit = () => {
 
         if (
           amount0Used != null && amount1Used != null) {
-          const amt0 = amount0Used.toString() / 10**token0.decimals
-          const amt1 = amount1Used.toString()/ 10**token1.decimals
-        
+          const amt0 = amount0Used.toString() / 10 ** token0?.decimals
+          const amt1 = amount1Used.toString() / 10 ** token1.decimals
+
           console.log(amt0, "knj", amt1)
-          const ratio =  1 / Number(amt1)
+          const ratio = 1 / Number(amt1)
           setRatio(ratio || null);
         }
       }
@@ -364,9 +383,21 @@ const Deposit = () => {
   };
 
   const addLiquidity = async () => {
+    let txHash: string = '';
     try {
       if (!address) return alert("Please connect your wallet");
-      if (!amount0 || !amount1 || !token0 || !token1) return;
+      if (!token0 || !token1) return;
+      if (!amount0 || !amount1) {
+        showInfoToast("Please enter amount to Proceed!", () => {
+          if (inputRefForAmount0.current && Number(inputRefForAmount0.current.value) <= 0) {
+            inputRefForAmount0.current.focus();
+          }
+          else if (inputRefForAmount1.current && Number(inputRefForAmount1.current.value) <= 0) {
+            inputRefForAmount1.current.focus();
+          }
+        })
+        return;
+      }
 
       handleLoad("addLiquidity", true);
       const amount0Desired = toUnits(amount0, token0?.decimals);
@@ -381,7 +412,7 @@ const Deposit = () => {
         await signer,
         aerodromeContracts[chainId].router,
         Number(amount0),
-        token0.decimals
+        token0?.decimals
       );
       if (tx0Approve) {
         await tx0Approve.wait();
@@ -418,8 +449,9 @@ const Deposit = () => {
         deadline,
         { gasLimit: 5000000 }
       );
-
-      await tx.wait();
+      txHash = tx?.hash;
+      await tx.wait()
+      showSuccessToast(chainId, txHash);
       await fetchPoolByIndex(chainId, Number(id));
       handProgress("isCompleted", true);
 
@@ -427,11 +459,16 @@ const Deposit = () => {
     } catch (error) {
       console.log(error);
       handleLoad("addLiquidity", false);
+      if (txHash.length > 0) {
+        showErrorToast(chainId, txHash);
+      }
+      else showCustomErrorToast();
     }
   };
 
   console.log(selectedV3PositionDetails, "selectedV3PositionDetails")
   const mint = async () => {
+    let txHash: string = '';
     try {
       if (!address) return toast.warn("Please connect your wallet");
       if (!amount0 || !amount1 || !token0 || !token1) return toast.warn("Enter the amounts for token0 and token1");
@@ -452,7 +489,7 @@ const Deposit = () => {
         await signer,
         aerodromeContracts[chainId].nfpm,
         Number(amount0),
-        token0.decimals
+        token0?.decimals
       );
       if (tx0Approve) {
         await tx0Approve.wait();
@@ -484,8 +521,9 @@ const Deposit = () => {
           selectedV3PositionDetails?.tickSpacing,
           sqrtPriceX96.toString()
         )
-
+        txHash = tx?.hash;
         await tx.wait()
+        showSuccessToast(chainId, txHash);
       }
 
       const aerodromeNfpm = new ethers.Contract(
@@ -529,13 +567,18 @@ const Deposit = () => {
         },
         { gasLimit: 5000000 }
       );
-
-      await tx.wait();
+      txHash = tx?.hash;
+      await tx.wait()
+      showSuccessToast(chainId, txHash);
       handProgress("isCompleted", true);
       handleLoad("mint", false);
     } catch (error) {
       console.log(error);
       handleLoad("mint", false);
+      if (txHash.length > 0) {
+        showErrorToast(chainId, txHash);
+      }
+      else showCustomErrorToast();
     }
 
   }
@@ -589,9 +632,11 @@ const Deposit = () => {
                             load={load["mint"]}
                           /> :
                           <ActButton
-                            label="addLiquidity"
+                            label="Add Liquidity"
                             onClick={() => addLiquidity()}
                             load={load["addLiquidity"]}
+
+
                           />
                         }
                       </div>
@@ -793,6 +838,7 @@ const Deposit = () => {
                             <input
                               name="amount0"
                               type="number"
+                              ref={inputRefForAmount0}
                               value={amount0}
                               onChange={handleChangeAmount}
                               placeholder="0"
@@ -836,6 +882,7 @@ const Deposit = () => {
                             <input
                               name="amount1"
                               type="number"
+                              ref={inputRefForAmount1}
                               value={amount1}
                               onChange={handleChangeAmount}
                               placeholder="0"

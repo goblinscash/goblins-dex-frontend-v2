@@ -11,6 +11,8 @@ import ListLayout from "@/components/lockRow";
 import { erc20Balance, fetchV2Pools } from "@/utils/web3.utils";
 import Link from "next/link";
 import { getUsdRates } from "@/utils/price.utils";
+import { showCustomErrorToast, showErrorToast } from "@/utils/toast/toast.utils";
+import { BtnLoader } from "@/components/common";
 
 type Column = {
   accessor: string;
@@ -113,6 +115,7 @@ const Pools = () => {
   >(null);
   const [filteredTokenList, setFilteredTokenList] = useState<Token[]>([]);
   const [tokenListWithBalances, setTokenListWithBalances] = useState<Token[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const { address } = useAccount();
 
@@ -131,6 +134,7 @@ const Pools = () => {
 
   useEffect(() => {
     if (chainId && token0 && token1) {
+
       fetchPools()
     }
   }, [chainId, token0, token1]);
@@ -181,28 +185,35 @@ const Pools = () => {
   // };
 
   const fetchPools = async () => {
-    if (!token0 || !token1) return;
-    const volatile = await fetchV2Pools(chainId, token0.address, token1.address, false);
-    //@ts-expect-error ignore
-    setVolatilePool(volatile);
-    const stable = await fetchV2Pools(chainId, token0.address, token1.address, true);
-    //@ts-expect-error ignore
-    setStablePool(stable);
-    // const v3Pool = await fetchV3Pools(chainId, token0.address, token1.address)    
-    const symbol = `Concentrated AMM-${getToken(token0.address)?.name}/${getToken(token1.address)?.name}`
-    setConcetratedPool([{
-      pool: "",
-      token0: token0.address,
-      token1: token1.address,
-      symbol: symbol,
-      chainId: chainId,
-      volume: "",
-      apr: "",
-      poolBalance: "",
-      action: "Deposit",
-      status: false,
-      type: 1
-    }])
+    try {
+      if (!token0 || !token1) return;
+      setLoading(true);
+      const volatile = await fetchV2Pools(chainId, token0.address, token1.address, false);
+      //@ts-expect-error ignore
+      setVolatilePool(volatile);
+      const stable = await fetchV2Pools(chainId, token0.address, token1.address, true);
+      //@ts-expect-error ignore
+      setStablePool(stable);
+      // const v3Pool = await fetchV3Pools(chainId, token0.address, token1.address)    
+      const symbol = `Concentrated AMM-${getToken(token0.address)?.name}/${getToken(token1.address)?.name}`
+      setConcetratedPool([{
+        pool: "",
+        token0: token0.address,
+        token1: token1.address,
+        symbol: symbol,
+        chainId: chainId,
+        volume: "",
+        apr: "",
+        poolBalance: "",
+        action: "Deposit",
+        status: false,
+        type: 1
+      }])
+      setLoading(false);
+    } catch (error) {
+      showCustomErrorToast("Unable to fetch pool data.")
+      setLoading(false);
+    }
   }
 
   return (
@@ -250,7 +261,7 @@ const Pools = () => {
                         </div>
                         <div className="content">
                           <p className="m-0 text-white/50 text-xs font-medium">
-                            {token0 ? token0.symbol : "Select a token"}
+                            {token0 ? token0?.symbol : "Select a token"}
                           </p>
                         </div>
                       </div>
@@ -299,8 +310,15 @@ const Pools = () => {
                       </div>
                       <div className="w-full">
                         <div className="tabContent pt-3">
-                          {stablePool.length > 0 && stablePool[0]?.status == true && <ListLayout column={column} data={stablePool} />}
-                          {volatilePool.length > 0 && volatilePool[0]?.status == true && <ListLayout column={column} data={volatilePool} />}
+                          {
+                            !loading ?
+
+                              <>
+                                {stablePool.length > 0 && stablePool[0]?.status == true && <ListLayout column={column} data={stablePool} />}
+                                {volatilePool.length > 0 && volatilePool[0]?.status == true && <ListLayout column={column} data={volatilePool} />}
+                              </> : <BtnLoader />
+
+                          }
                         </div>
                       </div>
                     </div>
@@ -311,8 +329,15 @@ const Pools = () => {
                       </div>
                       <div className="w-full">
                         <div className="tabContent pt-3">
-                          {stablePool.length > 0 && stablePool[0]?.status == false && <ListLayout column={column} data={stablePool} />}
-                          {volatilePool.length > 0 && volatilePool[0]?.status == false && <ListLayout column={column} data={volatilePool} />}
+                          {
+
+                            !loading ? <>
+
+                              {stablePool.length > 0 && stablePool[0]?.status == false && <ListLayout column={column} data={stablePool} />}
+                              {volatilePool.length > 0 && volatilePool[0]?.status == false && <ListLayout column={column} data={volatilePool} />}
+                            </> : <BtnLoader />
+
+                          }
                         </div>
                       </div>
                     </div>
@@ -323,7 +348,17 @@ const Pools = () => {
                       </div>
                       <div className="w-full">
                         <div className="tabContent pt-3">
-                          {concentratedPool.length > 0 && concentratedPool[0]?.status == false && <ListLayout column={column} data={concentratedPool} />}
+
+
+                          {
+
+                            !loading ? <>
+
+                              {concentratedPool.length > 0 && concentratedPool[0]?.status == false && <ListLayout column={column} data={concentratedPool} />}
+                            </> : <BtnLoader />
+
+                          }
+
                         </div>
                       </div>
                     </div>
