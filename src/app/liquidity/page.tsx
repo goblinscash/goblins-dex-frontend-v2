@@ -111,7 +111,17 @@ const column: Column[] = [
       );
     },
   },
-  { head: "APR", accessor: "apr" },
+  {
+    head: "APR",
+    accessor: "apr",
+    component: (item: FormattedPool) => {
+      return (
+        <>
+          {item.apr}%
+        </>
+      )
+    }
+  },
   {
     head: "Volume (24h)",
     accessor: "volume",

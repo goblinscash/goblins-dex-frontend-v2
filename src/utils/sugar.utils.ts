@@ -7,8 +7,8 @@ import rewardSugarAbi from "../abi/sugar/rewardSugar.json"
 import relaySugarAbi from "../abi/sugar/relaySugar.json"
 
 import { formatValue, fromUnits } from "./math.utils";
-import { getUsdRate, getUsdRates } from "./price.utils";
-import { calculateAPR, calculateVolume } from "./pool.utils";
+import { getUsdRates } from "./price.utils";
+import { calculateAPR } from "./pool.utils";
 
 export type FormattedPool = {
     chainId: number;
@@ -149,7 +149,7 @@ export const all = async (chainId: number, limit: number, offset: number, type?:
             root: pool[27],
             // Custom fields
             poolBalance: `$${Number(fromUnits(pool[8], Number(pool[2]))) + Number(fromUnits(pool[11], Number(pool[2])))}`,
-            apr: calculateAPR(pool),
+            apr: 0,
             volume: 0,
             url: `/deposit?id=${index}&token0=${pool[7]}&token1=${pool[10]}&type=${Number(pool.type)}&fee=${pool.pool_fee}`
         })) as FormattedPool[];
@@ -164,6 +164,7 @@ export const all = async (chainId: number, limit: number, offset: number, type?:
         const rates = await getUsdRates(chainId, tokens);
         pools.forEach((pool) => {
             pool.poolBalance = `$${rates[pool.token0] * Number(fromUnits(pool.reserve0, Number(pool.decimals))) + rates[pool.token1] * Number(fromUnits(pool.reserve1, Number(pool.decimals)))}`;
+            pool.apr = calculateAPR(chainId, pool, rates)
         });
 
         return pools;

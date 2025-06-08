@@ -773,7 +773,6 @@ export const quoteV3AddLiquidity = async (chainId: number, encodedInput: string,
         gasEstimate,
       } = await quoter.quoteExactInput.staticCall(encodedInput, BigInt(amountIn))
 
-      console.log(amountOut, "amountOut 333")
 
     return [amountIn, amountOut]
 }

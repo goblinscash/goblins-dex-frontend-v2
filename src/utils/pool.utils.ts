@@ -1,4 +1,5 @@
-import { getUsdPrice } from "./price.utils";
+import { fromUnits } from "./math.utils";
+import { getUsdPrice, getUsdRate } from "./price.utils";
 import { FormattedPool } from "./sugar.utils";
 import { getToken } from "./token.utils";
 
@@ -19,22 +20,30 @@ export const calculateVolume = async (chainId: number, pool: FormattedPool) => {
   const token1Fees = Number(pool.token1_fees) / 10 ** (token1?.decimals ?? 18)
 
   const volume = volumePct * (token0Fees + token1Fees);
-  
+
   return Number(volume.toFixed(3));
 }
 
 
-export const calculateAPR = (pool: FormattedPool) => {
+export const calculateAPR = (chainId: number, pool: FormattedPool, rates: Record<string, number>) => {
+  console.log("hellooooooo")
   const SECONDS_PER_DAY = 86400;
 
-  const emissions = Number(pool.emissions); // per second in USD
+  const emissions = Number(pool.emissions) / 10**18; // per second in USD
   const reserve0 = Number(pool.reserve0);
   const reserve1 = Number(pool.reserve1);
-  const liquidity = Number(pool.liquidity); // total pool token supply
-  const gaugeLiquidity = Number(pool.gauge_liquidity); // staked pool tokens
+  const liquidity = Number(pool.liquidity) / 10**18; // total pool token supply
+  const gaugeLiquidity = Number(pool.gauge_liquidity) / 10**18;; // staked pool tokens
+
+  const token0 = getToken(pool.token0)
+  const token1 = getToken(pool.token1)
+
+  const token0Rate = rates[pool.token0]
+  const token1Rate = rates[pool.token1]
+
 
   // Compute TVL in USD
-  const tvl = reserve0 + reserve1;
+  const tvl = (Number(fromUnits(reserve0, Number(token0?.decimals))) * token0Rate) + (Number(fromUnits(reserve1, Number(token1?.decimals))) * token1Rate);
 
   // Defensive checks
   if (!emissions || !tvl || !liquidity || !gaugeLiquidity) return 0;
@@ -48,7 +57,9 @@ export const calculateAPR = (pool: FormattedPool) => {
 
   if (stakedTVL === 0) return 0;
 
+  console.log(emissions, "gaugeLiquiditygaugeLiquiditygaugeLiquidity",tvl, gaugeLiquidity, "99", liquidity, "___",rewardPerDay, stakedTVL)
+
   // Final APR
-  const apr = (rewardPerDay / stakedTVL) * 100 * 365;
-  return apr;
+  const apr = (Number(rewardPerDay) / stakedTVL) * 365;
+  return Number(apr.toFixed(3));
 }

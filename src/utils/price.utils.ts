@@ -5,7 +5,7 @@ import multicallAbi from "../abi/multicall.json";
 import { getToken } from "./token.utils";
 
 export const StableCoin: Record<number, string> = {
-  56: "0xa44319D6232afEAa21A38b040Ca095110ad76d38", // tUSDT on BSC
+  56: "0x55d398326f99059fF775485246999027B3197955", // USDT on BSC
   8453: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", // USDC on BASE
 }
 

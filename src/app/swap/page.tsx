@@ -30,6 +30,7 @@ import { Notify } from "@/components/common";
 
 import { toast } from "react-toastify";
 import { showErrorToast, showInfoToast, showSuccessToast } from "@/utils/toast/toast.utils";
+import { encodePath } from "@/utils/path.utils";
 
 
 interface SwapStep {
@@ -296,12 +297,8 @@ const Swap = () => {
 
   const rootLength = root?.length;
 
-  console.log(root, "rootroot")
-
   const swap = async () => {
     let txHash: string = "";
-
-
     try {
       if (quoteData?.command_type === undefined) return;
       if (token0?.address === undefined) return;
@@ -312,13 +309,14 @@ const Swap = () => {
       const swapRoutes = quoteData?.data;
       const planner = new RoutePlanner();
 
-      console.log(command,"YYYYYYYYYYYYY", swapRoutes, ">>")
+      //@ts-expect-error ignore
+      const encodedInput = encodePath([swapRoutes[0].from, swapRoutes[0].to], [swapRoutes[0].fee])
+
       planner.addCommand(command, [
         address,
         toUnits(amount0, decimal),
         0,
-        //@ts-expect-error ignore
-        command == 0 ? encodedRoute(swapRoutes) : swapRoutes,
+        command == 0 ? encodedInput : swapRoutes,
         address,
       ]);
 
