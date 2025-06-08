@@ -61,7 +61,7 @@ export function getRoutes(
     fromToken: string,
     toToken: string,
     highLiqTokens: string[],
-    maxHops = 3
+    maxHops = 5
 ): [][] {
     if (!fromToken || !toToken) {
         return [];
@@ -93,17 +93,25 @@ export function getRoutes(
             pairAddresses.map((pairAddressWithDirection) => {
                 const [dir, pairAddress] = pairAddressWithDirection.split(":");
                 const pair = pairsByAddress[pairAddress];
-                console.log(pair, "pairpair")
-
                 const from = pair[2]
                 const to = pair[3]
+                const factory = pair[4]
 
                 const routeComponent = {
                     from,
                     to,
-                    stable: pair[1] == 0 ? true : false,  //pair.stable,
-                    factory: pair[4] //pair.factory,
+                    factory: factory
                 };
+                const isV3 = factory.toLowerCase() === '0x7a3027f7a2f9241c0634a7f6950d2d8270ac0563';
+
+                if (isV3) {
+                    //@ts-expect-error ignore
+                    routeComponent.fee = Number(pair[1]); // Assume pair[1] is the fee tier for v3
+                } else {
+                    //@ts-expect-error ignore
+                    routeComponent.stable = Number(pair[1]) == 0 ? true : false;
+                }
+
                 if (dir === "reversed") {
                     routeComponent.from = to;
                     routeComponent.to = from;
@@ -119,7 +127,7 @@ export function getRoutes(
                         );
                     });
                 }
-                
+
             });
 
             //@ts-expect-error ignore
@@ -171,7 +179,7 @@ function filterPaths(
  * if the quoted amount is the same. This should theoretically limit
  * the price impact on a trade.
  */
-export async function fetchQuote(
+export async function fetchQuoteV2(
     routes: [][],
     amount: BigNumber,
     chainId: number,
@@ -231,10 +239,7 @@ export async function fetchQuote(
     return bestQuote;
 }
 
-// under testing
-
 export async function quoteForSwap(chainId: number, token0: string, token1: string, amount: number, decimal0: number) {
-    // console.log(decimal0, ">>>>>>>><<<<<<<<<<", token0, token1, amount)
     try {
         const [poolsGraph, poolsByAddress] = buildGraph(await getPools(chainId));
         const routes = getRoutes(
@@ -247,7 +252,8 @@ export async function quoteForSwap(chainId: number, token0: string, token1: stri
 
         console.log(routes, "routesroutes")
 
-        const quote = await fetchQuote(
+
+        const quote = await fetchQuoteV2(
             routes,
             //@ts-expect-error ignore
             toUnits(amount, decimal0),
