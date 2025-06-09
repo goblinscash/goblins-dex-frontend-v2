@@ -55,3 +55,7 @@ export function showCustomErrorToast(message?: string, txhash?: string, chainId?
 export function showInfoToast(message: string, afterClose?: () => void) {
     toast.info(message, { onClose: afterClose });
 }
+export function showWarnToast(message: string, afterClose?: () => void) {
+    toast.warn(message, { onClose: afterClose });
+}
+
