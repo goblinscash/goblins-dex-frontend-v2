@@ -60,7 +60,7 @@ const DepositCard: React.FC<DepositCardProps> = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const router = useRouter()
 
-  console.log(tokenPair,"tokenPair" , depositId)
+  console.log(tokenPair, "tokenPair", depositId)
 
   // Update local expanded state when forceExpanded changes
   useEffect(() => {

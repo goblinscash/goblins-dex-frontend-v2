@@ -22,6 +22,7 @@ import Notify from '@/components/common/Notify';
 import aerodromeRouterAbi from "@/abi/aerodrome/router.json"
 import nfpmAbi from "@/abi/aerodrome/nfpm.json"
 import clGaugeAbi from "@/abi/aerodrome/clGauge.json"
+import { showCustomErrorToast, showErrorToast, showInfoToast, showSuccessToast } from '@/utils/toast/toast.utils';
 
 const feeNoticeMessage = "10% of fees generated from unstaked deposits is distributed to pool voters.";
 type LiquidityPosition = {
@@ -235,10 +236,11 @@ const StakePage = () => {
   }
 
   const unstake = async () => {
+    let txHash: string = '';
     try {
       console.log("start")
-      if (!address) return toast.warn("Please connect your wallet");
-      if (stakeDetails?.gauge == zeroAddr) return toast.warn("Gauge is not available for this pool")
+      if (!address) return showInfoToast("Please connect your wallet");
+      if (stakeDetails?.gauge == zeroAddr) return showInfoToast("Gauge is not available for this pool")
       if (stakeDetails?.liquidity != 0 || !stakeDetails?.gauge_liquidity) { };
       handleLoad("Unstake", true);
       if (!stakeDetails) return;
@@ -247,26 +249,30 @@ const StakePage = () => {
         guageAbi,
         await signer
       );
-      console.log(stakeDetails.gauge_liquidity, "stakePercentage", stakePercentage);
-      const rawLiquidity = ethers.toBigInt(stakeDetails.gauge_liquidity);
-      const percent = BigInt(Math.floor(stakePercentage * 100)); // e.g. 25.5 => 255000
-      const amountToWithdraw = (rawLiquidity * percent) / BigInt(10000);
-
-      console.log("💸 Unstaking:", amountToWithdraw.toString());
-
-      const tx = await gaugeInstance.withdraw(amountToWithdraw.toString(), {
+      const balance = await gaugeInstance.balanceOf(address);
+      // console.log("Balance:", balance.toString());
+      if (Number(balance.toString()) <= 0) {
+        return showInfoToast("You haven't staked yet! Please Stake First", () => {
+          handleLoad("Unstake", false);
+        });
+      }
+      const amountToSend = (balance * BigInt(stakePercentage)) / BigInt(100);
+      console.log("💸 Unstaking:", amountToSend.toString());
+      const tx = await gaugeInstance.withdraw(amountToSend.toString(), {
         gasLimit: 5000000
       });
-
-
+      txHash = tx?.hash;
       await tx.wait()
-      Notify({ chainId, txhash: tx.hash });
+      showSuccessToast(chainId, txHash);
       handleLoad("Unstake", false);
     } catch (error) {
       console.log(error);
       handleLoad("Unstake", false);
+      if (txHash.length > 0) {
+        showErrorToast(chainId, txHash);
+      }
+      else showCustomErrorToast();
     }
-
   }
 
   const removeV2Liquidity = async () => {
@@ -320,22 +326,21 @@ const StakePage = () => {
       console.log("📡 Contract instance created");
 
       console.log("🔄 Calling removeLiquidity...");
-      console.log(stakeDetails?.gauge_liquidity, fromUnits(stakeDetails.liquidity, 18), "stakeDetails.liquiditystakeDetails.liquidity")
-      const liquidityRaw = ethers.toBigInt(stakeDetails.liquidity);
-      const scale = 10000;
-      const percentBigInt = BigInt(Math.floor(stakePercentage * 100)); // e.g. 50% => 5000
-
-      const diff = BigInt(stakeDetails?.gauge_liquidity) - BigInt(stakeDetails.liquidity);
+      // console.log(stakeDetails?.gauge_liquidity, fromUnits(stakeDetails.liquidity, 18), "stakeDetails.liquiditystakeDetails.liquidity")
+      // const liquidityRaw = ethers.toBigInt(stakeDetails.liquidity);
+      // const scale = 10000;
+      // const percentBigInt = BigInt(Math.floor(stakePercentage * 100)); // e.g. 50% => 5000
+      console.log(stakeDetails?.gauge_liquidity - (stakeDetails.liquidity) * 10 ** 18, "stakeDetails.liquiditystakeDetails.liquidity", "gauge", stakeDetails?.gauge_liquidity, "stakeDetails.liquidity", stakeDetails.liquidity * 10 ** 18)
+      const diff = BigInt(stakeDetails?.gauge_liquidity) - BigInt(stakeDetails.liquidity * 10 ** 18);
       const positiveDiff = diff >= 0 ? diff : -diff;
-      const result = toUnits(positiveDiff.toString(), 18);
+      const result = positiveDiff.toString();
+      console.log(result, "stakeDetails.liquiditystakeDetails.liquidity")
 
-
-      console.log(stakeDetails?.gauge_liquidity - stakeDetails.liquidity, "stakeDetails.liquiditystakeDetails.liquidity")
       const tx = await aerodromeRouter.removeLiquidity(
         stakeDetails.token0.address,
         stakeDetails.token1.address,
         stable,
-        result.toString(),
+        (stakeDetails.liquidity * 10 ** 18).toString(),
         0,
         0,
         to,
