@@ -82,6 +82,8 @@ const DepositCard: React.FC<DepositCardProps> = ({
       router.push(`/gauge?stake=true&pool=${tokenPair.lp}&type=${tokenPair.type}&id=${tokenPair.index || 0}&position=${tokenPair.position}`)
     } else if (type == "withdraw") {
       router.push(`/gauge?withdraw=true&token0=${tokenPair.token0}&token1=${tokenPair.token1}&type=${tokenPair.type}&id=${tokenPair.index || 0}&position=${tokenPair.position}`)
+    } else if (type == "remove") {
+      router.push(`/gauge?remove=true&token0=${tokenPair.token0}&token1=${tokenPair.token1}&type=${tokenPair.type}&id=${tokenPair.index || 0}&position=${tokenPair.position}`)
     }
   }
 
@@ -328,6 +330,11 @@ const DepositCard: React.FC<DepositCardProps> = ({
                 <button onClick={() => navigate("withdraw")}>
                   <span className="px-2 sm:px-3 py-1 text-neon-green text-xs font-medium rounded-md hover:bg-[#3A3A3A] transition-colors whitespace-nowrap">
                     Withdraw
+                  </span>
+                </button>
+                <button onClick={() => navigate("remove")}>
+                  <span className="px-2 sm:px-3 py-1 text-neon-green text-xs font-medium rounded-md hover:bg-[#3A3A3A] transition-colors whitespace-nowrap">
+                    Remove LP
                   </span>
                 </button>
               </div>

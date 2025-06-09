@@ -178,12 +178,13 @@ const StakePage = () => {
     }
     if (Boolean(searchParams.get("stake"))) {
       setStakingAction("stake");
-
+    }
+    if (Boolean(searchParams.get("remove"))) {
+      setStakingAction("remove");
     }
 
   }, [searchParams, chainId, id, address]);
 
-  console.log(stakingAction, "stakingAction")
   const handleLoad = (action: string, status: boolean) => {
     setLoad((prev) => ({ ...prev, [action]: status }));
   };
@@ -207,7 +208,7 @@ const StakePage = () => {
       if (tx0Approve) {
         await tx0Approve.wait();
       } 
-      
+
       const gaugeInstance = new ethers.Contract(
         stakeDetails.gauge,
         guageAbi,
@@ -532,7 +533,7 @@ const StakePage = () => {
             />
           }
 
-          {_position == 0 && <ActButton
+          {_position == 0 && stakingAction == "remove" && <ActButton
             label="RemoveLiquidity"
             onClick={() => removeV2Liquidity()}
             load={load["RemoveLiquidity"]}
