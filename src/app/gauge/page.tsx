@@ -140,7 +140,7 @@ const StakePage = () => {
 
     const stakeInfo = {
       lp: _activeStake.pool!.lp,
-      liquidity: Number(_activeStake.position!.liquidity) / 10 ** 18,
+      liquidity: Number(_activeStake.position!.liquidity),
       token0: token0,
       token1: token1,
       fee: _activeStake.pool!.fee || "",
@@ -196,21 +196,16 @@ const StakePage = () => {
       if (!stakeDetails?.lp) return;
 
       handleLoad("Stake", true);
-
-
-
       const tx0Approve = await approve(
         stakeDetails?.lp,
         await signer,
         stakeDetails?.gauge,
-        stakeDetails.liquidity,
+        stakeDetails.liquidity/10**18,
         18
       );
       if (tx0Approve) {
         await tx0Approve.wait();
       }
-
-
       const gaugeInstance = new ethers.Contract(
         stakeDetails.gauge,
         guageAbi,
@@ -218,7 +213,7 @@ const StakePage = () => {
       );
 
       const tx = await gaugeInstance["deposit(uint256)"](
-        toUnits((stakeDetails.liquidity * stakePercentage) / 100, 18),
+        toUnits(((stakeDetails.liquidity / 10**18) * stakePercentage) / 100, 18),
         {
           gasLimit: 5000000
         }
@@ -277,70 +272,31 @@ const StakePage = () => {
 
   const removeV2Liquidity = async () => {
     try {
-      console.log("🚀 Starting removeV2Liquidity");
-
       if (!address) {
-        console.log("⚠️ Wallet not connected");
-        alert("Please connect your wallet");
-        return;
+        return showInfoToast("Please connect your wallet");
       }
 
       if (!stakeDetails) {
-        console.log("⚠️ No stakeDetails found");
-        return;
+        return showInfoToast("⚠️ No stakeDetails found");
       }
 
       handleLoad("RemoveLiquidity", true);
-      console.log("⏳ Loading started");
-
-      const amount0Min = toUnits(stakeDetails?.token0Amount, stakeDetails.token0?.decimals);
-      const amount1Min = toUnits(stakeDetails?.token0Amount, stakeDetails.token1?.decimals);
-      console.log("🧮 Calculated min amounts:", { amount0Min, amount1Min });
 
       const to = address;
       const deadline = Math.floor(Date.now() / 1000) + 600;
       const stable = stakeDetails.type.includes("Volatile") ? false : true;
-      console.log("📋 Params:", { to, deadline, stable });
-
-      console.log("🔐 Approving LP token");
-      const tx0Approve = await approve(
-        stakeDetails?.lp,
-        await signer,
-        aerodromeContracts[chainId].router,
-        stakeDetails.liquidity,
-        18
-      );
-      if (tx0Approve) {
-        console.log("⏳ Waiting for approval tx to confirm...");
-        await tx0Approve.wait();
-        console.log("✅ Approval confirmed");
-      } else {
-        console.log("ℹ️ No approval tx needed or returned");
-      }
 
       const aerodromeRouter = new ethers.Contract(
         aerodromeContracts[chainId].router,
         aerodromeRouterAbi,
         await signer
       );
-      console.log("📡 Contract instance created");
-
-      console.log("🔄 Calling removeLiquidity...");
-      // console.log(stakeDetails?.gauge_liquidity, fromUnits(stakeDetails.liquidity, 18), "stakeDetails.liquiditystakeDetails.liquidity")
-      // const liquidityRaw = ethers.toBigInt(stakeDetails.liquidity);
-      // const scale = 10000;
-      // const percentBigInt = BigInt(Math.floor(stakePercentage * 100)); // e.g. 50% => 5000
-      console.log(stakeDetails?.gauge_liquidity - (stakeDetails.liquidity) * 10 ** 18, "stakeDetails.liquiditystakeDetails.liquidity", "gauge", stakeDetails?.gauge_liquidity, "stakeDetails.liquidity", stakeDetails.liquidity * 10 ** 18)
-      const diff = BigInt(stakeDetails?.gauge_liquidity) - BigInt(stakeDetails.liquidity * 10 ** 18);
-      const positiveDiff = diff >= 0 ? diff : -diff;
-      const result = positiveDiff.toString();
-      console.log(result, "stakeDetails.liquiditystakeDetails.liquidity")
 
       const tx = await aerodromeRouter.removeLiquidity(
         stakeDetails.token0.address,
         stakeDetails.token1.address,
         stable,
-        (stakeDetails.liquidity * 10 ** 18).toString(),
+        stakeDetails.liquidity.toString(),
         0,
         0,
         to,
@@ -348,18 +304,63 @@ const StakePage = () => {
         { gasLimit: 5000000 }
       );
 
-      console.log("⏳ Waiting for removeLiquidity tx confirmation...");
       await tx.wait();
-
-      console.log("✅ Liquidity removed successfully");
-
       handleLoad("RemoveLiquidity", false);
-      console.log("⏹ Loading ended");
     } catch (error) {
       console.error("❌ Error in removeV2Liquidity:", error);
       handleLoad("RemoveLiquidity", false);
     }
   };
+
+  // const removeV3Liquidity = async () => {
+  //   try {
+  //     console.log("removeV3LiquidityremoveV3LiquidityremoveV3Liquidity")
+  //     if (!address) {
+  //       return showInfoToast("Please connect your wallet");
+  //     }
+
+  //     if (!stakeDetails) {
+  //       return showInfoToast("⚠️ No stakeDetails found");
+  //     }
+
+  //     handleLoad("RemoveLiquidity", true);
+
+  //     const deadline = Math.floor(Date.now() / 1000) + 600;
+
+  //     const aerodromeNfpm = new ethers.Contract(
+  //       aerodromeContracts[chainId].nfpm,
+  //       nfpmAbi,
+  //       await signer
+  //     );
+  //     console.log({
+  //       tokenId: _position,
+  //       liquidity: stakeDetails.liquidity.toString(),
+  //       amount0Min: toUnits(stakeDetails.token0Amount, stakeDetails.token0.decimals),
+  //       amount1Min:toUnits(stakeDetails.token1Amount, stakeDetails.token1.decimals),
+  //       deadline
+  //     }, "PPPPPPP+++++++++")
+
+  //     const txApprove = await aerodromeNfpm.approve(aerodromeContracts[chainId].nfpm, _position)
+  //     await txApprove.wait()
+
+  //     const tx = await aerodromeNfpm.decreaseLiquidity.staticCall(
+  //       {
+  //         tokenId: _position,
+  //         liquidity: stakeDetails.liquidity.toString(),
+  //         amount0Min: 0, // toUnits(stakeDetails.token0Amount, stakeDetails.token0.decimals),
+  //         amount1Min:0 , //toUnits(stakeDetails.token1Amount, stakeDetails.token1.decimals),
+  //         deadline
+  //       },
+  //       { gasLimit: 5000000, value: 0 }
+  //     );
+
+  //     await tx.wait();
+  //     handleLoad("RemoveLiquidity", false);
+  //   } catch (error) {
+  //     console.error("❌ Error in removeV3Liquidity:", error);
+  //     handleLoad("RemoveLiquidity", false);
+  //   }
+  // };
 
   const clStake = async () => {
     try {
