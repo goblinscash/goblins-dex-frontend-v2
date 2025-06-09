@@ -22,7 +22,7 @@ import Notify from '@/components/common/Notify';
 import aerodromeRouterAbi from "@/abi/aerodrome/router.json"
 import nfpmAbi from "@/abi/aerodrome/nfpm.json"
 import clGaugeAbi from "@/abi/aerodrome/clGauge.json"
-import { showCustomErrorToast, showErrorToast, showInfoToast, showSuccessToast } from '@/utils/toast/toast.utils';
+import { showCustomErrorToast, showErrorToast, showInfoToast, showSuccessToast, showWarnToast } from '@/utils/toast/toast.utils';
 
 const feeNoticeMessage = "10% of fees generated from unstaked deposits is distributed to pool voters.";
 type LiquidityPosition = {
@@ -189,16 +189,28 @@ const StakePage = () => {
   };
 
   const stake = async () => {
+    let txHash: string = "";
     try {
-      if (!address) return toast.warn("Please connect your wallet");
-      if (stakeDetails?.gauge == zeroAddr) return toast.warn("Gauge is not available for this pool")
-      if (stakeDetails?.liquidity == 0) return toast.warn("You dont have lp token to stake");
+      if (!address) return showWarnToast("Please connect your wallet");
+      if (stakeDetails?.gauge == zeroAddr) return showWarnToast("Gauge is not available for this pool");
+      if (stakeDetails?.liquidity == 0) return showWarnToast("You don't have lp token to stake");
       if (!stakeDetails?.lp) return;
 
       handleLoad("Stake", true);
+      console.log("Wallet Address:", address);
+      console.log("Gauge Address:", stakeDetails?.gauge);
+      console.log("LP Token Address:", stakeDetails?.lp);
+      console.log("Raw Liquidity:", stakeDetails?.liquidity.toString());
+      console.log("Stake Percentage:", stakePercentage);
+      const rawLiquidity = Number(stakeDetails?.liquidity);
+
+      if (!rawLiquidity || rawLiquidity < 0.000001) {
+        return showWarnToast("You don't have enough LP tokens to stake.", () =>
+          handleLoad("Stake", false));
+      }
 
 
-
+      // Step 1: Approve
       const tx0Approve = await approve(
         stakeDetails?.lp,
         await signer,
@@ -207,32 +219,44 @@ const StakePage = () => {
         18
       );
       if (tx0Approve) {
+        console.log("Approval TX sent:", tx0Approve.hash);
         await tx0Approve.wait();
+        console.log("Approval TX confirmed");
+      } else {
+        console.log("Approval skipped or failed");
       }
 
-
+      // Step 2: Stake
       const gaugeInstance = new ethers.Contract(
         stakeDetails.gauge,
         guageAbi,
         await signer
       );
 
-      const tx = await gaugeInstance["deposit(uint256)"](
-        toUnits((stakeDetails.liquidity * stakePercentage) / 100, 18),
-        {
-          gasLimit: 5000000
-        }
-      );
+      const amountToStake = toUnits((stakeDetails.liquidity * stakePercentage) / 100, 18);
+      console.log("Calculated Amount to Stake:", amountToStake.toString());
 
+      const tx = await gaugeInstance["deposit(uint256)"](amountToStake, {
+        gasLimit: 5000000
+      });
+      txHash = tx?.hash;
+      console.log("Stake TX sent:", txHash);
 
-      await tx.wait()
-      Notify({ chainId, txhash: tx.hash });
+      await tx.wait();
+      console.log("Stake TX confirmed");
+
+      showSuccessToast(chainId, txHash);
       handleLoad("Stake", false);
     } catch (error) {
-      console.log(error);
+      console.error("Stake Error:", error);
       handleLoad("Stake", false);
-    }
 
+      if (txHash) {
+        showErrorToast(chainId, txHash);
+      } else {
+        showCustomErrorToast();
+      }
+    }
   }
 
   const unstake = async () => {
