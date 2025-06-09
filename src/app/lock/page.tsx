@@ -21,6 +21,7 @@ import Increase from "@/components/lockInteraction/Increase";
 import Merge from "@/components/lockInteraction/Merge";
 import Extend from "@/components/lockInteraction/Extend";
 import { toast } from "react-toastify";
+import { showCustomErrorToast, showErrorToast, showInfoToast, showSuccessToast } from "@/utils/toast/toast.utils";
 
 const Deposit = () => {
   const searchParams = useSearchParams();
@@ -110,16 +111,17 @@ const Deposit = () => {
   };
 
   const createLock = async () => {
+    let txHash: string = '';
     try {
       if (!address) return alert("Please connect your wallet");
       if (!amount) {
         if (inputAmountRef) {
           inputAmountRef.current?.focus();
-          toast.info("Please add the amount to proceed!", {
-            onClose(reason) {
+          showInfoToast("Please add the amount to proceed!",
+            () => {
               inputAmountRef.current?.focus();
             },
-          })
+          )
         }
         return;
       };
@@ -149,15 +151,20 @@ const Deposit = () => {
         duration * 24 * 3600,
         { gasLimit: 5000000 }
       );
+      txHash = tx?.hash;
 
       await tx.wait();
       checkUserBalance(chainId);
-      Notify({ chainId, txhash: tx.hash });
+      showSuccessToast(chainId, txHash);
       handProgress("tokenLocked", true);
       handleLoad("createLock", false);
     } catch (error) {
       console.log(error);
       handleLoad("createLock", false);
+      if (txHash) {
+        showErrorToast(chainId, txHash);
+      }
+      else showCustomErrorToast()
     }
   };
 

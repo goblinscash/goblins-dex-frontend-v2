@@ -17,6 +17,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { isReset } from '@/utils/web3.utils';
 import Notify from '@/components/common/Notify';
+import { showCustomErrorToast, showErrorToast, showSuccessToast, showWarnToast } from '@/utils/toast/toast.utils';
 
 
 
@@ -88,11 +89,12 @@ const Relays = () => {
     }, [chainId, address]);
 
     const deposit = async () => {
+        let txHash:string='';
         try {
-            if (!address) return toast.warn("Please connect your wallet");
-            if (!isChecked) return toast.warn("Confirm unlock date change")
-            if (!selectedId?.id) return toast.warn("Select tokenId first")
-            if (!status?.isReset) return toast.warn(`First reset lock ${selectedId?.id} to proceed`)
+            if (!address) return showWarnToast("Please connect your wallet");
+            if (!isChecked) return showWarnToast("Confirm unlock date change")
+            if (!selectedId?.id) return showWarnToast("Select tokenId first")
+            if (!status?.isReset) return showWarnToast(`First reset lock ${selectedId?.id} to proceed`)
             handleLoad("deposit", true);
 
             const voter = new ethers.Contract(
@@ -106,17 +108,22 @@ const Relays = () => {
                 id_,
                 { gasLimit: 5000000 }
             );
-
+            txHash=tx?.hash;
             await tx.wait();
-
             await fetchLocksByAccount()
-            Notify({ chainId, txhash: tx.hash });
+
+            showSuccessToast(chainId , txHash);
+
             handleLoad("deposit", false);
             handProgress("depositCompleted", true);
             setSelectedId(null)
         } catch (error) {
             console.log(error);
             handleLoad("deposit", false);
+            if(txHash){
+                showErrorToast(chainId , txHash);
+            }
+            else showCustomErrorToast();
         }
     };
 
@@ -152,7 +159,7 @@ const Relays = () => {
                                                 {
                                                     locks.map((item) => (
                                                         <option key={item.id} value={item.id}>
-                                                          Lock #{item.id} with {fromUnits(item.amount, Number(item.decimals))} {gobV2[chainId || 8453]?.symbol}
+                                                            Lock #{item.id} with {fromUnits(item.amount, Number(item.decimals))} {gobV2[chainId || 8453]?.symbol}
                                                         </option>
                                                     ))
                                                 }

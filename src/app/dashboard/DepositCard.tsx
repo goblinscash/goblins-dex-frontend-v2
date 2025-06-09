@@ -111,7 +111,6 @@ const DepositCard: React.FC<DepositCardProps> = ({
       );
       txHash = tx?.hash;
       await tx.wait()
-      // Notify({ chainId, txhash: tx.hash });
       showSuccessToast(chainId, tx.hash);
       handleLoad("Claim", false);
     } catch (error) {
