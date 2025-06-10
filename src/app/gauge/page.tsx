@@ -202,12 +202,12 @@ const StakePage = () => {
         stakeDetails?.lp,
         await signer,
         stakeDetails?.gauge,
-        stakeDetails.liquidity/10**18,
+        stakeDetails.liquidity / 10 ** 18,
         18
       );
       if (tx0Approve) {
         await tx0Approve.wait();
-      } 
+      }
 
       const gaugeInstance = new ethers.Contract(
         stakeDetails.gauge,
@@ -216,7 +216,7 @@ const StakePage = () => {
       );
 
       const tx = await gaugeInstance["deposit(uint256)"](
-        toUnits(((stakeDetails.liquidity / 10**18) * stakePercentage) / 100, 18),
+        toUnits(((stakeDetails.liquidity / 10 ** 18) * stakePercentage) / 100, 18),
         {
           gasLimit: 5000000
         }
@@ -295,6 +295,17 @@ const StakePage = () => {
       const to = address;
       const deadline = Math.floor(Date.now() / 1000) + 600;
       const stable = stakeDetails.type.includes("Volatile") ? false : true;
+
+      const tx0Approve = await approve(
+        stakeDetails?.lp,
+        await signer,
+        aerodromeContracts[chainId].router,
+        stakeDetails.liquidity / 10**18,
+        18
+      );
+      if (tx0Approve) {
+        await tx0Approve.wait();
+      }
 
       const aerodromeRouter = new ethers.Contract(
         aerodromeContracts[chainId].router,
