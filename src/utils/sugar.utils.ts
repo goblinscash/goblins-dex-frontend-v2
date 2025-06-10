@@ -261,6 +261,8 @@ export const positions = async (chainId: number, limit: number, offset: number, 
 
         const positionsRaw = await instance.positions(limit, offset, account)
 
+        const posit = positionsRaw as Position[]
+        console.log(posit, "posit+++++++++>>>>>>>>")
         return positionsRaw as Position[]
 
     } catch (error) {

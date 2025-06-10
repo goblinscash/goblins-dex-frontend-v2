@@ -23,6 +23,7 @@ import aerodromeRouterAbi from "@/abi/aerodrome/router.json"
 import nfpmAbi from "@/abi/aerodrome/nfpm.json"
 import clGaugeAbi from "@/abi/aerodrome/clGauge.json"
 import { showCustomErrorToast, showErrorToast, showInfoToast, showSuccessToast, showWarnToast } from '@/utils/toast/toast.utils';
+import erc20Abi from '@/abi/erc20.json';
 
 const feeNoticeMessage = "10% of fees generated from unstaked deposits is distributed to pool voters.";
 type LiquidityPosition = {
@@ -43,7 +44,7 @@ type LiquidityPosition = {
 
 type StakeDetails = {
   lp: string;
-  liquidity: number;
+  liquidity: bigint;
   token0: Token;
   token1: Token;
   fee: string;
@@ -132,15 +133,17 @@ const StakePage = () => {
       }
     }
 
-    console.log(_activeStake?.activeVersion == "v3", "||PP", _activeStake.position?.amount0, _activeStake.position?.amount1)
+
+    console.log( _activeStake?.activeVersion == "v3", "||PP", Number(_activeStake.position!.liquidity), _activeStake.position!.liquidity, "++")
 
     const token0 = getToken(_activeStake?.pool!.token0)!;
     const token1 = getToken(_activeStake?.pool!.token1)!;
     const rewardToken = getToken(_activeStake.pool!.emissions_token);
 
+
     const stakeInfo = {
       lp: _activeStake.pool!.lp,
-      liquidity: Number(_activeStake.position!.liquidity),
+      liquidity: _activeStake.position!.liquidity,
       token0: token0,
       token1: token1,
       fee: _activeStake.pool!.fee || "",
@@ -279,6 +282,19 @@ const StakePage = () => {
     }
   }
 
+  //@ts-expect-error ignore
+  const approve_ = async (token: string, signer, spendor: string, amount: number, decimals: number) => {
+    const _amount = amount
+    const tokenContract = new ethers.Contract(token, erc20Abi, signer);
+    const allowance = await tokenContract.allowance(signer.address, spendor);
+    if (allowance < _amount) {
+      const tx1 = await tokenContract.approve(spendor, _amount);
+      return tx1;
+    } else {
+      return null
+    }
+  }
+
   const removeV2Liquidity = async () => {
     try {
       if (!address) {
@@ -295,8 +311,8 @@ const StakePage = () => {
       const deadline = Math.floor(Date.now() / 1000) + 600;
       const stable = stakeDetails.type.includes("Volatile") ? false : true;
 
-      console.log(stakeDetails.liquidity,"++++++++++++++++++++111111111111", stakeDetails?.lp)
-      const tx0Approve = await approve(
+      console.log(stakeDetails.liquidity, "++++++++++++++++++++111111111111", stakeDetails?.lp)
+      const tx0Approve = await approve_(
         stakeDetails?.lp,
         await signer,
         aerodromeContracts[chainId].router,

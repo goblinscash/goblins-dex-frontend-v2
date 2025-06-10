@@ -38,7 +38,7 @@ export const fromUnits = (value: string | number | bigint, decimals: number): st
   }
 
   const formatValue = ethers.formatUnits(bigIntValue, decimals)
-  return Number(Number(formatValue).toFixed(4));
+  return Number(formatValue);
 };
 
 
