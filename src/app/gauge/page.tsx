@@ -283,7 +283,7 @@ const StakePage = () => {
   }
 
   //@ts-expect-error ignore
-  const approve_ = async (token: string, signer, spendor: string, amount: number, decimals: number) => {
+  const approve_ = async (token: string, signer, spendor: string, amount: bigint, decimals: number) => {
     const _amount = amount
     const tokenContract = new ethers.Contract(token, erc20Abi, signer);
     const allowance = await tokenContract.allowance(signer.address, spendor);
@@ -316,7 +316,7 @@ const StakePage = () => {
         stakeDetails?.lp,
         await signer,
         aerodromeContracts[chainId].router,
-        Number(stakeDetails.liquidity),
+        stakeDetails.liquidity,
         18
       );
       console.log("++++++++++++++++++++2222222")
