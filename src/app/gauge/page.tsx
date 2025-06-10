@@ -257,9 +257,8 @@ const StakePage = () => {
       const balance = await gaugeInstance.balanceOf(address);
       // console.log("Balance:", balance.toString());
       if (Number(balance.toString()) <= 0) {
-        return showInfoToast("You haven't staked yet! Please Stake First", () => {
-          handleLoad("Unstake", false);
-        });
+        handleLoad("Unstake", false);
+        return showInfoToast("You haven't staked yet! Please Stake First");
       }
       const amountToSend = (balance * BigInt(stakePercentage)) / BigInt(100);
       console.log("💸 Unstaking:", amountToSend.toString());
@@ -296,13 +295,16 @@ const StakePage = () => {
       const deadline = Math.floor(Date.now() / 1000) + 600;
       const stable = stakeDetails.type.includes("Volatile") ? false : true;
 
+      console.log(stakeDetails.liquidity,"++++++++++++++++++++111111111111", stakeDetails?.lp)
       const tx0Approve = await approve(
         stakeDetails?.lp,
         await signer,
         aerodromeContracts[chainId].router,
-        stakeDetails.liquidity / 10**18,
+        stakeDetails.liquidity,
         18
       );
+      console.log("++++++++++++++++++++2222222")
+
       if (tx0Approve) {
         await tx0Approve.wait();
       }
@@ -324,6 +326,7 @@ const StakePage = () => {
         deadline,
         { gasLimit: 5000000 }
       );
+      console.log("++++++++++++++++++++3333333333")
 
       await tx.wait();
       handleLoad("RemoveLiquidity", false);
