@@ -197,7 +197,7 @@ const StakePage = () => {
     try {
       if (!address) return showWarnToast("Please connect your wallet");
       if (stakeDetails?.gauge == zeroAddr) return showWarnToast("Gauge is not available for this pool");
-      if (stakeDetails?.liquidity == 0) return showWarnToast("You don't have lp token to stake");
+      if (stakeDetails?.liquidity === BigInt(0)) return showWarnToast("You don't have lp token to stake");
       if (!stakeDetails?.lp) return;
 
       handleLoad("Stake", true);
@@ -205,7 +205,7 @@ const StakePage = () => {
         stakeDetails?.lp,
         await signer,
         stakeDetails?.gauge,
-        stakeDetails.liquidity / 10 ** 18,
+        Number(stakeDetails.liquidity) / 10 ** 18,
         18
       );
       if (tx0Approve) {
@@ -219,7 +219,7 @@ const StakePage = () => {
       );
 
       const tx = await gaugeInstance["deposit(uint256)"](
-        toUnits(((stakeDetails.liquidity / 10 ** 18) * stakePercentage) / 100, 18),
+        toUnits(((Number(stakeDetails.liquidity) / 10 ** 18) * stakePercentage) / 100, 18),
         {
           gasLimit: 5000000
         }
@@ -249,7 +249,7 @@ const StakePage = () => {
       console.log("start")
       if (!address) return showInfoToast("Please connect your wallet");
       if (stakeDetails?.gauge == zeroAddr) return showInfoToast("Gauge is not available for this pool")
-      if (stakeDetails?.liquidity != 0 || !stakeDetails?.gauge_liquidity) { };
+      if (stakeDetails?.liquidity != BigInt(0) || !stakeDetails?.gauge_liquidity) { };
       handleLoad("Unstake", true);
       if (!stakeDetails) return;
       const gaugeInstance = new ethers.Contract(
@@ -316,7 +316,7 @@ const StakePage = () => {
         stakeDetails?.lp,
         await signer,
         aerodromeContracts[chainId].router,
-        stakeDetails.liquidity,
+        Number(stakeDetails.liquidity),
         18
       );
       console.log("++++++++++++++++++++2222222")
